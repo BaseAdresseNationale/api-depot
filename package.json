@@ -1,0 +1,9 @@
+{
+  "name": "@etalab/ban-api-push-bal",
+  "version": "0.0.0",
+  "description": "API de dépôt des Bases Adresses Locales",
+  "repository": "https://github.com/etalab/ban-api-push-bal",
+  "author": "Jérôme Desboeufs <jerome.desboeufs@data.gouv.fr>",
+  "license": "MIT",
+  "private": false
+}
