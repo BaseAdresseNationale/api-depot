@@ -21,6 +21,7 @@
     "hasha": "^5.2.2",
     "http-errors": "^1.8.0",
     "lodash": "^4.17.21",
+    "mongodb": "^3.6.9",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
