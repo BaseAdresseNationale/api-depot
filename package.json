@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@etalab/bal": "^1.2.0",
+    "@etalab/decoupage-administratif": "^0.8.0",
     "bytes": "^3.1.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
