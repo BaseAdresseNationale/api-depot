@@ -1,0 +1,4 @@
+- name: iAdresses
+  organization: ACME SARL
+  email: iadresses@acme.ltd
+  token: xxxxxxxxxxxxxxx
