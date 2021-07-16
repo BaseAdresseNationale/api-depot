@@ -18,7 +18,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.use(cors({origin: true}))
 
-app.use('/commune/:codeCommune', (req, res, next) => {
+app.param('codeCommune', (req, res, next) => {
   if (!isCommuneActuelle(req.params.codeCommune)) {
     return next(createError(404, 'Le code commune n’existe pas ou n’est plus en vigueur'))
   }
