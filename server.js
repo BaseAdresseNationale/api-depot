@@ -12,7 +12,7 @@ const w = require('./lib/util/w')
 const rawBodyParser = require('./lib/util/raw-body-parser')
 const {validateBAL} = require('./lib/validate-bal')
 const {authClient} = require('./lib/clients')
-const {createRevision} = require('./lib/revisions')
+const {fetchRevision, createRevision} = require('./lib/revisions')
 
 const app = express()
 
@@ -31,6 +31,18 @@ app.param('codeCommune', (req, res, next) => {
   req.codeCommune = req.params.codeCommune
   next()
 })
+
+app.param('revisionId', w(async (req, res, next) => {
+  const {revisionId} = req.params
+  const revision = await fetchRevision(revisionId)
+
+  if (!revision) {
+    throw createError(404, 'L’identifiant de révision demandé n’existe pas')
+  }
+
+  req.revision = revision
+  next()
+}))
 
 app.post('/communes/:codeCommune/revisions', authClient(), w(async (req, res) => {
   // {nomComplet, organisation, extras, codeCommune, client}
