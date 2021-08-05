@@ -12,7 +12,7 @@ const w = require('./lib/util/w')
 const rawBodyParser = require('./lib/util/raw-body-parser')
 const {validateBAL} = require('./lib/validate-bal')
 const {authClient} = require('./lib/clients')
-const {fetchRevision, createRevision, addFile} = require('./lib/revisions')
+const {fetchRevision, createRevision, addFile, getFiles} = require('./lib/revisions')
 
 const app = express()
 
@@ -67,6 +67,11 @@ app.post('/communes/:codeCommune/revisions', authClient(), w(async (req, res) =>
   })
 
   res.status(201).send(revision)
+}))
+
+app.get('/revisions/:revisionId', authClient(), w(async (req, res) => {
+  const files = await getFiles(req.revision)
+  res.send({...req.revision, files})
 }))
 
 app.post('/revisions/:revisionId/files/bal', authClient(), w(async (req, res) => {
