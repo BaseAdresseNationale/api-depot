@@ -4,7 +4,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
-const {isString, isPlainObject, create} = require('lodash')
+const {isString, isPlainObject} = require('lodash')
 const createError = require('http-errors')
 const errorHandler = require('./lib/util/error-handler')
 const {isCommuneActuelle} = require('./lib/util/cog')
@@ -12,7 +12,7 @@ const w = require('./lib/util/w')
 const rawBodyParser = require('./lib/util/raw-body-parser')
 const {validateBAL} = require('./lib/validate-bal')
 const {authClient} = require('./lib/clients')
-const {fetchRevision, createRevision} = require('./lib/revisions')
+const {fetchRevision, createRevision, addFile} = require('./lib/revisions')
 
 const app = express()
 
@@ -67,6 +67,20 @@ app.post('/communes/:codeCommune/revisions', authClient(), w(async (req, res) =>
   })
 
   res.status(201).send(revision)
+}))
+
+app.post('/revisions/:revisionId/files/bal', authClient(), w(async (req, res) => {
+  if (!Buffer.isBuffer(req.body)) {
+    throw createError(400, 'Fichier non fourni')
+  }
+
+  const file = await addFile(req.revision, {
+    data: req.body,
+    name: req.filename || null,
+    type: 'bal'
+  })
+
+  res.status(201).send(file)
 }))
 
 app.post('/commune/:codeCommune/validate', rawBodyParser(), validateBAL(), (req, res) => {
