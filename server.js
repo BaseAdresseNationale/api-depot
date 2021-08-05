@@ -12,7 +12,7 @@ const w = require('./lib/util/w')
 const rawBodyParser = require('./lib/util/raw-body-parser')
 const {validateBAL} = require('./lib/validate-bal')
 const {authClient} = require('./lib/clients')
-const {fetchRevision, createRevision, addFile, getFiles} = require('./lib/revisions')
+const {fetchRevision, createRevision, addFile, getFiles, publishRevision} = require('./lib/revisions')
 
 const app = express()
 
@@ -90,6 +90,16 @@ app.post('/revisions/:revisionId/files/bal', authClient(), w(async (req, res) =>
   })
 
   res.status(201).send(file)
+}))
+
+app.post('/revisions/:revisionId/publish', authClient(), w(async (req, res) => {
+  if (req.revision.status !== 'pending' || !req.revision.ready) {
+    throw createError(403, 'La publication n’est pas possible')
+  }
+
+  const publishedRevision = await publishRevision(req.revision)
+
+  res.send(publishedRevision)
 }))
 
 app.post('/commune/:codeCommune/validate', rawBodyParser(), validateBAL(), (req, res) => {
