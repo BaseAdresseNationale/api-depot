@@ -75,6 +75,10 @@ app.get('/revisions/:revisionId', authClient(), w(async (req, res) => {
 }))
 
 app.post('/revisions/:revisionId/files/bal', authClient(), w(async (req, res) => {
+  if (req.revision.status !== 'pending') {
+    throw createError(403, 'La révision n’est plus modifiable')
+  }
+
   if (!Buffer.isBuffer(req.body)) {
     throw createError(400, 'Fichier non fourni')
   }
