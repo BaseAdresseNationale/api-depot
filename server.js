@@ -12,7 +12,7 @@ const w = require('./lib/util/w')
 const rawBodyParser = require('./lib/util/raw-body-parser')
 const {validateBAL} = require('./lib/validate-bal')
 const {authClient} = require('./lib/clients')
-const {fetchRevision, createRevision, addFile, getFiles, publishRevision} = require('./lib/revisions')
+const {fetchRevision, createRevision, addFile, getFiles, publishRevision, computeRevision} = require('./lib/revisions')
 
 const app = express()
 
@@ -100,6 +100,16 @@ app.post('/revisions/:revisionId/publish', authClient(), w(async (req, res) => {
   const publishedRevision = await publishRevision(req.revision)
 
   res.send(publishedRevision)
+}))
+
+app.post('/revisions/:revisionId/compute', authClient(), w(async (req, res) => {
+  if (req.revision.status !== 'pending') {
+    throw createError(403, 'La révision n’est plus modifiable')
+  }
+
+  const computedRevision = await computeRevision(req.revision)
+
+  res.send(computedRevision)
 }))
 
 app.post('/commune/:codeCommune/validate', rawBodyParser(), validateBAL(), (req, res) => {
