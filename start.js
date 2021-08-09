@@ -2,8 +2,10 @@
 require('dotenv').config()
 
 const {createServer} = require('./lib/server')
+const mongo = require('./lib/util/mongo')
 
 async function main() {
+  await mongo.connect()
   const server = await createServer()
   const port = process.env.PORT || 5000
 
