@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "node server",
+    "start": "node start",
     "lint": "xo",
     "test": "ava"
   },
