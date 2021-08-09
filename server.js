@@ -12,7 +12,7 @@ const w = require('./lib/util/w')
 const rawBodyParser = require('./lib/util/raw-body-parser')
 const {validateBAL} = require('./lib/validate-bal')
 const {authClient} = require('./lib/clients')
-const {fetchRevision, createRevision, addFile, getFiles, publishRevision, computeRevision} = require('./lib/revisions')
+const {fetchRevision, createRevision, setFile, getFiles, publishRevision, computeRevision} = require('./lib/revisions')
 
 const app = express()
 
@@ -74,7 +74,7 @@ app.get('/revisions/:revisionId', authClient(), w(async (req, res) => {
   res.send({...req.revision, files})
 }))
 
-app.post('/revisions/:revisionId/files/bal', authClient(), w(async (req, res) => {
+app.put('/revisions/:revisionId/files/bal', authClient(), w(async (req, res) => {
   if (req.revision.status !== 'pending') {
     throw createError(403, 'La révision n’est plus modifiable')
   }
@@ -83,10 +83,9 @@ app.post('/revisions/:revisionId/files/bal', authClient(), w(async (req, res) =>
     throw createError(400, 'Fichier non fourni')
   }
 
-  const file = await addFile(req.revision, {
+  const file = await setFile(req.revision, 'bal', {
     data: req.body,
-    name: req.filename || null,
-    type: 'bal'
+    name: req.filename || null
   })
 
   res.status(201).send(file)
