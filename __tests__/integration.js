@@ -48,7 +48,7 @@ test('authentication / fail', async t => {
   t.pass()
 })
 
-test.serial.only('basic revision', async t => {
+test.serial('basic revision', async t => {
   const server = await createServer({clients: [fakeClient]})
 
   const res1 = await request(server)
