@@ -93,4 +93,25 @@ test.serial('basic revision', async t => {
 
   t.is(res4.body.status, 'published')
   t.is(res4.body.current, true)
+
+  const res5 = await request(server)
+    .get('/communes/31591/current-revision/files/bal')
+    .expect('Content-Type', 'text/csv')
+    .expect('Content-Disposition', 'attachment; filename="31591.csv"')
+    .expect(200)
+
+  t.is(res5.text, balFile.toString())
+
+  const res6 = await request(server)
+    .get('/communes/31591/current-revision')
+    .expect(200)
+
+  t.is(res6.body._id, revisionId)
+
+  const res7 = await request(server)
+    .get('/communes/31591/revisions')
+    .expect(200)
+
+  t.is(res7.body.length, 1)
+  t.is(res7.body[0]._id, revisionId)
 })
