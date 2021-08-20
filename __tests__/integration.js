@@ -95,7 +95,7 @@ test.serial('basic revision', async t => {
   t.is(res4.body.current, true)
 
   const res5 = await request(server)
-    .get('/communes/31591/current-revision/files/bal')
+    .get('/communes/31591/current-revision/files/bal/download')
     .expect('Content-Type', 'text/csv')
     .expect('Content-Disposition', 'attachment; filename="31591.csv"')
     .expect(200)
