@@ -54,8 +54,11 @@ test.serial('basic revision', async t => {
   const res1 = await request(server)
     .post('/communes/31591/revisions')
     .set('Authorization', 'Token foobar')
+    .set('Content-Type', 'application/json')
+    .send(JSON.stringify({context: {organisation: 'ACME'}}))
     .expect(201)
 
+  t.is(res1.body.context.organisation, 'ACME')
   t.is(res1.body.status, 'pending')
   t.is(res1.body.ready, false)
   t.is(res1.body.codeCommune, '31591')
