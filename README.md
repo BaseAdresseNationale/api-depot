@@ -1,3 +1,1 @@
-# ban-api-depot
-
-API de dépôt des Bases Adresses Locales
+# API de dépôt d'une Base Adresse Locale
