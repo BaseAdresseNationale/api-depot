@@ -1,26 +1,17 @@
 const express = require('express')
-const cors = require('cors')
-const morgan = require('morgan')
 const {isString, isPlainObject} = require('lodash')
 const createError = require('http-errors')
 const contentDisposition = require('content-disposition')
-const errorHandler = require('./util/error-handler')
-const {isCommuneActuelle} = require('./util/cog')
-const w = require('./util/w')
-const rawBodyParser = require('./util/raw-body-parser')
+const errorHandler = require('../lib/util/error-handler')
+const {isCommuneActuelle} = require('../lib/util/cog')
+const w = require('../lib/util/w')
+const rawBodyParser = require('../lib/util/raw-body-parser')
 const {validateBAL} = require('./validate-bal')
-const {authenticateClient} = require('./clients')
-const {fetchRevision, getCurrentRevision, getRevisionsByCommune, createRevision, setFile, getFiles, getFileData, publishRevision, computeRevision} = require('./revisions')
+const {fetchRevision, getCurrentRevision, getRevisionsByCommune, createRevision, setFile, getFiles, getFileData, publishRevision, computeRevision} = require('./model')
 
-async function createServer({clients}) {
-  const app = express()
-  const authClient = authenticateClient(clients)
+async function revisionsRoutes({authClient}) {
+  const app = new express.Router()
 
-  if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
-    app.use(morgan('dev'))
-  }
-
-  app.use(cors({origin: true}))
   app.use(express.json())
 
   app.param('codeCommune', (req, res, next) => {
@@ -165,7 +156,7 @@ async function createServer({clients}) {
     res.send(req.client)
   })
 
-  app.get('/', (req, res) => {
+  app.use('/', (req, res) => {
     res.send('Hello world!')
   })
 
@@ -174,4 +165,4 @@ async function createServer({clients}) {
   return app
 }
 
-module.exports = {createServer}
+module.exports = {revisionsRoutes}

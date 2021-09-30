@@ -4,7 +4,7 @@ require('dotenv').config()
 const {join} = require('path')
 const {readFileSync} = require('fs')
 const yaml = require('js-yaml')
-const {createServer} = require('./lib/server')
+const {createServer} = require('./server')
 const mongo = require('./lib/util/mongo')
 
 const clients = yaml.load(readFileSync(join(__dirname, 'clients.yml'), 'utf8'))
