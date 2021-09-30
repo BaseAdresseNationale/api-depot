@@ -4,7 +4,7 @@ const test = require('ava')
 const request = require('supertest')
 const {MongoMemoryServer} = require('mongodb-memory-server')
 const mongo = require('../lib/util/mongo')
-const {createServer} = require('../lib/server')
+const {createServer} = require('../server')
 
 let mongod
 
@@ -65,7 +65,7 @@ test.serial('basic revision', async t => {
 
   const revisionId = res1.body._id
 
-  const balFile = await readFile(join(__dirname, '..', 'lib', '__tests__', 'fixtures', 'bal-valid.csv'))
+  const balFile = await readFile(join(__dirname, '..', 'revisions', '__tests__', 'fixtures', 'bal-valid.csv'))
 
   const res2 = await request(server)
     .put(`/revisions/${revisionId}/files/bal`)
