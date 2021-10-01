@@ -5,7 +5,7 @@ const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
 const {authenticateClient} = require('./lib/clients')
-const {revisionsRoutes} = require('./revisions/routes')
+const {revisionsRoutes} = require('./lib/revisions/routes')
 
 async function createServer({clients}) {
   const app = express()
