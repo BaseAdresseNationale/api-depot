@@ -6,12 +6,12 @@ const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
 const {revisionsRoutes} = require('./lib/revisions/routes')
+const {habilitationsRoutes} = require('./lib/habilitation/routes')
 
 async function main() {
   const app = express()
   const port = process.env.PORT || 5000
 
-  app.use(express.json())
   app.use(cors({origin: true}))
 
   await mongo.connect()
@@ -21,7 +21,9 @@ async function main() {
   }
 
   const revisions = await revisionsRoutes()
+  const habilitation = await habilitationsRoutes()
   app.use('/', revisions)
+  app.use('/', habilitation)
 
   app.listen(port, () => {
     console.log(`Start listening on port ${port}`)
