@@ -1,4 +1,4 @@
-- name: iAdresses
-  organization: ACME SARL
+- nom: iAdresses
+  organisme: ACME SARL
   email: iadresses@acme.ltd
   token: xxxxxxxxxxxxxxx
