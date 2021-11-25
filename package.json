@@ -12,7 +12,7 @@
     "test": "ava"
   },
   "dependencies": {
-    "@etalab/bal": "^1.6.0",
+    "@etalab/bal": "^1.7.1",
     "@etalab/decoupage-administratif": "^0.8.0",
     "@slack/web-api": "^6.4.0",
     "bytes": "^3.1.0",
