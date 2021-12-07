@@ -9,17 +9,22 @@
   "scripts": {
     "start": "node server",
     "lint": "xo",
-    "test": "ava"
+    "test": "ava",
+    "habilitations:build-rne": "node lib/habilitations/build-rne"
   },
   "dependencies": {
     "@etalab/bal": "^1.7.1",
     "@etalab/decoupage-administratif": "^0.8.0",
     "@slack/web-api": "^6.4.0",
     "bytes": "^3.1.0",
+    "connect-mongo": "^4.6.0",
     "content-disposition": "^0.5.3",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "fs-extra": "^10.0.0",
     "get-stream": "^6.0.1",
     "got": "^11.8.2",
     "hasha": "^5.2.2",
@@ -29,6 +34,8 @@
     "mongodb": "^4.1.3",
     "morgan": "^1.10.0",
     "nodemailer": "^6.7.0",
+    "passport": "^0.5.0",
+    "passport-oauth2": "^1.6.1",
     "random-number-csprng": "^1.0.2"
   },
   "devDependencies": {
@@ -42,7 +49,8 @@
     "space": 2,
     "rules": {
       "unicorn/prevent-abbreviations": "off",
-      "unicorn/import-style": "off"
+      "unicorn/import-style": "off",
+      "unicorn/prefer-ternary": "off"
     }
   }
 }
