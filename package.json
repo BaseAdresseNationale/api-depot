@@ -42,7 +42,7 @@
     "ava": "^4.0.1",
     "mongodb-memory-server": "^8.4.0",
     "supertest": "^6.2.2",
-    "xo": "^0.36.1"
+    "xo": "^0.48.0"
   },
   "xo": {
     "semicolon": false,
@@ -50,7 +50,12 @@
     "rules": {
       "unicorn/prevent-abbreviations": "off",
       "unicorn/import-style": "off",
-      "unicorn/prefer-ternary": "off"
+      "unicorn/prefer-ternary": "off",
+      "unicorn/prefer-module": "off",
+      "node/prefer-global/process": "off",
+      "node/prefer-global/buffer": "off",
+      "import/extensions": "off",
+      "comma-dangle": ["error", "never"]
     }
   }
 }
