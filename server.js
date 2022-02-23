@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 require('dotenv').config()
 
-const mongo = require('./lib/util/mongo')
 const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
+const mongo = require('./lib/util/mongo')
 const {revisionsRoutes} = require('./lib/revisions/routes')
 const {habilitationsRoutes} = require('./lib/habilitations/routes')
 
