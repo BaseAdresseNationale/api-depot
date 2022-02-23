@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@etalab/bal": "^2.1.1",
-    "@etalab/decoupage-administratif": "^0.8.0",
+    "@etalab/decoupage-administratif": "^2.0.0",
     "@slack/web-api": "^6.5.1",
     "bytes": "^3.1.1",
     "connect-mongo": "^4.6.0",
