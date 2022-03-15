@@ -13,7 +13,7 @@
     "habilitations:build-rne": "node lib/habilitations/build-rne"
   },
   "dependencies": {
-    "@etalab/bal": "^2.3.2",
+    "@etalab/bal": "^2.3.3",
     "@etalab/decoupage-administratif": "^2.0.0",
     "@slack/web-api": "^6.7.0",
     "bytes": "^3.1.2",
