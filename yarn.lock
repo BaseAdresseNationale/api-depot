@@ -43,10 +43,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@etalab/bal@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@etalab/bal/-/bal-2.4.0.tgz#aa90f60046110d7d76f46c3210acb4c47c7ab25d"
-  integrity sha512-yFmz3hCjDCaw6MEKezUHBhLPhdubaX2aG0TTLLKC8ByYhMSnZLDp7EJxkvOpD8wyB/ROub2TPHTPE5UXYenQkA==
+"@etalab/bal@^2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@etalab/bal/-/bal-2.6.0.tgz#8146a2d9c16e2825e9d5e8d1a29abbe1a3ce7644"
+  integrity sha512-LAiXIT0gKmjlr4rNPuzKjqxC2OezfG2PdatGKph0SyslyyawGpQNalSnUEPYCd3aZGpwqvEZJstbx9nQkZxv+Q==
   dependencies:
     blob-to-buffer "^1.2.9"
     bluebird "^3.7.2"
@@ -57,7 +57,7 @@
     iconv-lite "^0.6.3"
     lodash "^4.17.21"
     papaparse "^5.3.2"
-    yargs "^17.4.1"
+    yargs "^17.5.0"
 
 "@etalab/decoupage-administratif@^2.0.0":
   version "2.0.0"
@@ -4631,10 +4631,10 @@ yargs@^17.3.1:
     y18n "^5.0.5"
     yargs-parser "^21.0.0"
 
-yargs@^17.4.1:
-  version "17.4.1"
-  resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.4.1.tgz#ebe23284207bb75cee7c408c33e722bfb27b5284"
-  integrity sha512-WSZD9jgobAg3ZKuCQZSa3g9QOJeCCqLoLAykiWgmXnDo9EPnn4RPf5qVTtzgOx66o6/oqhcA5tHtJXpG8pMt3g==
+yargs@^17.5.0:
+  version "17.5.1"
+  resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.5.1.tgz#e109900cab6fcb7fd44b1d8249166feb0b36e58e"
+  integrity sha512-t6YAJcxDkNX7NFYiVtKvWUz8l+PaKTLiL63mJYWR2GnHq2gjEWISzsLp9wg3aY36dY1j+gfIEL3pIF+XlJJfbA==
   dependencies:
     cliui "^7.0.2"
     escalade "^3.1.1"
