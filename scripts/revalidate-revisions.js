@@ -2,7 +2,7 @@
 /* eslint no-await-in-loop: off */
 require('dotenv').config()
 
-const validatorVersion = require('@etalab/bal/package.json').version
+const validatorVersion = require('@ban-team/validateur-bal/package.json').version
 const mongo = require('../lib/util/mongo')
 const {fetchRevision, getFiles, getFileData} = require('../lib/revisions/model')
 const {applyValidateBAL} = require('../lib/revisions/validate-bal')
