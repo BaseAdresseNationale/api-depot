@@ -1,0 +1,4 @@
+- nom: administrateur
+  organization: ACME SARL
+  email: administrateur@acme.ltd
+  token: xxxxxxxxxxxxxxx
