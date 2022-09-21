@@ -36,7 +36,13 @@ On pourra ensuite éditer les variables d'environnement dans le fichier `.env` s
 cp clients.yml.sample clients.yml
 ```
 
-Ce fichier pourra ensuite être édité localement.
+### Création du fichier autorisant les administrateurs de l'API
+
+```bash
+cp admins.yml.sample admins.yml
+```
+
+Ces fichiers pourront ensuite être édités localement.
 
 ## Démarrer le service
 
