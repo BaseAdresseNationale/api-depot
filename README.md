@@ -30,14 +30,6 @@ cp .env.sample .env
 
 On pourra ensuite éditer les variables d'environnement dans le fichier `.env` si nécessaire.
 
-### Création du fichier autorisant les clients de l'API
-
-```bash
-cp clients.yml.sample clients.yml
-```
-
-Ce fichier pourra ensuite être édité localement.
-
 ## Démarrer le service
 
 ```
