@@ -7,6 +7,7 @@ const morgan = require('morgan')
 const mongo = require('./lib/util/mongo')
 const {revisionsRoutes} = require('./lib/revisions/routes')
 const {habilitationsRoutes} = require('./lib/habilitations/routes')
+const {mandatairesRoutes} = require('./lib/mandataires/routes')
 
 async function main() {
   const app = express()
@@ -22,8 +23,11 @@ async function main() {
 
   const revisions = await revisionsRoutes()
   const habilitation = await habilitationsRoutes()
+  const mandataires = await mandatairesRoutes()
+
   app.use('/', revisions)
   app.use('/', habilitation)
+  app.use('/', mandataires)
 
   app.listen(port, () => {
     console.log(`Start listening on port ${port}`)
