@@ -31,7 +31,7 @@ async function main() {
   const clientsChefsDeFile = clientsYml.filter(client => client.chefDeFile).map(client => ({
     nom: client.chefDeFile,
     email: client.chefDeFileEmail,
-    perimetreConvention: client.perimetreConvention,
+    perimetre: client.perimetre,
     signataireCharte: client.signataireCharte
   }))
   const chefsDeFile = unionWith(clientsChefsDeFile, isEqual).map(chefDeFile => ({
