@@ -34,6 +34,7 @@
     "lodash": "^4.17.21",
     "mongodb": "^4.4.0",
     "morgan": "^1.10.0",
+    "nanoid": "^3.4.4",
     "nodemailer": "^6.7.2",
     "passport": "^0.5.2",
     "passport-oauth2": "^1.6.1",
