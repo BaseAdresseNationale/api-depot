@@ -9,6 +9,14 @@ const {ObjectId} = require('../lib/util/mongo')
 
 async function main() {
   await mongo.connect()
+
+  await populateClients()
+  await updateRevisiondClients()
+
+  await mongo.disconnect()
+}
+
+async function populateClients() {
   const now = new Date()
 
   const clientsYml = yaml.load(readFileSync(join(__dirname, '..', 'clients.yml'), 'utf8'))
@@ -48,6 +56,7 @@ async function main() {
     const mandataire = await mongo.db.collection('mandataires').findOne({nom: item.mandataire, email: item.mandataireEmail})
     const client = {
       _id: new ObjectId(),
+      id: item.id,
       mandataire: mandataire._id,
       nom: item.nom,
       token: item.token,
@@ -65,8 +74,17 @@ async function main() {
   }))
 
   await mongo.db.collection('clients').insertMany(clients)
+}
 
-  await mongo.disconnect()
+async function updateRevisiondClients() {
+  const clients = await mongo.db.collection('clients').find().toArray()
+
+  // Remplace l'ancien object client des révisions par le nouvel id mongo
+  clients.map(async client => {
+    await mongo.db.collection('revisions').updateMany({'client.id': client.id}, {
+      $set: {client: client._id}
+    })
+  })
 }
 
 main().catch(error => {
