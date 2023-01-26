@@ -7,7 +7,7 @@ const {unionWith, isEqual, every, sumBy} = require('lodash')
 const mongo = require('../lib/util/mongo')
 const {ObjectId} = require('../lib/util/mongo')
 
-function integrityCheck(clients) {
+function prepareData(clients) {
   const clientsCount = clients.length
   console.log(`ℹ️ Nombre de clients trouvés : ${clientsCount}`)
 
@@ -65,11 +65,14 @@ function integrityCheck(clients) {
 
 async function main() {
   const clientsYML = yaml.load(readFileSync(join(__dirname, '..', 'clients.yml'), 'utf8'))
-  const data = integrityCheck(clientsYML)
+  const data = prepareData(clientsYML)
 
   await mongo.connect()
 
   await populateClients(data)
+
+  await patchRevisionsWithoutClientId()
+
   await updateRevisionsClients()
   await updateHabilitationsClients()
 
@@ -140,6 +143,12 @@ async function populateClients(data) {
   await mongo.db.collection('clients').insertMany(clients)
   const countClients = await mongo.db.collection('clients').count()
   console.log(`${countClients} clients ajouté en base.`)
+}
+
+async function patchRevisionsWithoutClientId() { // Patch legacy revisions without cliend id
+  await mongo.db.collection('revisions').updateMany({'client.nom': 'Guichet Adresse'}, {$set: {'client.id': 'guichet-adresse'}})
+  await mongo.db.collection('revisions').updateMany({'client.nom': 'SIGTOPO Colmar Agglomération'}, {$set: {'client.id': 'sigtopo-colmar-agglomeration'}})
+  await mongo.db.collection('revisions').updateMany({'client.nom': 'SIG du Pays de Brest'}, {$set: {'client.id': 'sig-pays-de-brest'}})
 }
 
 async function updateRevisionsClients() {
