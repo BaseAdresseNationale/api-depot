@@ -2,7 +2,7 @@
 const {join} = require('path')
 const {readFileSync} = require('fs')
 const yaml = require('js-yaml')
-const {unionWith, isEqual, every} = require('lodash')
+const {unionWith, isEqual, every, sumBy} = require('lodash')
 
 const mongo = require('../lib/util/mongo')
 const {ObjectId} = require('../lib/util/mongo')
@@ -146,20 +146,28 @@ async function updateRevisionsClients() {
   const clients = await mongo.db.collection('clients').find().toArray()
 
   // Remplace l'ancien objet client des révisions par le nouvel id mongo
-  await Promise.all(clients.map(
+  const revisionsUpdated = await Promise.all(clients.map(
     async client => mongo.db.collection('revisions').updateMany({'client.id': client.id}, {
       $set: {client: client._id}
     })))
+
+  const revisionsModifiedCount = sumBy(revisionsUpdated, item => item.modifiedCount)
+  const revisionsTotalCount = await mongo.db.collection('revisions').count()
+  console.log(`${revisionsModifiedCount} / ${revisionsTotalCount} revisions ont étaient mise à jour`)
 }
 
 async function updateHabilitationsClients() {
   const clients = await mongo.db.collection('clients').find().toArray()
 
   // Remplace l'ancien objet client des habilitations par le nouvel id mongo
-  await Promise.all(clients.map(
+  const habilitationsUpdated = await Promise.all(clients.map(
     async client => mongo.db.collection('habilitations').updateMany({'client.id': client.id}, {
       $set: {client: client._id}
     })))
+
+  const habilitationsModifiedCount = sumBy(habilitationsUpdated, item => item.modifiedCount)
+  const habilitationsTotalCount = await mongo.db.collection('habilitations').count()
+  console.log(`${habilitationsModifiedCount} / ${habilitationsTotalCount} habilitations ont étaient mise à jour`)
 }
 
 main().catch(error => {
