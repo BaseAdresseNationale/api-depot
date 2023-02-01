@@ -1,13 +1,15 @@
 #!/usr/bin/env node
+require('dotenv').config()
+
 const {join} = require('path')
 const {readFileSync} = require('fs')
 const yaml = require('js-yaml')
-const {unionWith, isEqual, every, sumBy} = require('lodash')
+const {unionWith, isEqual, every} = require('lodash')
 
 const mongo = require('../lib/util/mongo')
 const {ObjectId} = require('../lib/util/mongo')
 
-function prepareData(clients) {
+function validateData(clients) {
   const clientsCount = clients.length
   console.log(`ℹ️ Nombre de clients trouvés : ${clientsCount}`)
 
@@ -46,7 +48,7 @@ function prepareData(clients) {
       console.error(`⚠️ Le chef de file ${chefDeFile} n’a pas de périmètre`)
     }
 
-    if (signataireCharte !== false || signataireCharte !== true) {
+    if (signataireCharte !== false && signataireCharte !== true) {
       console.error(`⚠️ Le chef de file ${chefDeFile} n’a pas de champ "signataireCharte" renseigné`)
     }
 
@@ -64,8 +66,8 @@ function prepareData(clients) {
 }
 
 async function main() {
-  const clientsYML = yaml.load(readFileSync(join(__dirname, '..', 'clients.yml'), 'utf8'))
-  const data = prepareData(clientsYML)
+  const clientsYML = yaml.load(readFileSync(join(__dirname, '..', 'clients-migration.yml'), 'utf8'))
+  const data = validateData(clientsYML)
 
   await mongo.connect()
 
@@ -101,7 +103,7 @@ async function populateClients(data) {
   console.log(`Nombre de chefs de file fusionnées : ${data.chefsDeFile.length - chefsDeFile.length}`)
 
   // Récupération des clients
-  const clients = await Promise.all(data.clients.map(async item => {
+  const clients = data.clients.map(item => {
     const mandataire = mandataires.find(({nom, email}) => nom === item.mandataire && email === item.mandataireEmail)
 
     if (!mandataire) {
@@ -130,7 +132,7 @@ async function populateClients(data) {
     }
 
     return client
-  }))
+  })
 
   await mongo.db.collection('mandataires').insertMany(mandataires)
   const countMandataires = await mongo.db.collection('mandataires').count()
@@ -155,28 +157,44 @@ async function updateRevisionsClients() {
   const clients = await mongo.db.collection('clients').find().toArray()
 
   // Remplace l'ancien objet client des révisions par le nouvel id mongo
-  const revisionsUpdated = await Promise.all(clients.map(
-    async client => mongo.db.collection('revisions').updateMany({'client.id': client.id}, {
+  let revisionsModifiedCount = 0
+  for (const client of clients) {
+    const revisionsUpdated = await mongo.db.collection('revisions').updateMany({'client.id': client.id}, { // eslint-disable-line no-await-in-loop
       $set: {client: client._id}
-    })))
+    })
 
-  const revisionsModifiedCount = sumBy(revisionsUpdated, item => item.modifiedCount)
+    revisionsModifiedCount += revisionsUpdated.modifiedCount
+  }
+
   const revisionsTotalCount = await mongo.db.collection('revisions').count()
-  console.log(`${revisionsModifiedCount} / ${revisionsTotalCount} revisions ont étaient mise à jour`)
+  console.log(`${revisionsModifiedCount} / ${revisionsTotalCount} revisions ont été mises à jour`)
+
+  if (revisionsModifiedCount !== revisionsTotalCount) {
+    const notUpdated = await mongo.db.collection('revisions').find({'client.nom': {$exists: true}}).toArray()
+    console.log(`Les révisions suivant n’ont pas pu être mise à jour : ${notUpdated.map(r => r._id).join(', ')}`)
+  }
 }
 
 async function updateHabilitationsClients() {
   const clients = await mongo.db.collection('clients').find().toArray()
 
   // Remplace l'ancien objet client des habilitations par le nouvel id mongo
-  const habilitationsUpdated = await Promise.all(clients.map(
-    async client => mongo.db.collection('habilitations').updateMany({'client.id': client.id}, {
+  let habilitationsModifiedCount = 0
+  for (const client of clients) {
+    const habilitationsUpdated = await mongo.db.collection('habilitations').updateMany({'client.id': client.id}, { // eslint-disable-line no-await-in-loop
       $set: {client: client._id}
-    })))
+    })
 
-  const habilitationsModifiedCount = sumBy(habilitationsUpdated, item => item.modifiedCount)
+    habilitationsModifiedCount += habilitationsUpdated.modifiedCount
+  }
+
   const habilitationsTotalCount = await mongo.db.collection('habilitations').count()
-  console.log(`${habilitationsModifiedCount} / ${habilitationsTotalCount} habilitations ont étaient mise à jour`)
+  console.log(`${habilitationsModifiedCount} / ${habilitationsTotalCount} habilitations ont été mises à jour`)
+
+  if (habilitationsModifiedCount !== habilitationsTotalCount) {
+    const notUpdated = await mongo.db.collection('habilitations').find({'client.nom': {$exists: true}}).toArray()
+    console.log(`Les habilitations suivant n’ont pas pu être mise à jour : ${notUpdated.map(h => h._id).join(', ')}`)
+  }
 }
 
 main().catch(error => {
