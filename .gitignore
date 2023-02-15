@@ -103,6 +103,10 @@ dist
 # TernJS port file
 .tern-port
 
+# Docker files
+Dockerfile*
+docker-compose*
+
 /clients.yml
 /elus.json
 /admins.json
