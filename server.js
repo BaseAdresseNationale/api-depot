@@ -7,6 +7,7 @@ const morgan = require('morgan')
 const mongo = require('./lib/util/mongo')
 const {revisionsRoutes} = require('./lib/revisions/routes')
 const {habilitationsRoutes} = require('./lib/habilitations/routes')
+const {clientsRoutes} = require('./lib/clients/routes')
 const {mandatairesRoutes} = require('./lib/mandataires/routes')
 const {chefsDeFileRoutes} = require('./lib/chefs-de-file/routes')
 
@@ -24,11 +25,13 @@ async function main() {
 
   const revisions = await revisionsRoutes()
   const habilitation = await habilitationsRoutes()
+  const clients = await clientsRoutes()
   const mandataires = await mandatairesRoutes()
   const chefsDeFile = await chefsDeFileRoutes()
 
   app.use('/', revisions)
   app.use('/', habilitation)
+  app.use('/', clients)
   app.use('/', mandataires)
   app.use('/', chefsDeFile)
 
