@@ -23,6 +23,8 @@ async function main() {
     app.use(morgan('dev'))
   }
 
+  app.use('/public', express.static('public'))
+
   const revisions = await revisionsRoutes()
   const habilitation = await habilitationsRoutes()
   const clients = await clientsRoutes()
