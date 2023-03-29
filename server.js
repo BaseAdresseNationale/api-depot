@@ -10,6 +10,7 @@ const {habilitationsRoutes} = require('./lib/habilitations/routes')
 const {clientsRoutes} = require('./lib/clients/routes')
 const {mandatairesRoutes} = require('./lib/mandataires/routes')
 const {chefsDeFileRoutes} = require('./lib/chefs-de-file/routes')
+const {statsRoutes} = require('./lib/stats/routes')
 
 async function main() {
   const app = express()
@@ -30,12 +31,14 @@ async function main() {
   const clients = await clientsRoutes()
   const mandataires = await mandatairesRoutes()
   const chefsDeFile = await chefsDeFileRoutes()
+  const stats = await statsRoutes()
 
   app.use('/', revisions)
   app.use('/', habilitation)
   app.use('/', clients)
   app.use('/', mandataires)
   app.use('/', chefsDeFile)
+  app.use('/', stats)
 
   app.listen(port, () => {
     console.log(`Start listening on port ${port}`)
