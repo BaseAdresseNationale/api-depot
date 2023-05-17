@@ -8,6 +8,7 @@
   "private": false,
   "scripts": {
     "start": "node server",
+    "dev": "npx nodemon server",
     "lint": "xo",
     "test": "ava",
     "habilitations:build-rne": "node lib/habilitations/build-rne"
