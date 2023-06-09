@@ -14,6 +14,7 @@
     "habilitations:build-rne": "node lib/habilitations/build-rne"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.352.0",
     "@ban-team/validateur-bal": "^2.15.0",
     "@etalab/decoupage-administratif": "^3.0.0",
     "@slack/web-api": "^6.7.0",
@@ -45,6 +46,8 @@
     "ava": "^4.0.1",
     "mongodb-memory-server": "^8.4.0",
     "nodemon": "^3.0.1",
+    "proxyquire": "^2.1.3",
+    "sinon": "^15.1.2",
     "supertest": "^6.2.2",
     "xo": "^0.48.0"
   },
