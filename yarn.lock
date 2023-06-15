@@ -33,10 +33,9 @@
   resolved "https://registry.yarnpkg.com/@ban-team/shared-data/-/shared-data-1.2.0.tgz#0e29e84a00f7df3b17e5821bde1405a2bfa656b5"
   integrity sha512-35jz6ITHHufUKxXAfa8ReSMl6lZarnfVBkS++wgHpk27e9K52bXyAHo+n3X331n2mSzoIQXxFK7SEcPob7a5cA==
 
-"@ban-team/validateur-bal@^2.13.0":
+"@ban-team/validateur-bal@https://github.com/BaseAdresseNationale/validateur-bal.git#fufeck_fix_profil-aitf-relax":
   version "2.13.0"
-  resolved "https://registry.yarnpkg.com/@ban-team/validateur-bal/-/validateur-bal-2.13.0.tgz#0d23e8192f631614d59312d265a04697f8fe09db"
-  integrity sha512-+GFoSti7n5dn4l+ZjiWjk19wkdxauhDIFa0gk3uIsDInwE1e3HiCdYxDYkYMAeU5/p1XadxANIVv73CH92YGbg==
+  resolved "https://github.com/BaseAdresseNationale/validateur-bal.git#1031f9d687a37f26c76006737ff4b1d00d086172"
   dependencies:
     "@ban-team/shared-data" "^1.2.0"
     "@etalab/project-legal" "^0.6.0"
