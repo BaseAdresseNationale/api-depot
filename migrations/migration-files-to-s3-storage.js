@@ -1,36 +1,32 @@
 #!/usr/bin/env node
 require('dotenv').config()
 const mongo = require('../lib/util/mongo')
-const {checkS3FileExists, uploadS3File} = require('./../lib/files/s3.service')
-const {getFiles, getFileData} = require('./../lib/revisions/model')
+const {s3Service} = require('./../lib/files/s3.service')
+const {getFileData} = require('./../lib/revisions/model')
 
 async function main() {
   await mongo.connect()
 
-  const revisionsCursor = await mongo.db.collection('revisions').find({})
-  const total = await mongo.db.collection('revisions').countDocuments()
+  const filesCursor = await mongo.db.collection('files').find({})
+  const total = await mongo.db.collection('files').estimatedDocumentCount()
   let count = 0
 
-  for await (const revision of revisionsCursor) {
+  for await (const file of filesCursor) {
     count++
-    const revisionId = revision._id.toHexString()
-    const files = await getFiles(revision)
-    const balFiles = files.filter(f => f.type === 'bal')
-    const balFileId = balFiles[0] && balFiles[0]._id.toHexString()
-    const fileAlreadyExists = balFileId && await checkS3FileExists(revisionId)
-    if (balFiles.length !== 1 || fileAlreadyExists) {
-      // eslint-disable-next-line no-negated-condition
-      console.log(`Skipping upload for revision ${revisionId}. Reason: ${balFiles.length !== 1 ? 'Incorrect number of files' : 'Already uploaded'}`)
+
+    const fileId = file._id.toHexString()
+    const fileAlreadyExists = fileId && await s3Service.checkS3FileExists(fileId)
+    if (fileAlreadyExists) {
+      console.log(`Skipping upload for file ${fileId}. Reason: Already uploaded`)
       continue
     }
 
-    const balFileData = await getFileData(balFileId)
-    console.log(`Uploading CSV file for file ${balFileId}`)
-    await uploadS3File({
-      filename: balFileId,
-      data: balFileData
+    console.log(`Uploading CSV file for file ${fileId}`)
+    await s3Service.uploadS3File({
+      filename: fileId,
+      data: file.data.buffer
     })
-    console.log(`Upload OK, ${count} / ${total} revisions processed`)
+    console.log(`Upload OK, ${count} / ${total} files processed`)
   }
 
   await mongo.disconnect()
