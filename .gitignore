@@ -105,3 +105,5 @@ dist
 
 /elus.json
 /admins.json
+
+*.DS_Store
