@@ -8,6 +8,7 @@
   "private": false,
   "scripts": {
     "start": "node server",
+    "dev": "npx nodemon server",
     "lint": "xo",
     "test": "ava",
     "habilitations:build-rne": "node lib/habilitations/build-rne"
@@ -43,6 +44,7 @@
   "devDependencies": {
     "ava": "^4.0.1",
     "mongodb-memory-server": "^8.4.0",
+    "nodemon": "^3.0.1",
     "supertest": "^6.2.2",
     "xo": "^0.48.0"
   },
