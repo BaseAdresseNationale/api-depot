@@ -2,7 +2,6 @@
 require('dotenv').config()
 const mongo = require('../lib/util/mongo')
 const {s3Service} = require('./../lib/files/s3.service')
-const {getFileData} = require('./../lib/revisions/model')
 
 async function main() {
   await mongo.connect()
