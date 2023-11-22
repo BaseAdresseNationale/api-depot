@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.352.0",
-    "@ban-team/validateur-bal": "^2.16.0",
+    "@ban-team/validateur-bal": "^2.17.0",
     "@etalab/decoupage-administratif": "^3.0.0",
     "@slack/web-api": "^6.7.0",
     "bytes": "^3.1.2",
