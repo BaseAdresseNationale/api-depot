@@ -8,7 +8,9 @@
   "private": false,
   "scripts": {
     "start": "node server",
+    "start:cron": "node cron",
     "dev": "npx nodemon server",
+    "dev:cron": "npx nodemon cron",
     "lint": "xo",
     "test": "ava",
     "habilitations:build-rne": "node lib/habilitations/build-rne"
