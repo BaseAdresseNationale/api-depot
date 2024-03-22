@@ -95,7 +95,7 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `PORT`                    | Port à utiliser pour l'API                                                  |
 | `SHOW_EMAILS`             | Indique si les courriels doivent être affichés dans les logs (`YES`)        |
 | `API_DEPOT_URL`           | URL de l'api-depot                                                          |
-| `API_ETABLISSEMENTS_PUBLICS`| URL de base de l’API des batiments publique |
+| `API_ANNURAIRE`           | URL de base de l’API des batiments publique |
 | `FC_SERVICE_URL`| URL de base du service france connect |
 | `FC_FS_ID`| Id de l'application dans france connect |
 | `SESSION_SECRET`| Champ `secret` de la session des route habilitation |
