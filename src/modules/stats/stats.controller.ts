@@ -1,0 +1,87 @@
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Response } from 'express';
+import { AdminGuard } from 'src/lib/class/guards/admin.guard';
+import { DateFromToQuery } from './dto/date_to_from.dto';
+import {
+  DateFromToQueryPipe,
+  DateFromToQueryTransformed,
+} from 'src/lib/class/pipes/date_from_to.pipe';
+import { StatService } from './stats.service';
+import { FirstPublicationDTO } from './dto/first_pulication.dto';
+import { PublicationDTO } from './dto/publication.dto';
+
+@ApiTags('stats')
+@Controller('stats')
+export class StatController {
+  constructor(private statService: StatService) {}
+
+  @Get('firsts-publications')
+  @ApiOperation({
+    summary: 'Find all first publications',
+    operationId: 'findFirstPublications',
+  })
+  @ApiQuery({ type: DateFromToQuery })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: FirstPublicationDTO,
+    isArray: true,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findFirstPublications(
+    @Query(DateFromToQueryPipe)
+    dates: DateFromToQueryTransformed,
+    @Res() res: Response,
+  ) {
+    const result: FirstPublicationDTO[] =
+      await this.statService.findFirstPublications(dates);
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  @Get('publications')
+  @ApiOperation({
+    summary: 'Find publications',
+    operationId: 'findPublications',
+  })
+  @ApiQuery({ type: DateFromToQuery })
+  @ApiResponse({ status: HttpStatus.OK, type: PublicationDTO, isArray: true })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async findPublications(
+    @Query(DateFromToQueryPipe)
+    dates: DateFromToQueryTransformed,
+    @Res() res: Response,
+  ) {
+    const result: PublicationDTO[] =
+      await this.statService.findPublications(dates);
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  // app.get('/stats/publications', ensureIsAdmin, w(async (req, res) => {
+  //   checkQueryDateFromTo(req)
+  //   const dates = {
+  //     from: req.query.from ? startOfDay(new Date(req.query.from)) : sub(new Date(), {months: 1}),
+  //     to: req.query.to ? endOfDay(new Date(req.query.to)) : new Date()
+  //   }
+
+  //   const revisions = await Revisions.getRevisionsPublishedBetweenDate(dates)
+  //   const revisionsWithClient = mapRevisionsWithClient(revisions, clientsToMonitorIndex)
+  //   const balsByDays = StatsService.getBalsByDays(revisionsWithClient)
+
+  //   res.send(balsByDays)
+  // }))
+}
