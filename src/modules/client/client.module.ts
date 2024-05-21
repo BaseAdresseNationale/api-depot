@@ -1,13 +1,13 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-
 import { ConfigModule } from '@nestjs/config';
+
+import { MandataireModule } from '@/modules/mandataire/mandataire.module';
+import { ChefDeFileModule } from '@/modules/chef_de_file/chef_de_file.module';
 import { Client, ClientSchema } from './client.schema';
 import { ClientService } from './client.service';
 import { ClientController } from './client.controller';
 import { ClientMiddleware } from './client.middleware';
-import { MandataireModule } from '../mandataire/mandataire.module';
-import { ChefDeFileModule } from '../chef_de_file/chef_de_file.module';
 
 @Module({
   imports: [

@@ -3,29 +3,29 @@ import { ObjectId } from 'mongodb';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import randomNumber from 'random-number-csprng';
+import { ConfigService } from '@nestjs/config';
+import { AxiosError, AxiosRequestConfig } from 'axios';
+import { catchError, firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
 
+import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
+import { getMandatsByUser } from '@/lib/utils/elus';
+import { Mandat } from '@/lib/types/elu.type';
+import { getCommune } from '@/lib/utils/cog';
+import { CommuneCOG } from '@/lib/types/cog.type';
+import { Client } from '@/modules/client/client.schema';
+import { ApiAnnuaireService } from '@/modules/api_annuraire/api_annuraire.service';
+import { MailerService } from '@/modules/mailer/mailer.service';
+import { formatEmail as createCodePinNotificationEmail } from '@/modules/mailer/templates/code-pin-notification';
+import {
+  ValidateCodePinRequestDTO,
+  ValidateCodePinResponseDTO,
+} from './dto/validate_code_pin.dto';
 import {
   Habilitation,
   StatusHabilitationEnum,
   TypeStrategyEnum,
 } from './habilitation.schema';
-import { Client } from '../client/client.schema';
-import { ApiAnnuaireService } from '../api_annuraire/api_annuraire.service';
-import { getCommune } from 'src/lib/utils/cog';
-import { CommuneCOG } from 'src/lib/types/cog.type';
-import { MailerService } from '../mailer/mailer.service';
-import { formatEmail as createCodePinNotificationEmail } from '../mailer/templates/code-pin-notification';
-import {
-  ValidateCodePinRequestDTO,
-  ValidateCodePinResponseDTO,
-} from './dto/validate_code_pin.dto';
-import { ConfigService } from '@nestjs/config';
-import { AxiosError, AxiosRequestConfig } from 'axios';
-import { catchError, firstValueFrom } from 'rxjs';
-import { HttpService } from '@nestjs/axios';
-import { UserFranceConnect } from 'src/lib/types/user_france_connect.type';
-import { getMandatsByUser } from 'src/lib/utils/elus';
-import { Mandat } from 'src/lib/types/elu.type';
 
 @Injectable()
 export class HabilitationService {

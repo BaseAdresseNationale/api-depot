@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes, Types } from 'mongoose';
-import { DateEntity } from 'src/lib/class/schemas/dates.schema';
+
+import { DateEntity } from '@/lib/class/schemas/dates.schema';
 
 export enum AuthorizationStrategyEnum {
   INTERNAL = 'internal',

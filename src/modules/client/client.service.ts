@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, QueryWithHelpers, Types } from 'mongoose';
 import { omit } from 'lodash';
 
+import { MandataireService } from '@/modules/mandataire/mandataire.service';
+import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { Client } from './client.schema';
-import { MandataireService } from '../mandataire/mandataire.service';
-import { ChefDeFileService } from '../chef_de_file/chef_de_file.service';
 import { PublicClient } from './dto/public_client.dto';
 
 @Injectable()

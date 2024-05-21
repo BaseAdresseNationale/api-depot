@@ -1,6 +1,7 @@
 import { template } from 'lodash';
+
+import { CommuneCOG } from '@/lib/types/cog.type';
 import { Email } from '../mailer.types';
-import { CommuneCOG } from 'src/lib/types/cog.type';
 
 const templateStr = (balId) => `
 <!DOCTYPE html>

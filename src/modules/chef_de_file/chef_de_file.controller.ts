@@ -16,9 +16,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CustomRequest } from 'src/lib/types/request.type';
 import { Response } from 'express';
-import { AdminGuard } from 'src/lib/class/guards/admin.guard';
+
+import { CustomRequest } from '@/lib/types/request.type';
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
 import { UpdateChefDeFileDTO } from './dto/update_chef_de_file.dto';
 import { ChefDeFileService } from './chef_de_file.service';
 import { ChefDeFile } from './chef_de_file.schema';

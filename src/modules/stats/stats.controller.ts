@@ -14,12 +14,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
-import { AdminGuard } from 'src/lib/class/guards/admin.guard';
-import { DateFromToQuery } from './dto/date_to_from.dto';
+
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
 import {
   DateFromToQueryPipe,
   DateFromToQueryTransformed,
-} from 'src/lib/class/pipes/date_from_to.pipe';
+} from '@/lib/class/pipes/date_from_to.pipe';
+import { DateFromToQuery } from './dto/date_to_from.dto';
 import { StatService } from './stats.service';
 import { FirstPublicationDTO } from './dto/first_pulication.dto';
 import { PublicationDTO } from './dto/publication.dto';

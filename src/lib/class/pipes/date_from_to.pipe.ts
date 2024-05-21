@@ -7,7 +7,8 @@ import {
   parse,
   compareDesc,
 } from 'date-fns';
-import { DateFromToQuery } from 'src/modules/stats/dto/date_to_from.dto';
+
+import { DateFromToQuery } from '@/modules/stats/dto/date_to_from.dto';
 
 export type DateFromToQueryTransformed = {
   from: Date;

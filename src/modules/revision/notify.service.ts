@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
-import { formatEmail as createNotifyPartnersOnForcePublishEmail } from '../mailer/templates/notify-partners-on-force-publish';
+import { getCommune } from '@/lib/utils/cog';
+import { formatEmail as createNotifyPartnersOnForcePublishEmail } from '@/modules/mailer/templates/notify-partners-on-force-publish';
+import { Client } from '@/modules/client/client.schema';
+import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
+import { ClientService } from '@/modules/client/client.service';
+import { MandataireService } from '@/modules/mandataire/mandataire.service';
+import { MailerService } from '@/modules/mailer/mailer.service';
 import { Revision } from './revision.schema';
-import { Client } from '../client/client.schema';
-import { ChefDeFileService } from '../chef_de_file/chef_de_file.service';
-import { ClientService } from '../client/client.service';
-import { getCommune } from 'src/lib/utils/cog';
-import { MandataireService } from '../mandataire/mandataire.service';
-import { MailerService } from '../mailer/mailer.service';
 
 const MANAGED_CLIENTS = {
   MES_ADRESSES: 'mes-adresses',

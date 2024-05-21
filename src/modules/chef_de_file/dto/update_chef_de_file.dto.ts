@@ -7,8 +7,9 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Perimeter } from '../chef_de_file.schema';
 import { Type } from 'class-transformer';
+
+import { Perimeter } from '../chef_de_file.schema';
 
 export class UpdateChefDeFileDTO {
   @IsString()

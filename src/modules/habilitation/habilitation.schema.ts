@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes, Types } from 'mongoose';
-import { Mandat } from 'src/lib/types/elu.type';
+
+import { Mandat } from '@/lib/types/elu.type';
 
 export enum StatusHabilitationEnum {
   ACCEPTED = 'accepted',

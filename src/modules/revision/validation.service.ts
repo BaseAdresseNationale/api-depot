@@ -2,12 +2,12 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { validate } from '@ban-team/validateur-bal';
 import { version as validatorVersion } from '@ban-team/validateur-bal/package.json';
 
-import { Validation } from './revision.schema';
-import { Client } from '../client/client.schema';
-import { ChefDeFileService } from '../chef_de_file/chef_de_file.service';
-import { LevelEnum, Row, ValidationBal } from 'src/lib/types/validator.types';
-import { communeIsInPerimeters } from 'src/lib/utils/perimeters';
+import { LevelEnum, Row, ValidationBal } from '@/lib/types/validator.types';
+import { communeIsInPerimeters } from '@/lib/utils/perimeters';
+import { Client } from '@/modules/client/client.schema';
+import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { RevisionService } from './revision.service';
+import { Validation } from './revision.schema';
 
 @Injectable()
 export class ValidationService {

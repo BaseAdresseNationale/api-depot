@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 
-import { CustomRequest } from 'src/lib/types/request.type';
-import { isCommune } from '../../utils/cog';
+import { CustomRequest } from '@/lib/types/request.type';
+import { isCommune } from '@/lib/utils/cog';
 
 @Injectable()
 export class CommuneMiddleware implements NestMiddleware {

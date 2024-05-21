@@ -1,5 +1,4 @@
 import { Type } from 'class-transformer';
-import { Context } from '../revision.schema';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDefined,
@@ -8,6 +7,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+
+import { Context } from '../revision.schema';
 
 export class ContextDTO implements Context {
   @IsString()

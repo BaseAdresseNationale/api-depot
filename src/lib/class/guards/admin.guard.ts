@@ -6,8 +6,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { CustomRequest } from '../../types/request.type';
 import { ConfigService } from '@nestjs/config';
+
+import { CustomRequest } from '@/lib/types/request.type';
 
 @Injectable()
 export class AdminGuard implements CanActivate {

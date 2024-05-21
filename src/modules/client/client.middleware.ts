@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 
-import { CustomRequest } from 'src/lib/types/request.type';
+import { CustomRequest } from '@/lib/types/request.type';
 import { ClientService } from './client.service';
 import { Client } from './client.schema';
 

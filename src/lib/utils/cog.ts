@@ -2,7 +2,8 @@ import { keyBy, groupBy } from 'lodash';
 import * as communes from '@etalab/decoupage-administratif/data/communes.json';
 import departements from '@etalab/decoupage-administratif/data/departements.json';
 import epci from '@etalab/decoupage-administratif/data/epci.json';
-import { CommuneCOG, DepartementCOG, EpciCOG } from '../types/cog.type';
+
+import { CommuneCOG, DepartementCOG, EpciCOG } from '@/lib/types/cog.type';
 
 const filteredCommunes: CommuneCOG[] = (communes as CommuneCOG[]).filter(
   ({ type }) => ['commune-actuelle', 'arrondissement-municipal'].includes(type),

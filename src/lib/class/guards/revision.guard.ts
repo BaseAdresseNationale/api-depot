@@ -5,7 +5,8 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { CustomRequest } from '../../types/request.type';
+
+import { CustomRequest } from '@/lib/types/request.type';
 
 @Injectable()
 export class RevisionGuard implements CanActivate {

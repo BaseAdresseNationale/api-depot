@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
+import { RevisionModule } from '@/modules/revision/revision.module';
+import { ClientModule } from '@/modules/client/client.module';
 import { StatService } from './stats.service';
 import { StatController } from './stats.controller';
-import { RevisionModule } from '../revision/revision.module';
-import { ClientModule } from '../client/client.module';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [ConfigModule, RevisionModule, ClientModule],

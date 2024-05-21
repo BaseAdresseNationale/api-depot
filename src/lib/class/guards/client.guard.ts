@@ -6,8 +6,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { omit } from 'lodash';
-import { CustomRequest } from '../../types/request.type';
-import { ClientService } from 'src/modules/client/client.service';
+
+import { CustomRequest } from '@/lib/types/request.type';
+import { ClientService } from '@/modules/client/client.service';
 
 @Injectable()
 export class ClientGuard implements CanActivate {

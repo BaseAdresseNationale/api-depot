@@ -2,7 +2,8 @@ import { deburr, groupBy } from 'lodash';
 import { UserFranceConnect } from '../types/user_france_connect.type';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { Elu, Mandat } from '../types/elu.type';
+
+import { Elu, Mandat } from '@/lib/types/elu.type';
 
 let elusJson: Elu[] = [];
 

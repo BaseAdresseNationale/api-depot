@@ -16,13 +16,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CustomRequest } from 'src/lib/types/request.type';
 import { Response } from 'express';
-import { AdminGuard } from 'src/lib/class/guards/admin.guard';
 import { omit } from 'lodash';
+
+import { CustomRequest } from '@/lib/types/request.type';
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
+import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { HabilitationService } from './habilitation.service';
 import { Habilitation, TypeStrategyEnum } from './habilitation.schema';
-import { ClientGuard } from 'src/lib/class/guards/client.guard';
 import {
   ValidateCodePinRequestDTO,
   ValidateCodePinResponseDTO,

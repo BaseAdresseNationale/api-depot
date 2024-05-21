@@ -17,6 +17,10 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "@/modules/*": ["src/modules/*"],
+      "@/lib/*": ["src/lib/*"]
+    }
   }
 }

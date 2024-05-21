@@ -20,18 +20,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CustomRequest } from 'src/lib/types/request.type';
 import { Response } from 'express';
+
+import { CustomRequest } from '@/lib/types/request.type';
+import { ClientGuard } from '@/lib/class/guards/client.guard';
+import { RevisionGuard } from '@/lib/class/guards/revision.guard';
+import { FileGuard } from '@/lib/class/guards/file.guard';
+import { ParseDatePipe } from '@/lib/class/pipes/date.pipe';
+import { FileService } from '@/modules/file/file.service';
+import { File } from '@/modules/file/file.schema';
 import { Revision, StatusRevisionEnum } from './revision.schema';
 import { RevisionService } from './revision.service';
-import { FileService } from '../file/file.service';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
-import { ParseDatePipe } from 'src/lib/class/pipes/date.pipe';
 import { CreateRevisionDTO } from './dto/create_revision.dto';
-import { ClientGuard } from 'src/lib/class/guards/client.guard';
-import { RevisionGuard } from 'src/lib/class/guards/revision.guard';
-import { FileGuard } from 'src/lib/class/guards/file.guard';
-import { File } from '../file/file.schema';
 
 @ApiTags('revisions')
 @Controller('')

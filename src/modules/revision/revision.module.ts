@@ -1,21 +1,21 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-
 import { ConfigModule } from '@nestjs/config';
+
+import { CommuneMiddleware } from '@/lib/class/middlewares/commune.middleware';
+import { ClientModule } from '@/modules/client/client.module';
+import { FileModule } from '@/modules/file/file.module';
+import { ChefDeFileModule } from '@/modules/chef_de_file/chef_de_file.module';
+import { BanModule } from '@/modules/ban/ban.module';
+import { MailerModule } from '@/modules/mailer/mailer.module';
+import { HabilitationModule } from '@/modules/habilitation/habilitation.module';
+import { MandataireModule } from '@/modules/mandataire/mandataire.module';
 import { RevisionMiddleware } from './revision.middleware';
-import { CommuneMiddleware } from 'src/lib/class/middlewares/commune.middleware';
+import { ValidationService } from './validation.service';
 import { Revision, RevisionSchema } from './revision.schema';
 import { RevisionService } from './revision.service';
 import { RevisionController } from './revision.controller';
-import { ClientModule } from '../client/client.module';
-import { FileModule } from '../file/file.module';
-import { ValidationService } from './validation.service';
-import { ChefDeFileModule } from '../chef_de_file/chef_de_file.module';
-import { BanModule } from '../ban/ban.module';
 import { NotifyService } from './notify.service';
-import { MailerModule } from '../mailer/mailer.module';
-import { HabilitationModule } from '../habilitation/habilitation.module';
-import { MandataireModule } from '../mandataire/mandataire.module';
 
 @Module({
   imports: [

@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { add, endOfDay, format, compareDesc } from 'date-fns';
 import { keyBy, groupBy, mapValues } from 'lodash';
-import { RevisionService } from '../revision/revision.service';
-import { DateFromToQueryTransformed } from 'src/lib/class/pipes/date_from_to.pipe';
-import { ClientService } from '../client/client.service';
-import { Client } from '../client/client.schema';
+
+import { DateFromToQueryTransformed } from '@/lib/class/pipes/date_from_to.pipe';
+import { RevisionService } from '@/modules/revision/revision.service';
+import { Revision } from '@/modules/revision/revision.schema';
+import { ClientService } from '@/modules/client/client.service';
+import { Client } from '@/modules/client/client.schema';
 import { FirstPublicationDTO } from './dto/first_pulication.dto';
 import { PublicationDTO } from './dto/publication.dto';
-import { Revision } from '../revision/revision.schema';
 
 const CLIENTS_TO_MONITOR = {
   mesAdresses: 'mes-adresses',

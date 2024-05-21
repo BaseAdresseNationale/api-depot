@@ -16,11 +16,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ClientService } from './client.service';
-import { CustomRequest } from 'src/lib/types/request.type';
-import { Client } from './client.schema';
 import { Response } from 'express';
-import { AdminGuard } from 'src/lib/class/guards/admin.guard';
+
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
+import { CustomRequest } from '@/lib/types/request.type';
+import { ClientService } from './client.service';
+import { Client } from './client.schema';
 import { UpdateClientDTO } from './dto/update_client.dto';
 
 @ApiTags('clients')

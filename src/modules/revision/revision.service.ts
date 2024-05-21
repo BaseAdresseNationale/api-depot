@@ -9,24 +9,24 @@ import {
 } from 'mongoose';
 import { pick } from 'lodash';
 
+import { isCommune } from '@/lib/utils/cog';
+import { PublicClient } from '@/modules/client/dto/public_client.dto';
+import { ClientService } from '@/modules/client/client.service';
+import { FileService } from '@/modules/file/file.service';
+import { File } from '@/modules/file/file.schema';
+import { BanService } from '@/modules/ban/ban.service';
+import { Client } from '@/modules/client/client.schema';
+import { HabilitationService } from '@/modules/habilitation/habilitation.service';
+import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.schema';
+import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
+import { ValidationService } from './validation.service';
+import { NotifyService } from './notify.service';
 import {
   Context,
   Revision,
   StatusRevisionEnum,
   Validation,
 } from './revision.schema';
-import { PublicClient } from '../client/dto/public_client.dto';
-import { ClientService } from '../client/client.service';
-import { FileService } from '../file/file.service';
-import { File } from '../file/file.schema';
-import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
-import { isCommune } from 'src/lib/utils/cog';
-import { Client } from '../client/client.schema';
-import { ValidationService } from './validation.service';
-import { HabilitationService } from '../habilitation/habilitation.service';
-import { StatusHabilitationEnum } from '../habilitation/habilitation.schema';
-import { BanService } from '../ban/ban.service';
-import { NotifyService } from './notify.service';
 
 @Injectable()
 export class RevisionService {

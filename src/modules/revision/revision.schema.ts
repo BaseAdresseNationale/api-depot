@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes, Types } from 'mongoose';
+
 import {
   Habilitation,
   HabilitationSchema,
-} from '../habilitation/habilitation.schema';
-import { ParseError } from 'src/lib/types/validator.types';
+} from '@/modules/habilitation/habilitation.schema';
+import { ParseError } from '@/lib/types/validator.types';
 
 export enum StatusRevisionEnum {
   PENDING = 'pending',

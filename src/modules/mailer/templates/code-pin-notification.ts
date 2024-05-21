@@ -1,4 +1,5 @@
 import { template } from 'lodash';
+
 import { Email } from '../mailer.types';
 
 const bodyTemplate = template(`

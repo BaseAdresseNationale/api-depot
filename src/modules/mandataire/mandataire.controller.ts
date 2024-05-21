@@ -16,10 +16,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CustomRequest } from 'src/lib/types/request.type';
-import { Mandataire } from './mandataire.schema';
 import { Response } from 'express';
-import { AdminGuard } from 'src/lib/class/guards/admin.guard';
+
+import { CustomRequest } from '@/lib/types/request.type';
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
+import { Mandataire } from './mandataire.schema';
 import { UpdateMandataireDTO } from './dto/update_mandataire.dto';
 import { MandataireService } from './mandataire.service';
 

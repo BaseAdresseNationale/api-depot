@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-
 import { ConfigModule } from '@nestjs/config';
+
 import { MandataireService } from './mandataire.service';
 import { MandataireController } from './mandataire.controller';
 import { MandataireMiddleware } from './mandataire.middleware';
