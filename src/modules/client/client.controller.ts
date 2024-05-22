@@ -53,10 +53,7 @@ export class ClientController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createOne(@Req() req: CustomRequest, @Res() res: Response) {
-    const client: Client = await this.clientService.updateOne(
-      req.client._id.toString(),
-      req.body,
-    );
+    const client: Client = await this.clientService.createOne(req.body);
     res.status(HttpStatus.OK).json(client);
   }
 

@@ -53,6 +53,10 @@ export class MandataireService {
     return mandataire;
   }
 
+  public async createOne(body: Partial<Mandataire>): Promise<Mandataire> {
+    return this.mandataireModel.create(body);
+  }
+
   public async updateOne(
     mandataireId: string,
     changes: Partial<Mandataire>,

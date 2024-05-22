@@ -50,8 +50,7 @@ export class MandataireController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createOne(@Req() req: CustomRequest, @Res() res: Response) {
-    const mandataire: Mandataire = await this.mandataireService.updateOne(
-      req.mandataire._id.toString(),
+    const mandataire: Mandataire = await this.mandataireService.createOne(
       req.body,
     );
     res.status(HttpStatus.OK).json(mandataire);

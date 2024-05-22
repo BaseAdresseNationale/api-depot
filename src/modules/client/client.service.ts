@@ -63,6 +63,10 @@ export class ClientService {
     return client;
   }
 
+  public async createOne(body: Partial<Client>): Promise<Client> {
+    return this.clientModel.create(body);
+  }
+
   public async updateOne(
     clientId: string,
     changes: Partial<Client>,
