@@ -57,7 +57,7 @@ export const StrategySchema = SchemaFactory.createForClass(Strategy);
 export class Habilitation {
   @Prop({ type: SchemaTypes.ObjectId, auto: true })
   @ApiProperty({ type: String, required: false })
-  _id: Types.ObjectId;
+  _id?: Types.ObjectId;
 
   @Prop({ type: String })
   @ApiProperty({ type: String, required: false })
@@ -65,7 +65,7 @@ export class Habilitation {
 
   @Prop({ type: String })
   @ApiProperty({ type: String, required: false })
-  emailCommune: string;
+  emailCommune?: string;
 
   @Prop({ type: SchemaTypes.ObjectId })
   @ApiProperty({ type: String, required: false })

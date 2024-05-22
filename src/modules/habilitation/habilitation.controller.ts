@@ -52,7 +52,7 @@ export class HabilitationController {
       req.codeCommune,
       req.client,
     );
-    res.status(HttpStatus.OK).json(habilitation);
+    res.status(HttpStatus.CREATED).json(habilitation);
   }
 
   @Get('habilitations/:habilitationId')
@@ -124,9 +124,9 @@ export class HabilitationController {
     return;
   }
 
-  // @Get('/habilitations/franceconnect/callback')
   // https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service
-  @Get('/callback')
+  // @Get('/callback')
+  @Get('/habilitations/franceconnect/callback')
   @UseGuards(FranceConnectCallBackGuard)
   franceConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
     this.habilitationService.franceConnectCallback(
