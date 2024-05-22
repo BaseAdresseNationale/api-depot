@@ -22,7 +22,7 @@ export class UpdateChefDeFileDTO {
 
   @IsBoolean()
   @ApiProperty({ type: Boolean, required: false })
-  isEmailPublic: boolean;
+  isEmailPublic?: boolean;
 
   @IsDefined()
   @ValidateNested({ each: true })
@@ -34,5 +34,5 @@ export class UpdateChefDeFileDTO {
     required: true,
     nullable: false,
   })
-  perimeters: Perimeter[];
+  perimetre?: Perimeter[];
 }

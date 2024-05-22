@@ -1,9 +1,15 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NestMiddleware,
+} from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { ChefDeFile } from './chef_de_file.schema';
 import { ChefDeFileService } from './chef_de_file.service';
+import { isObjectIdOrHexString } from 'mongoose';
 
 @Injectable()
 export class ChefDeFileMiddleware implements NestMiddleware {
@@ -11,7 +17,14 @@ export class ChefDeFileMiddleware implements NestMiddleware {
 
   async use(req: CustomRequest, res: Response, next: NextFunction) {
     const { chefDeFileId } = req.params;
+
     if (chefDeFileId) {
+      if (!isObjectIdOrHexString(chefDeFileId)) {
+        throw new HttpException(
+          `Chef de file Id ${chefDeFileId} is not ObjectId`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const chefDeFile: ChefDeFile =
         await this.chefDeFileService.findOneOrFail(chefDeFileId);
       req.chefDeFile = chefDeFile;

@@ -16,6 +16,7 @@ import { Revision, RevisionSchema } from './revision.schema';
 import { RevisionService } from './revision.service';
 import { RevisionController } from './revision.controller';
 import { NotifyService } from './notify.service';
+import { PublicationController } from './publication.controller';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { NotifyService } from './notify.service';
     MandataireModule,
   ],
   providers: [RevisionService, ValidationService, NotifyService],
-  controllers: [RevisionController],
+  controllers: [RevisionController, PublicationController],
   exports: [RevisionService],
 })
 export class RevisionModule {

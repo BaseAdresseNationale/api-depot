@@ -53,6 +53,10 @@ export class ChefDeFileService {
     return chefDeFile;
   }
 
+  public async createOne(body: Partial<ChefDeFile>): Promise<ChefDeFile> {
+    return this.chefDeFileModel.create(body);
+  }
+
   public async updateOne(
     chefDeFileId: string,
     changes: Partial<ChefDeFile>,
@@ -60,7 +64,7 @@ export class ChefDeFileService {
     const chefDefile: ChefDeFile = await this.chefDeFileModel.findOneAndUpdate(
       { _id: chefDeFileId },
       { $set: changes },
-      { upsert: true },
+      { returnDocument: 'after' },
     );
 
     return chefDefile;

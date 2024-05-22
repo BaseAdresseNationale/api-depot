@@ -42,11 +42,11 @@ export class ChefDeFile extends DateEntity {
   @ApiProperty({ type: String, required: false })
   email: string;
 
-  @Prop({ type: Boolean })
+  @Prop({ type: Boolean, default: false })
   @ApiProperty({ type: Boolean, required: false })
   isEmailPublic: boolean;
 
-  @Prop({ type: [PerimeterSchema] })
+  @Prop({ type: [PerimeterSchema], default: [] })
   @ApiProperty({ type: () => Perimeter, required: false, isArray: true })
   perimetre?: Perimeter[];
 }

@@ -50,8 +50,7 @@ export class ChefDeFileController {
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createOne(@Req() req: CustomRequest, @Res() res: Response) {
-    const chefDeFile: ChefDeFile = await this.chefDeFileService.updateOne(
-      req.chefDeFile._id.toString(),
+    const chefDeFile: ChefDeFile = await this.chefDeFileService.createOne(
       req.body,
     );
     res.status(HttpStatus.OK).json(chefDeFile);
