@@ -5,14 +5,7 @@ import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
-import {
-  sub,
-  startOfDay,
-  endOfDay,
-  isValid,
-  parse,
-  compareDesc,
-} from 'date-fns';
+import { parse } from 'date-fns';
 
 import { Client } from '@/modules/client/client.schema';
 import { Revision } from '@/modules/revision/revision.schema';

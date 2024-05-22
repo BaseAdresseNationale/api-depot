@@ -18,7 +18,7 @@ export class ApiAnnuaireService {
     return re.test(String(email).toLowerCase());
   }
 
-  public async getEmailCommune(codeCommune: string) {
+  public async getEmailCommune(codeCommune: string): Promise<string> {
     try {
       const url: string = `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}`;
       const options: AxiosRequestConfig = { responseType: 'json' };
