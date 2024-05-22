@@ -58,7 +58,6 @@ export class StatService {
         },
       },
     ]);
-
     const cumulFirstRevisionsByDate: FirstPublicationDTO[] = [];
     for (
       let dateIterator = endOfDay(new Date(dates.from.getTime()));
