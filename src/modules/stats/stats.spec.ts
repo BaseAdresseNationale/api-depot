@@ -4,10 +4,10 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
 
-import { Client } from 'src/modules/client/client.schema';
-import { Revision } from 'src/modules/revision/revision.schema';
-import { RevisionModule } from 'src/modules/revision/revision.module';
-import { ClientModule } from 'src/modules/client/client.module';
+import { Client } from '@/modules/client/client.schema';
+import { Revision } from '@/modules/revision/revision.schema';
+import { RevisionModule } from '@/modules/revision/revision.module';
+import { ClientModule } from '@/modules/client/client.module';
 
 process.env.FC_FS_ID = 'coucou';
 

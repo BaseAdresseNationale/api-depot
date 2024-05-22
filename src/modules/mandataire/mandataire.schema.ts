@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes, Types } from 'mongoose';
 
-import { DateEntity } from 'src/lib/class/schemas/dates.schema';
+import { DateEntity } from '@/lib/class/schemas/dates.schema';
 
 @Schema({ collection: 'mandataires' })
 export class Mandataire extends DateEntity {
