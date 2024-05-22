@@ -63,7 +63,7 @@ export class ValidationService {
   ): Promise<Validation> {
     const { parseOk, parseErrors, profilErrors, rows }: ValidationBal =
       await validate(fileData, {
-        profile: client.relaxMode ? '1.3-relax' : '1.3',
+        profile: client?.options.relaxMode ? '1.3-relax' : '1.3',
       });
 
     if (!parseOk) {

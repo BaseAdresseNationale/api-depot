@@ -6,7 +6,7 @@ export class PublicClient {
   _id: Types.ObjectId;
 
   @ApiProperty({ type: String, required: false })
-  id: string;
+  id?: string;
 
   @ApiProperty({ type: String, required: false })
   nom: string;

@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
 
 import { Mandataire } from './mandataire.schema';
@@ -12,7 +13,7 @@ import { UpdateMandataireDTO } from './dto/update_mandataire.dto';
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
 
-describe('mandataire MODULE', () => {
+describe('MANDATAIRE MODULE', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;
@@ -98,8 +99,14 @@ describe('mandataire MODULE', () => {
     expect(response2.body).toMatchObject(mandataire);
   });
 
-  it('GET /mandataires/:id 404', async () => {
+  it('GET /mandataires/:id 400', async () => {
     await request(app.getHttpServer()).get(`/mandataires/coucou`).expect(400);
+  });
+
+  it('GET /mandataires/:id 404', async () => {
+    await request(app.getHttpServer())
+      .get(`/mandataires/${new ObjectId().toHexString()}`)
+      .expect(404);
   });
 
   it('GET /mandataires', async () => {
@@ -220,5 +227,18 @@ describe('mandataire MODULE', () => {
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .send(change)
       .expect(400);
+  });
+
+  it('PUT /mandataires/:id 404', async () => {
+    const change: UpdateMandataireDTO = {
+      nom: 'nom',
+      email: 'nom@test.fr',
+    };
+
+    await request(app.getHttpServer())
+      .put(`/mandataires/${new ObjectId().toHexString()}`)
+      .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
+      .send(change)
+      .expect(404);
   });
 });

@@ -10,6 +10,15 @@ export enum AuthorizationStrategyEnum {
   HABILITATION = 'habilitation',
 }
 
+@Schema({ _id: false })
+export class Options {
+  @Prop({ type: Boolean })
+  @ApiProperty({ type: Boolean, required: false })
+  relaxMode?: boolean;
+}
+
+export const OptionsSchema = SchemaFactory.createForClass(Options);
+
 @Schema({ collection: 'clients' })
 export class Client extends DateEntity {
   @Prop({ type: SchemaTypes.ObjectId, auto: true })
@@ -36,13 +45,13 @@ export class Client extends DateEntity {
   @ApiProperty({ type: String, required: false })
   chefDeFile: Types.ObjectId;
 
-  @Prop({ type: SchemaTypes.Boolean })
+  @Prop({ type: SchemaTypes.Boolean, default: true })
   @ApiProperty({ required: false })
   active?: boolean;
 
-  @Prop({ type: SchemaTypes.Boolean })
-  @ApiProperty({ required: false })
-  relaxMode?: boolean;
+  @Prop({ type: OptionsSchema })
+  @ApiProperty({ type: () => Options, required: false })
+  options?: Options;
 
   @Prop({ type: SchemaTypes.String, enum: AuthorizationStrategyEnum })
   @ApiProperty({ enum: AuthorizationStrategyEnum, required: false })

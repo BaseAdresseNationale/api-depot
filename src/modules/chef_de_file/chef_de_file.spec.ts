@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
 
 import { ChefDeFileModule } from './chef_de_file.module';
@@ -129,8 +130,14 @@ describe('CHEF_DE_FILE MODULE', () => {
     expect(response2.body).toMatchObject(chef_de_file);
   });
 
-  it('GET /chefs_de_file/:id 404', async () => {
+  it('GET /chefs_de_file/:id 400', async () => {
     await request(app.getHttpServer()).get(`/chefs_de_file/coucou`).expect(400);
+  });
+
+  it('GET /chefs_de_file/:id 404', async () => {
+    await request(app.getHttpServer())
+      .get(`/chefs_de_file/${new ObjectId().toHexString()}`)
+      .expect(404);
   });
 
   it('GET /chefs_de_file', async () => {
@@ -280,5 +287,25 @@ describe('CHEF_DE_FILE MODULE', () => {
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .send(change)
       .expect(400);
+  });
+
+  it('PUT /chefs_de_file/:id 404', async () => {
+    const change: UpdateChefDeFileDTO = {
+      nom: 'nom',
+      email: 'nom@test.fr',
+      isEmailPublic: false,
+      perimetre: [
+        {
+          type: TypePerimeterEnum.COMMUNE,
+          code: '00000',
+        },
+      ],
+    };
+
+    await request(app.getHttpServer())
+      .put(`/chefs_de_file/${new ObjectId().toHexString()}`)
+      .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
+      .send(change)
+      .expect(404);
   });
 });

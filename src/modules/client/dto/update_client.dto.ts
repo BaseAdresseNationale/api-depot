@@ -1,25 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsMongoId, IsString } from 'class-validator';
-import { Types } from 'mongoose';
+import {
+  IsBoolean,
+  IsMongoId,
+  IsNotEmptyObject,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Options } from '../client.schema';
+import { Type } from 'class-transformer';
 
 export class UpdateClientDTO {
   @IsString()
   @ApiProperty({ type: String, required: false })
-  nom: string;
+  nom?: string;
 
   @IsMongoId()
   @ApiProperty({ type: String, required: false })
-  mandataire: Types.ObjectId;
+  mandataire?: string;
 
   @IsMongoId()
   @ApiProperty({ type: String, required: false })
-  chefDeFile: Types.ObjectId;
+  chefDeFile?: string;
 
   @IsBoolean()
   @ApiProperty({ required: false })
   active?: boolean;
 
-  @IsBoolean()
-  @ApiProperty({ required: false })
-  relaxMode?: boolean;
+  @IsNotEmptyObject()
+  @ValidateNested({ each: true })
+  @Type(() => Options)
+  @ApiProperty({ type: () => Options, required: true })
+  options?: Options;
 }
