@@ -3,12 +3,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
-import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
-import { parse } from 'date-fns';
 
-import { Client } from '@/modules/client/client.schema';
-import { Revision } from '@/modules/revision/revision.schema';
 import { ChefDeFileModule } from './chef_de_file.module';
 import { ChefDeFile, TypePerimeterEnum } from './chef_de_file.schema';
 import { UpdateChefDeFileDTO } from './dto/update_chef_de_file.dto';
