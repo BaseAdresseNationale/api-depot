@@ -114,22 +114,6 @@ export class RevisionService {
     return revision;
   }
 
-  public async updateOne(
-    revisionId: string,
-    changes: Partial<Revision>,
-  ): Promise<Revision> {
-    const revision: Revision = await this.revisionModel
-      .findOneAndUpdate(
-        { _id: revisionId },
-        { $set: changes },
-        { upsert: true },
-      )
-      .lean()
-      .exec();
-
-    return revision;
-  }
-
   public async createOne(
     { context }: { context: Context },
     codeCommune: string,

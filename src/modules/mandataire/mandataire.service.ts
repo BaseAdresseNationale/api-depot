@@ -64,7 +64,7 @@ export class MandataireService {
     const mandataire: Mandataire = await this.mandataireModel.findOneAndUpdate(
       { _id: mandataireId },
       { $set: changes },
-      { upsert: true },
+      { returnDocument: 'after' },
     );
 
     return mandataire;

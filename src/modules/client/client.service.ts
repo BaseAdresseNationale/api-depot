@@ -74,7 +74,7 @@ export class ClientService {
     const client: Client = await this.clientModel.findOneAndUpdate(
       { _id: clientId },
       { $set: changes },
-      { upsert: true },
+      { returnDocument: 'after' },
     );
 
     return client;
