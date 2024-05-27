@@ -115,14 +115,13 @@ export class RevisionService {
   }
 
   public async createOne(
-    { context }: { context: Context },
     codeCommune: string,
     client: Client,
+    context: Context,
   ): Promise<Revision> {
     const revision = await this.revisionModel.create({
       codeCommune,
       context,
-      validation: {},
       client: client._id,
       status: StatusRevisionEnum.PENDING,
       ready: false,

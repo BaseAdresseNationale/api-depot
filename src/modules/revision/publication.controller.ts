@@ -48,15 +48,13 @@ export class PublicationController {
   @UseGuards(ClientGuard)
   async createOne(@Req() req: CustomRequest, @Res() res: Response) {
     const revision: Revision = await this.revisionService.createOne(
-      req.body,
       req.codeCommune,
       req.client,
+      req.body.context,
     );
-    console.log(revision);
-    console.log({ ...revision });
     const revisionWithClient: RevisionWithClientDTO =
       await this.revisionService.expandWithClient(revision);
-    res.status(HttpStatus.OK).json(revisionWithClient);
+    res.status(HttpStatus.CREATED).json(revisionWithClient);
   }
 
   @Put('revisions/:revisionId/files/bal')

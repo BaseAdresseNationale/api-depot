@@ -23,19 +23,19 @@ export class Validation {
   @ApiProperty({ type: String, required: false })
   validatorVersion?: string;
 
-  @Prop({ type: [Object] })
+  @Prop({ type: [Object], default: undefined })
   @ApiProperty()
   parseErrors?: ParseError[];
 
-  @Prop({ type: [String] })
+  @Prop({ type: [String], default: undefined })
   @ApiProperty({ type: String, required: false, isArray: true })
   errors?: string[];
 
-  @Prop({ type: [String] })
+  @Prop({ type: [String], default: undefined })
   @ApiProperty({ type: String, required: false, isArray: true })
   warnings?: string[];
 
-  @Prop({ type: [String] })
+  @Prop({ type: [String], default: undefined })
   @ApiProperty({ type: String, required: false, isArray: true })
   infos?: string[];
 
@@ -89,11 +89,11 @@ export class Revision {
   @ApiProperty({ type: Boolean, required: false })
   current: boolean;
 
-  @Prop({ type: ValidationSchema })
+  @Prop({ type: ValidationSchema, required: true, default: {} })
   @ApiProperty({ type: () => Validation, required: false })
-  validation?: Validation;
+  validation?: Validation | null;
 
-  @Prop({ type: ContextSchema })
+  @Prop({ type: ContextSchema, required: true, default: {} })
   @ApiProperty({ type: () => Context, required: false })
   context?: Context;
 
@@ -102,15 +102,15 @@ export class Revision {
   habilitation?: Habilitation;
 
   @Prop({ type: SchemaTypes.Date, default: Date.now })
-  @ApiProperty()
+  @ApiProperty({ required: false })
   createdAt?: Date;
 
   @Prop({ type: SchemaTypes.Date, default: Date.now })
-  @ApiProperty()
+  @ApiProperty({ required: false })
   updatedAt?: Date;
 
   @Prop({ type: SchemaTypes.Date })
-  @ApiProperty()
+  @ApiProperty({ required: false })
   publishedAt?: Date;
 }
 

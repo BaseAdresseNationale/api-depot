@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import * as getRawBody from 'raw-body';
 import { Request } from 'express';
-import hash from 'hasha';
+import * as hash from 'hasha';
 import * as bytes from 'bytes';
 
 const MAX_BUFFER: number = bytes('50mb');
@@ -18,8 +18,8 @@ export class FileGuard implements CanActivate {
     const req: Request = context.switchToHttp().getRequest<Request>();
     const bodyBuffer: Buffer = await getRawBody(req, { limit: MAX_BUFFER });
 
-    if (!Buffer.isBuffer(bodyBuffer)) {
-      throw new HttpException('Fichier non fourni', HttpStatus.BAD_REQUEST);
+    if (!Buffer.isBuffer(bodyBuffer) || Buffer.byteLength(bodyBuffer) <= 0) {
+      throw new HttpException('Fichier non fourni.', HttpStatus.NOT_FOUND);
     }
 
     if (req.get('Content-MD5')) {
@@ -28,7 +28,7 @@ export class FileGuard implements CanActivate {
       if (signature !== req.get('Content-MD5')) {
         throw new HttpException(
           'La valeur de l’en-tête Content-MD5 ne correspond pas à la signature MD5 du contenu soumis.',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.BAD_REQUEST,
         );
       }
     }
@@ -36,14 +36,14 @@ export class FileGuard implements CanActivate {
     if (req.get('Content-Encoding')) {
       throw new HttpException(
         'Aucun encodage de contenue dans l’en-tête n’est accepté.',
-        HttpStatus.NOT_FOUND,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
     if (req.get('Content-Type') && req.get('Content-Type') !== 'text/csv') {
       throw new HttpException(
         'Le type du contenue dans l’en-tête ne peut être que text/csv.',
-        HttpStatus.NOT_FOUND,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -53,7 +53,7 @@ export class FileGuard implements CanActivate {
     ) {
       throw new HttpException(
         'La longueur de contenue dans l’en-tête ne correspond pas a la taille en octet du fichier.',
-        HttpStatus.NOT_FOUND,
+        HttpStatus.BAD_REQUEST,
       );
     }
 

@@ -13,24 +13,24 @@ import { Context } from '../revision.schema';
 export class ContextDTO implements Context {
   @IsString()
   @IsDefined()
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
   nomComplet?: string;
 
   @IsString()
   @IsDefined()
-  @ApiProperty({ type: String, required: true })
+  @ApiProperty({ type: String, required: false })
   organisation?: string;
 
   @IsObject()
   @IsNotEmptyObject()
-  @ApiProperty({ type: () => Object, required: true })
+  @ApiProperty({ type: () => Object, required: false })
   extra?: Record<string, any>;
 }
 
 export class CreateRevisionDTO {
-  @IsDefined()
+  @IsObject()
   @IsNotEmptyObject()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => ContextDTO)
   @ApiProperty({ type: () => ContextDTO, required: true })
   context?: ContextDTO;
