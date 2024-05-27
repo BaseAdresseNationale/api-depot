@@ -6,16 +6,22 @@ import { Connection, connect, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
-import { sub } from 'date-fns';
+import { add } from 'date-fns';
 import * as fs from 'fs';
 import axios from 'axios';
 import * as nodemailer from 'nodemailer';
 
 import { Client } from '../client/client.schema';
-import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
+import {
+  ChefDeFile,
+  TypePerimeterEnum,
+} from '../chef_de_file/chef_de_file.schema';
 import { Mandataire } from '../mandataire/mandataire.schema';
 import { RevisionModule } from './revision.module';
-import { Habilitation } from '../habilitation/habilitation.schema';
+import {
+  Habilitation,
+  StatusHabilitationEnum,
+} from '../habilitation/habilitation.schema';
 import { Context, Revision, StatusRevisionEnum } from './revision.schema';
 import { S3Service } from '../file/s3.service';
 import { File } from '../file/file.schema';
@@ -96,12 +102,16 @@ describe('PUBLICATION MODULE', () => {
     return fs.readFileSync(absolutePath);
   }
 
-  async function createClient(props: Partial<Client> = {}): Promise<Client> {
+  async function createClient(
+    props: Partial<Client> = {},
+    propsChefDeFile: Partial<ChefDeFile> = {},
+  ): Promise<Client> {
     const mandataire = await mandataireModel.create({
       nom: 'mandataire',
       email: 'mandataire@test.fr',
     });
     const chefDeFile = await chefDefileModel.create({
+      ...propsChefDeFile,
       nom: 'chefDeFile',
       email: 'chefDeFile@test.fr',
       isEmailPublic: true,
@@ -365,6 +375,356 @@ describe('PUBLICATION MODULE', () => {
         type: 'bal',
       };
       expect(body).toMatchObject(expected);
+    });
+  });
+
+  describe('POST revisions/:revisionId/compute', () => {
+    it('COMPUTE REVISION ALREADY PUBLISHED', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+      });
+      await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect({
+          statusCode: 412,
+          message: 'La révision n’est plus modifiable',
+        });
+    });
+
+    it('COMPUTE REVISION NO FILE', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+      });
+      await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect({
+          statusCode: 404,
+          message: 'Aucun fichier de type `bal` associé à cette révision',
+        });
+    });
+
+    it('COMPUTE REVISION BAD CODE INSEE', async () => {
+      const client: Client = await createClient({
+        options: { relaxMode: true },
+      });
+      const fileData = readFile('1.3-valid.csv');
+      const revision = await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+      });
+      const file = await fileModel.create({ revisionId: revision._id });
+      jest
+        .spyOn(s3Service, 'getFile')
+        .mockImplementation(async (fileId: string) => {
+          expect(fileId).toEqual(file._id.toHexString());
+          return fileData;
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .send(file);
+
+      expect(body.status).toBe(StatusRevisionEnum.PENDING);
+      expect(body.validation.valid).toBeFalsy();
+      expect(body.validation.errors).toEqual(
+        expect.arrayContaining(['commune_insee.valeur_inattendue']),
+      );
+      expect(body.validation.warnings).toBeDefined();
+      expect(body.validation.infos).toBeDefined();
+      expect(body.validation.rowsCount).toBe(1);
+    });
+
+    it('COMPUTE REVISION OUT OF PERIMETER', async () => {
+      const client: Client = await createClient({
+        options: { relaxMode: true },
+      });
+      const fileData = readFile('1.3-valid.csv');
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+      });
+      const file = await fileModel.create({ revisionId: revision._id });
+      jest
+        .spyOn(s3Service, 'getFile')
+        .mockImplementation(async (fileId: string) => {
+          expect(fileId).toEqual(file._id.toHexString());
+          return fileData;
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .send(file);
+      expect(body.status).toBe(StatusRevisionEnum.PENDING);
+      expect(body.validation.valid).toBeFalsy();
+      expect(body.validation.errors).toEqual(
+        expect.arrayContaining(['commune_insee.out_of_perimeter']),
+      );
+      expect(body.validation.warnings).toBeDefined();
+      expect(body.validation.infos).toBeDefined();
+      expect(body.validation.rowsCount).toBe(1);
+    });
+
+    it('COMPUTE REVISION OUT OF PERIMETER', async () => {
+      const client: Client = await createClient({
+        options: { relaxMode: true },
+      });
+      const fileData = readFile('1.3-valid.csv');
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+      });
+      const file = await fileModel.create({ revisionId: revision._id });
+      jest
+        .spyOn(s3Service, 'getFile')
+        .mockImplementation(async (fileId: string) => {
+          expect(fileId).toEqual(file._id.toHexString());
+          return fileData;
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .send(file);
+      expect(body.status).toBe(StatusRevisionEnum.PENDING);
+      expect(body.validation.valid).toBeFalsy();
+      expect(body.validation.errors).toEqual(
+        expect.arrayContaining(['commune_insee.out_of_perimeter']),
+      );
+      expect(body.validation.warnings).toBeDefined();
+      expect(body.validation.infos).toBeDefined();
+      expect(body.validation.rowsCount).toBe(1);
+    });
+
+    it('COMPUTE REVISION', async () => {
+      const client: Client = await createClient(
+        {
+          options: { relaxMode: true },
+        },
+        {
+          perimetre: [
+            {
+              type: TypePerimeterEnum.COMMUNE,
+              code: '31591',
+            },
+          ],
+        },
+      );
+      const fileData = readFile('1.3-valid.csv');
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+      });
+      const file = await fileModel.create({ revisionId: revision._id });
+      jest
+        .spyOn(s3Service, 'getFile')
+        .mockImplementation(async (fileId: string) => {
+          expect(fileId).toEqual(file._id.toHexString());
+          return fileData;
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .send(file);
+      expect(body.status).toBe(StatusRevisionEnum.PENDING);
+      expect(body.validation.valid).toBeTruthy();
+      expect(body.validation.errors.length).toBe(0);
+      expect(body.validation.warnings).toBeDefined();
+      expect(body.validation.infos).toBeDefined();
+      expect(body.validation.rowsCount).toBe(1);
+    });
+  });
+
+  describe('POST revisions/:revisionId/publish', () => {
+    it('PUBLISH REVISION BAD HABILITATION', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        ready: true,
+      });
+      const habilitationId = new ObjectId().toHexString();
+      await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .send({ habilitationId })
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect({
+          statusCode: 404,
+          message: `L’habilitation ${habilitationId} n’est pas valide`,
+        });
+    });
+
+    it('PUBLISH REVISION HABILITATION NOT VALID', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        ready: true,
+      });
+      const habilitation = await habilitationModel.create({
+        status: StatusHabilitationEnum.PENDING,
+      });
+      await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .send({ habilitationId: habilitation._id.toHexString() })
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect({
+          statusCode: 404,
+          message: `L’habilitation ${habilitation._id.toHexString()} n’est pas valide`,
+        });
+    });
+
+    it('PUBLISH REVISION NOT READY', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        ready: false,
+      });
+      const expiresAt = add(new Date(), { years: 1 });
+      const habilitation = await habilitationModel.create({
+        status: StatusHabilitationEnum.ACCEPTED,
+        expiresAt,
+        codeCommune: '31591',
+        client: client._id,
+      });
+      await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .send({ habilitationId: habilitation._id.toHexString() })
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect({
+          statusCode: 412,
+          message: 'La publication n’est pas possible',
+        });
+    });
+
+    it('PUBLISH REVISION ALREADY PUBLISHED', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        ready: false,
+      });
+      const expiresAt = add(new Date(), { years: 1 });
+      const habilitation = await habilitationModel.create({
+        status: StatusHabilitationEnum.ACCEPTED,
+        expiresAt,
+        codeCommune: '31591',
+        client: client._id,
+      });
+      await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .send({ habilitationId: habilitation._id.toHexString() })
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect({
+          statusCode: 412,
+          message: 'La publication n’est pas possible',
+        });
+    });
+
+    it('PUBLISH REVISION FIRST PUBLISH', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        ready: true,
+      });
+      const expiresAt = add(new Date(), { years: 1 });
+      const habilitation = await habilitationModel.create({
+        status: StatusHabilitationEnum.ACCEPTED,
+        expiresAt,
+        codeCommune: '31591',
+        client: client._id,
+      });
+      const { body } = await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .send({ habilitationId: habilitation._id.toHexString() })
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect(200);
+      expect(body.publishedAt).toBeDefined();
+      expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
+      expect(body.current).toBeTruthy();
+      expect(body.ready).toBeNull();
+      expect(body.habilitation).toMatchObject({
+        _id: habilitation._id.toHexString(),
+        codeCommune: '31591',
+        expiresAt: expiresAt.toISOString(),
+      });
+    });
+
+    it('PUBLISH REVISION WITHOUT HABILITATION', async () => {
+      const client: Client = await createClient();
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        ready: true,
+      });
+      const { body } = await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect(200);
+      expect(body.publishedAt).toBeDefined();
+      expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
+      expect(body.current).toBeTruthy();
+      expect(body.ready).toBeNull();
+    });
+
+    it('PUBLISH REVISION MULTI REVISION', async () => {
+      const client: Client = await createClient();
+      const revision1 = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        ready: true,
+      });
+      const { _id: readyId } = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        current: false,
+        ready: false,
+      });
+
+      const { _id: currentId } = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: true,
+      });
+      const { body } = await request(app.getHttpServer())
+        .post(`/revisions/${revision1._id.toHexString()}/publish`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect(200);
+      expect(body.publishedAt).toBeDefined();
+      expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
+      expect(body.current).toBeTruthy();
+      expect(body.ready).toBeNull();
+
+      const oldRevision = await revisionModel.findById(currentId);
+      expect(oldRevision.current).toBeFalsy();
+
+      const readyRevision = await revisionModel.findById(readyId);
+      expect(readyRevision.ready).toBeFalsy();
     });
   });
 });

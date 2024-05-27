@@ -225,6 +225,13 @@ export class RevisionService {
     client: Client,
     habilitationId: string | null = null,
   ): Promise<Revision> {
+    if (revision.status !== StatusRevisionEnum.PENDING || !revision.ready) {
+      throw new HttpException(
+        'La publication n’est pas possible',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
     const now = new Date();
     const changes: Partial<Revision> = {
       publishedAt: now,
@@ -260,7 +267,10 @@ export class RevisionService {
       ]);
     }
 
-    const prevRevision = await this.findCurrent(revision.codeCommune);
+    let prevRevision = null;
+    try {
+      prevRevision = await this.findCurrent(revision.codeCommune);
+    } catch {}
 
     // On supprime le flag current pour toutes les anciennes révisions publiées de cette commune
     await this.revisionModel.updateMany(
@@ -273,7 +283,6 @@ export class RevisionService {
 
     // On publie la révision
     const revisionPublished: Revision = await this.revisionModel
-
       .findOneAndUpdate(
         { _id: revision._id },
         { $set: changes },

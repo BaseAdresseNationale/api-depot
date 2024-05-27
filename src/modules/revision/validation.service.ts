@@ -49,11 +49,17 @@ export class ValidationService {
     codeCommune: string,
     rowsCount: number,
   ): Promise<boolean> {
-    const currentRevision = await this.revisionService.findCurrent(codeCommune);
-    const nbRows = currentRevision?.validation?.rowsCount || 0;
-    const newNbRows = rowsCount;
-    // REMOVE > 20%
-    return nbRows * 0.2 < nbRows - newNbRows;
+    try {
+      const currentRevision =
+        await this.revisionService.findCurrent(codeCommune);
+
+      const nbRows = currentRevision?.validation?.rowsCount || 0;
+      const newNbRows = rowsCount;
+      // REMOVE > 20%
+      return nbRows * 0.2 < nbRows - newNbRows;
+    } catch {
+      return false;
+    }
   }
 
   public async validate(

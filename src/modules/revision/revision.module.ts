@@ -55,6 +55,10 @@ export class RevisionModule {
         path: 'revisions/:revisionId/compute',
         method: RequestMethod.POST,
       },
+      {
+        path: 'revisions/:revisionId/publish',
+        method: RequestMethod.POST,
+      },
     );
 
     consumer.apply(CommuneMiddleware).forRoutes(
