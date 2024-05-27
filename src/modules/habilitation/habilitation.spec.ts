@@ -6,9 +6,16 @@ import { Connection, connect, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
+import { add, sub } from 'date-fns';
 import axios from 'axios';
+import { omit } from 'lodash';
+import * as nodemailer from 'nodemailer';
 
-import { Habilitation, StatusHabilitationEnum } from './habilitation.schema';
+import {
+  Habilitation,
+  StatusHabilitationEnum,
+  TypeStrategyEnum,
+} from './habilitation.schema';
 import { Client } from '../client/client.schema';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
 import { Mandataire } from '../mandataire/mandataire.schema';
@@ -16,6 +23,9 @@ import { HabilitationModule } from './habilitation.module';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
+
+jest.mock('nodemailer');
+const createTransport = nodemailer.createTransport;
 
 describe('CLIENT MODULE', () => {
   let app: INestApplication;
@@ -26,6 +36,9 @@ describe('CLIENT MODULE', () => {
   let mandataireModel: Model<Mandataire>;
   let chefDefileModel: Model<ChefDeFile>;
   let habilitationModel: Model<Habilitation>;
+  // NODEMAILER
+  const sendMailMock = jest.fn();
+  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -67,6 +80,7 @@ describe('CLIENT MODULE', () => {
     await mandataireModel.deleteMany({});
     await chefDefileModel.deleteMany({});
     await habilitationModel.deleteMany({});
+    sendMailMock.mockReset();
   });
 
   async function createClient(props: Partial<Client> = {}): Promise<Client> {
@@ -80,12 +94,14 @@ describe('CLIENT MODULE', () => {
     });
   }
 
-  it('COMMUNE MIDLEWARE BAD', async () => {
-    const client: Client = await createClient();
-    await request(app.getHttpServer())
-      .post(`/communes/91400/habilitations`)
-      .set('authorization', `Bearer ${client.token}`)
-      .expect(404);
+  describe('CLIENT GUARD', () => {
+    it('COMMUNE MIDLEWARE BAD', async () => {
+      const client: Client = await createClient();
+      await request(app.getHttpServer())
+        .post(`/communes/91400/habilitations`)
+        .set('authorization', `Bearer ${client.token}`)
+        .expect(404);
+    });
   });
 
   describe('CLIENT GUARD NO TOKEN', () => {
@@ -166,234 +182,388 @@ describe('CLIENT MODULE', () => {
       expect(body).toMatchObject(hab);
     });
   });
-  // it('POST /clients 403', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //   });
-  //   await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .expect(403);
-  // });
 
-  // it('POST /clients default', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //   });
-  //   const response = await await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+  describe('GET /habilitations/:habilitationId', () => {
+    it('HABILITATION MIDLEWARE NO OBJECT ID', async () => {
+      await request(app.getHttpServer())
+        .get(`/habilitations/coucou`)
+        .expect(400);
+    });
 
-  //   expect(response.body).toMatchObject(client);
-  // });
+    it('HABILITATION MIDLEWARE BAD HABILITATION ID', async () => {
+      await request(app.getHttpServer())
+        .get(`/habilitations/${new ObjectId().toHexString()}`)
+        .expect(404);
+    });
 
-  // it('POST /clients', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
-  //   const response = await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
-  //   expect(response.body).toMatchObject(client);
-  // });
+    it('GET /habilitations/:habilitationId', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        client: new ObjectId().toHexString(),
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: TypeStrategyEnum.EMAIL,
+          pinCode: '00000',
+        },
+      };
 
-  // it('GET /clients/:id', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
-  //   const { body }: { body: Client } = await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+      const { _id } = await habilitationModel.create(habilitation);
 
-  //   const { body: clientResponse }: { body: Client } = await request(
-  //     app.getHttpServer(),
-  //   )
-  //     .get(`/clients/${body._id}`)
-  //     .expect(200);
+      const { body } = await request(app.getHttpServer())
+        .get(`/habilitations/${_id}`)
+        .set('authorization', `Bearer ${client.token}`)
+        .expect(200);
+      expect(body).toMatchObject(omit(habilitation, 'strategy.pinCode'));
+    });
+  });
 
-  //   expect(clientResponse).toMatchObject(client);
-  // });
+  describe('PUT /habilitations/:habilitationId/validate', () => {
+    it('ADMIN GUARD NO TOKEN', async () => {
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: TypeStrategyEnum.EMAIL,
+          pinCode: '00000',
+        },
+      };
 
-  // it('GET /clients/:id 400', async () => {
-  //   await request(app.getHttpServer()).get(`/clients/coucou`).expect(400);
-  // });
+      const { _id } = await habilitationModel.create(habilitation);
 
-  // it('GET /clients/:id 404', async () => {
-  //   await request(app.getHttpServer())
-  //     .get(`/clients/${new ObjectId().toHexString()}`)
-  //     .expect(404);
-  // });
+      await request(app.getHttpServer())
+        .put(`/habilitations/${_id}/validate`)
+        .expect(403);
+    });
 
-  // it('GET /clients', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
-  //   await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+    it('ADMIN GUARD TOKEN', async () => {
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: TypeStrategyEnum.EMAIL,
+          pinCode: '00000',
+        },
+      };
 
-  //   const { body: clientResponses }: { body: Client[] } = await request(
-  //     app.getHttpServer(),
-  //   )
-  //     .get(`/clients`)
-  //     .expect(200);
+      const { _id } = await habilitationModel.create(habilitation);
 
-  //   expect(clientResponses[0]).toMatchObject(client);
-  // });
+      const { body } = await request(app.getHttpServer())
+        .put(`/habilitations/${_id}/validate`)
+        .set('authorization', `Token ${process.env.ADMIN_TOKEN}`)
+        .expect(200);
 
-  // it('GET /clients', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
-  //   await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+      expect(body.expiresAt).toBeDefined();
+      expect(body.expiresAt).not.toBeNull();
+      expect(body.acceptedAt).toBeDefined();
+      expect(body.acceptedAt).not.toBeNull();
+      expect(body.status).toBe(StatusHabilitationEnum.ACCEPTED);
+      expect(body.strategy.type).toBe(TypeStrategyEnum.INTERNAL);
+    });
 
-  //   await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+    it('ADMIN GUARD BEARER AND CHECK VALIDATE', async () => {
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: TypeStrategyEnum.EMAIL,
+          pinCode: '00000',
+        },
+      };
 
-  //   await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+      const { _id } = await habilitationModel.create(habilitation);
 
-  //   const response2 = await request(app.getHttpServer())
-  //     .get(`/clients`)
-  //     .expect(200);
+      const { body } = await request(app.getHttpServer())
+        .put(`/habilitations/${_id}/validate`)
+        .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
+        .expect(200);
 
-  //   expect(response2.body.length).toBe(3);
-  // });
+      expect(body.expiresAt).toBeDefined();
+      expect(body.expiresAt).not.toBeNull();
+      expect(body.acceptedAt).toBeDefined();
+      expect(body.acceptedAt).not.toBeNull();
+      expect(body.status).toBe(StatusHabilitationEnum.ACCEPTED);
+      expect(body.strategy.type).toBe(TypeStrategyEnum.INTERNAL);
+    });
+  });
 
-  // it('PUT /clients', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
-  //   const response = await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+  describe('POST /habilitations/:habilitationId/authentication/email/send-pin-code', () => {
+    it('SEND CODE PIN ALREADY ACCEPETED', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.ACCEPTED,
+      };
 
-  //   const change: UpdateClientDTO = {
-  //     nom: 'put_test',
-  //     active: true,
-  //     options: {
-  //       relaxMode: false,
-  //     },
-  //   };
+      const { _id } = await habilitationModel.create(habilitation);
 
-  //   const response3 = await request(app.getHttpServer())
-  //     .put(`/clients/${response.body._id}`)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .send(change)
-  //     .expect(200);
+      await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .expect(412);
 
-  //   expect(response3.body).toMatchObject(change);
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
 
-  //   const response4 = await request(app.getHttpServer())
-  //     .get(`/clients/${response.body._id}`)
-  //     .expect(200);
+    it('SEND CODE PIN ALREADY REJECTED', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.REJECTED,
+      };
 
-  //   expect(response4.body).toMatchObject(change);
-  // });
+      const { _id } = await habilitationModel.create(habilitation);
 
-  // it('PUT 403 /clients', async () => {
-  //   const client = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
-  //   const response = await request(app.getHttpServer())
-  //     .post(`/clients`)
-  //     .send(client)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .expect(200);
+      await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .expect(412);
 
-  //   const change: UpdateClientDTO = {
-  //     nom: 'put_test',
-  //     active: true,
-  //     options: {
-  //       relaxMode: false,
-  //     },
-  //   };
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
 
-  //   await request(app.getHttpServer())
-  //     .put(`/clients/${response.body._id}`)
-  //     .send(change)
-  //     .expect(403);
+    it('SEND CODE PIN NO EMAIL', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        status: StatusHabilitationEnum.PENDING,
+      };
 
-  //   const response4 = await request(app.getHttpServer())
-  //     .get(`/clients/${response.body._id}`)
-  //     .expect(200);
+      const { _id } = await habilitationModel.create(habilitation);
 
-  //   expect(response4.body).toMatchObject(client);
-  // });
+      await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .expect(412);
 
-  // it('PUT /clients/:id 400', async () => {
-  //   const change = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
 
-  //   await request(app.getHttpServer())
-  //     .put(`/clients/coucou`)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .send(change)
-  //     .expect(400);
-  // });
+    it('SEND CODE PIN ALREADY SEND', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          createdAt: new Date(),
+        },
+      };
 
-  // it('PUT /clients/:id 404', async () => {
-  //   const change = getClient({
-  //     nom: 'client_test',
-  //     active: false,
-  //     options: {
-  //       relaxMode: true,
-  //     },
-  //   });
+      const { _id } = await habilitationModel.create(habilitation);
 
-  //   await request(app.getHttpServer())
-  //     .put(`/clients/${new ObjectId().toHexString()}`)
-  //     .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-  //     .send(change)
-  //     .expect(404);
-  // });
+      await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .expect(409);
+
+      expect(sendMailMock).not.toHaveBeenCalled();
+    });
+
+    it('SEND CODE PIN ALREADY SEND', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '91534',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+      };
+
+      const { _id } = await habilitationModel.create(habilitation);
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .expect(200);
+
+      expect(body.strategy.type).toBe(TypeStrategyEnum.EMAIL);
+      expect(body.strategy.pinCode).not.toBeDefined();
+      expect(body.strategy.pinCodeExpiration).toBeDefined();
+      expect(body.strategy.pinCodeExpiration).not.toBeNull();
+      expect(body.strategy.createdAt).toBeDefined();
+      expect(body.strategy.createdAt).not.toBeNull();
+      expect(body.strategy.remainingAttempts).toBe(10);
+
+      expect(sendMailMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /habilitations/:habilitationId/authentication/email/validate-pin-code', () => {
+    it('VALIDATE CODE PIN ALREADY ACCEPETED', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.ACCEPTED,
+      };
+
+      const { _id } = await habilitationModel.create(habilitation);
+
+      await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .send({ code: '0000' })
+        .expect(412);
+    });
+
+    it('VALIDATE CODE PIN ALREADY ACCEPETED', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.REJECTED,
+      };
+
+      const { _id } = await habilitationModel.create(habilitation);
+
+      await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .send({ code: '0000' })
+        .expect(412);
+    });
+
+    it('VALIDATE CODE PIN BAD CODE', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: 'email',
+          pinCodeExpiration: add(new Date(), { years: 1 }),
+          pinCode: '0000',
+          createdAt: '2024-05-27T09:19:07.770Z',
+          remainingAttempts: 0,
+        },
+      };
+
+      const { _id } = await habilitationModel.create(habilitation);
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .send({ code: '1111' })
+        .expect(200);
+
+      expect(body).toMatchObject({
+        validated: false,
+        error: 'Code non valide. Demande rejetée.',
+        remainingAttempts: 0,
+      });
+
+      const afterHabilitation = await habilitationModel.findById(_id);
+      expect(afterHabilitation.rejectedAt).toBeDefined();
+      expect(afterHabilitation.status).toBe(StatusHabilitationEnum.REJECTED);
+      expect(afterHabilitation.acceptedAt).not.toBeDefined();
+      expect(afterHabilitation.expiresAt).not.toBeDefined();
+    });
+
+    it('VALIDATE CODE PIN BAD CODE', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: 'email',
+          pinCodeExpiration: add(new Date(), { years: 1 }),
+          pinCode: '0000',
+          createdAt: '2024-05-27T09:19:07.770Z',
+          remainingAttempts: 10,
+        },
+      };
+
+      const { _id } = await habilitationModel.create(habilitation);
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .send({ code: '1111' })
+        .expect(200);
+
+      expect(body).toMatchObject({
+        validated: false,
+        error: 'Code non valide, 9 tentatives restantes',
+        remainingAttempts: 9,
+      });
+
+      const afterHabilitation = await habilitationModel.findById(_id);
+      expect(afterHabilitation.status).toBe(StatusHabilitationEnum.PENDING);
+      expect(afterHabilitation.acceptedAt).not.toBeDefined();
+      expect(afterHabilitation.expiresAt).not.toBeDefined();
+    });
+
+    it('VALIDATE CODE PIN DATE EXPIRE', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: 'email',
+          pinCodeExpiration: sub(new Date(), { years: 1 }),
+          pinCode: '0000',
+          createdAt: '2024-05-27T09:19:07.770Z',
+          remainingAttempts: 10,
+        },
+      };
+
+      const { _id } = await habilitationModel.create(habilitation);
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .send({ code: '0000' })
+        .expect(200);
+
+      expect(body).toMatchObject({
+        validated: false,
+        error: 'Code expiré',
+      });
+
+      const afterHabilitation = await habilitationModel.findById(_id);
+      expect(afterHabilitation.status).toBe(StatusHabilitationEnum.PENDING);
+      expect(afterHabilitation.acceptedAt).not.toBeDefined();
+      expect(afterHabilitation.expiresAt).not.toBeDefined();
+    });
+
+    it('VALIDATE CODE PIN', async () => {
+      const client: Client = await createClient();
+      const habilitation = {
+        codeCommune: '94000',
+        emailCommune: 'test@test.fr',
+        status: StatusHabilitationEnum.PENDING,
+        strategy: {
+          type: 'email',
+          pinCodeExpiration: add(new Date(), { years: 1 }),
+          pinCode: '0000',
+          createdAt: '2024-05-27T09:19:07.770Z',
+          remainingAttempts: 10,
+        },
+      };
+
+      const { _id } = await habilitationModel.create(habilitation);
+
+      const { body } = await request(app.getHttpServer())
+        .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .send({ code: '0000' })
+        .expect(200);
+
+      expect(body).toMatchObject({
+        validated: true,
+      });
+
+      const afterHabilitation = await habilitationModel.findById(_id);
+      expect(afterHabilitation.status).toBe(StatusHabilitationEnum.ACCEPTED);
+      expect(afterHabilitation.acceptedAt).toBeDefined();
+      expect(afterHabilitation.expiresAt).toBeDefined();
+    });
+  });
 });

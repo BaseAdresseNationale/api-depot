@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import randomNumber from 'random-number-csprng';
+import * as randomNumber from 'random-number-csprng';
 import { ConfigService } from '@nestjs/config';
 import { AxiosError, AxiosRequestConfig } from 'axios';
 import { catchError, firstValueFrom } from 'rxjs';
@@ -85,7 +85,7 @@ export class HabilitationService {
 
   public async acceptHabilitation(
     habilitationId: ObjectId,
-    changes: Partial<Habilitation>,
+    changes: Partial<Habilitation> = {},
   ): Promise<Habilitation> {
     const now = new Date();
     const habilitationEnd = new Date();
@@ -103,6 +103,7 @@ export class HabilitationService {
             expiresAt: habilitationEnd,
           },
         },
+        { returnDocument: 'after' },
       );
     return habilitation;
   }
@@ -126,6 +127,7 @@ export class HabilitationService {
             rejectedAt: now,
           },
         },
+        { returnDocument: 'after' },
       );
     return habilitation;
   }
@@ -148,32 +150,29 @@ export class HabilitationService {
     return expireAt;
   }
 
-  public async sendCodePin(habilitation: Habilitation): Promise<void> {
-    if (habilitation.status === StatusHabilitationEnum.ACCEPTED) {
+  public async sendCodePin(body: Habilitation): Promise<Habilitation> {
+    if (body.status === StatusHabilitationEnum.ACCEPTED) {
       throw new HttpException(
         'Cette habilitation est déjà validée',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    if (habilitation.status === StatusHabilitationEnum.REJECTED) {
+    if (body.status === StatusHabilitationEnum.REJECTED) {
       throw new HttpException(
         'Cette habilitation est rejetée',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    if (!habilitation.emailCommune) {
+    if (!body.emailCommune) {
       throw new HttpException(
         'Impossible d’envoyer le code, aucun courriel n’est connu pour cette commune',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    if (
-      habilitation.strategy &&
-      this.hasBeenSentRecently(habilitation.strategy.createdAt)
-    ) {
+    if (body.strategy && this.hasBeenSentRecently(body.strategy.createdAt)) {
       throw new HttpException(
         'Un courriel a déjà été envoyé, merci de patienter',
         HttpStatus.CONFLICT,
@@ -183,20 +182,23 @@ export class HabilitationService {
     const now = new Date();
     const pinCode = await this.generatePinCode();
 
-    await this.habilitationModel.findOneAndUpdate(
-      { _id: habilitation._id },
-      {
-        $set: {
-          strategy: {
-            type: 'email',
-            pinCode,
-            pinCodeExpiration: this.getExpirationDate(now),
-            remainingAttempts: 10,
-            createdAt: now,
+    const habilitation: Habilitation = await this.habilitationModel
+      .findOneAndUpdate(
+        { _id: body._id },
+        {
+          $set: {
+            strategy: {
+              type: TypeStrategyEnum.EMAIL,
+              pinCode,
+              pinCodeExpiration: this.getExpirationDate(now),
+              remainingAttempts: 10,
+              createdAt: now,
+            },
           },
         },
-      },
-    );
+        { returnDocument: 'after' },
+      )
+      .lean();
     const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
 
     const templateEmail = createCodePinNotificationEmail({
@@ -206,6 +208,8 @@ export class HabilitationService {
     await this.mailerService.sendMail(templateEmail, [
       habilitation.emailCommune,
     ]);
+
+    return habilitation;
   }
 
   public async validateCodePin(
@@ -238,10 +242,11 @@ export class HabilitationService {
         {
           $inc: { 'strategy.remainingAttempts': -1 },
         },
+        { returnDocument: 'after' },
       );
 
       if (remainingAttempts <= 0) {
-        await this.habilitationModel.findOneAndUpdate(
+        await this.habilitationModel.updateOne(
           { _id: habilitation._id },
           {
             status: StatusHabilitationEnum.REJECTED,
@@ -272,6 +277,8 @@ export class HabilitationService {
         error: 'Code expiré',
       };
     }
+
+    await this.acceptHabilitation(habilitation._id);
 
     return { validated: true };
   }

@@ -36,8 +36,8 @@ export class Strategy {
   @ApiProperty({ type: Date, required: false })
   createdAt?: Date | null;
 
-  @Prop({ type: Date })
-  @ApiProperty({ type: Date, required: false })
+  @Prop({ type: Number })
+  @ApiProperty({ type: Number, required: false })
   remainingAttempts?: number;
 
   // FRANCECONNECT

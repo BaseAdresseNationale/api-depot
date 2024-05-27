@@ -8,7 +8,6 @@ import * as request from 'supertest';
 
 import { Client } from './client.schema';
 import { ClientModule } from './client.module';
-import { PublicClient } from './dto/public_client.dto';
 import { UpdateClientDTO } from './dto/update_client.dto';
 import { Mandataire } from '../mandataire/mandataire.schema';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';

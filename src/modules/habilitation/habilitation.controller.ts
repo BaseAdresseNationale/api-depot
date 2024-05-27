@@ -95,8 +95,10 @@ export class HabilitationController {
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
   async sendCodePin(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.habilitationService.sendCodePin(req.habilitation);
-    res.status(HttpStatus.OK).json({ code: 200, message: 'OK' });
+    const habilitation = await this.habilitationService.sendCodePin(
+      req.habilitation,
+    );
+    res.status(HttpStatus.OK).json(omit(habilitation, 'strategy.pinCode'));
   }
 
   @Post('habilitations/:habilitationId/authentication/email/validate-pin-code')

@@ -178,6 +178,7 @@ export class RevisionService {
     const revision: Revision = await this.revisionModel.findOneAndUpdate(
       { _id: revisionId },
       { $set: { updatedAt: new Date() } },
+      { returnDocument: 'after' },
     );
 
     return revision;
@@ -214,6 +215,7 @@ export class RevisionService {
             ready: Boolean(validation.valid),
           },
         },
+        { returnDocument: 'after' },
       )
       .lean()
       .exec();
@@ -272,7 +274,12 @@ export class RevisionService {
 
     // On publie la révision
     const revisionPublished: Revision = await this.revisionModel
-      .findOneAndUpdate({ _id: revision._id }, { $set: changes })
+
+      .findOneAndUpdate(
+        { _id: revision._id },
+        { $set: changes },
+        { returnDocument: 'after' },
+      )
       .lean()
       .exec();
 
