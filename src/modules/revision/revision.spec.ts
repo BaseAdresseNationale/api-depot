@@ -6,9 +6,8 @@ import { Connection, connect, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
-import { add, sub } from 'date-fns';
+import { sub } from 'date-fns';
 import axios from 'axios';
-import { omit } from 'lodash';
 import * as nodemailer from 'nodemailer';
 
 import { Client } from '../client/client.schema';
