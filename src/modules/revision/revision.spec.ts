@@ -17,6 +17,8 @@ import { Mandataire } from '../mandataire/mandataire.schema';
 import { RevisionModule } from './revision.module';
 import { Habilitation } from '../habilitation/habilitation.schema';
 import { Revision, StatusRevisionEnum } from './revision.schema';
+import { S3Service } from '../file/s3.service';
+import { File } from '../file/file.schema';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
@@ -34,6 +36,8 @@ describe('REVISION MODULE', () => {
   let chefDefileModel: Model<ChefDeFile>;
   let habilitationModel: Model<Habilitation>;
   let revisionModel: Model<Revision>;
+  let fileModel: Model<File>;
+  let s3Service: S3Service;
   // NODEMAILER
   const sendMailMock = jest.fn();
   createTransport.mockReturnValue({ sendMail: sendMailMock });
@@ -64,6 +68,8 @@ describe('REVISION MODULE', () => {
       getModelToken(Habilitation.name),
     );
     revisionModel = app.get<Model<Revision>>(getModelToken(Revision.name));
+    fileModel = app.get<Model<File>>(getModelToken(File.name));
+    s3Service = app.get<S3Service>(S3Service);
   });
 
   afterAll(async () => {
@@ -80,6 +86,7 @@ describe('REVISION MODULE', () => {
     await chefDefileModel.deleteMany({});
     await habilitationModel.deleteMany({});
     await revisionModel.deleteMany({});
+    await fileModel.deleteMany({});
     sendMailMock.mockReset();
   });
 
@@ -278,6 +285,162 @@ describe('REVISION MODULE', () => {
         chefDeFile: 'chefDeFile',
         chefDeFileEmail: 'chefDeFile@test.fr',
       });
+    });
+  });
+
+  describe('GET /communes/:codeCommune/current-revision/files/bal/download', () => {
+    it('GET /communes/:codeCommune/current-revision/files/bal/download NOT EXIST', async () => {
+      await request(app.getHttpServer())
+        .get(`/communes/91400/current-revision`)
+        .expect(404);
+    });
+
+    it('GET /communes/:codeCommune/current-revision/files/bal/download NOT CURRENT', async () => {
+      const client: Client = await createClient();
+      await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: false,
+      });
+
+      await request(app.getHttpServer())
+        .get(`/communes/91534/current-revision`)
+        .expect(404);
+    });
+
+    it('GET /communes/:codeCommune/current-revision/files/bal/download NO FILE', async () => {
+      const client: Client = await createClient();
+      await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: true,
+      });
+
+      await request(app.getHttpServer())
+        .get(`/communes/91534/current-revision/files/bal/download`)
+        .expect(404);
+    });
+
+    it('GET /communes/:codeCommune/current-revision/files/bal/download', async () => {
+      const client: Client = await createClient();
+      const { _id: revisionId } = await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: true,
+      });
+
+      const { _id } = await fileModel.create({ revisionId });
+
+      const fileData = Buffer.from('file data');
+
+      jest
+        .spyOn(s3Service, 'getFile')
+        .mockImplementation(async (fileId: string) => {
+          expect(fileId).toBe(_id.toHexString());
+          return fileData;
+        });
+
+      const { text } = await request(app.getHttpServer())
+        .get(`/communes/91534/current-revision/files/bal/download`)
+        .expect(200);
+
+      expect(text).toEqual(fileData.toString());
+    });
+  });
+
+  describe('GET /revisions/:revisionId', () => {
+    it('GET /revisions/:revisionId BAD OBJECT ID', async () => {
+      await request(app.getHttpServer()).get(`/revisions/coucou`).expect(400);
+    });
+
+    it('GET /revisions/:revisionId NOT EXIST', async () => {
+      await request(app.getHttpServer())
+        .get(`/revisions/${new ObjectId().toHexString()}`)
+        .expect(404);
+    });
+
+    it('GET /revisions/:revisionId', async () => {
+      const client: Client = await createClient();
+
+      const { _id } = await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: true,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/revisions/${_id.toHexString()}`)
+        .expect(200);
+
+      expect(body.codeCommune).toBe('91534');
+      expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
+      expect(body.current).toBe(true);
+      expect(body.client).toMatchObject({
+        _id: client._id.toHexString(),
+        nom: 'test',
+        mandataire: 'mandataire',
+        chefDeFile: 'chefDeFile',
+        chefDeFileEmail: 'chefDeFile@test.fr',
+      });
+    });
+  });
+
+  describe('GET /revisions/:revisionId/files/bal/download', () => {
+    it('GET /revisions/:revisionId/files/bal/download BAD OBJECT ID', async () => {
+      await request(app.getHttpServer())
+        .get(`/revisions/coucou/files/bal/download`)
+        .expect(400);
+    });
+
+    it('GET /revisions/:revisionId/files/bal/download NOT EXIST', async () => {
+      await request(app.getHttpServer())
+        .get(`/revisions/${new ObjectId().toHexString()}/files/bal/download`)
+        .expect(404);
+    });
+
+    it('GET /revisions/:revisionId/files/bal/download NO FILE', async () => {
+      const client: Client = await createClient();
+      const { _id } = await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: true,
+      });
+
+      await request(app.getHttpServer())
+        .get(`/revisions/${_id.toHexString()}/files/bal/download`)
+        .expect(404);
+    });
+
+    it('GET /revisions/:revisionId/files/bal/download', async () => {
+      const client: Client = await createClient();
+      const { _id: revisionId } = await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: true,
+      });
+
+      const { _id } = await fileModel.create({ revisionId });
+
+      const fileData = Buffer.from('file data');
+
+      jest
+        .spyOn(s3Service, 'getFile')
+        .mockImplementation(async (fileId: string) => {
+          expect(fileId).toBe(_id.toHexString());
+          return fileData;
+        });
+
+      const { text } = await request(app.getHttpServer())
+        .get(`/revisions/${revisionId.toHexString()}/files/bal/download`)
+        .expect(200);
+
+      expect(text).toEqual(fileData.toString());
     });
   });
 });

@@ -41,7 +41,7 @@ export class RevisionModule {
     consumer.apply(RevisionMiddleware).forRoutes(
       {
         path: 'revisions/:revisionId',
-        method: RequestMethod.POST,
+        method: RequestMethod.GET,
       },
       {
         path: 'revisions/:revisionId/files/bal/download',
