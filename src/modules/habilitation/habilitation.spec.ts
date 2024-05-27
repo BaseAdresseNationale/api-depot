@@ -27,7 +27,7 @@ process.env.ADMIN_TOKEN = 'xxxx';
 jest.mock('nodemailer');
 const createTransport = nodemailer.createTransport;
 
-describe('CLIENT MODULE', () => {
+describe('HABILITATION MODULE', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
   let mongoConnection: Connection;

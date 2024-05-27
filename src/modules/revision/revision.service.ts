@@ -131,7 +131,7 @@ export class RevisionService {
     return revision.toObject();
   }
 
-  public async expandCurrentRevision(
+  public async expandWithClient(
     revision: Revision,
     withFile: boolean = false,
   ): Promise<RevisionWithClientDTO> {

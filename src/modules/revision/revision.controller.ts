@@ -47,9 +47,7 @@ export class RevisionController {
       await this.revisionService.findCurrents(publishedSince);
 
     const revisionWithClient: RevisionWithClientDTO[] = await Promise.all(
-      revisions.map((r: Revision) =>
-        this.revisionService.expandCurrentRevision(r),
-      ),
+      revisions.map((r: Revision) => this.revisionService.expandWithClient(r)),
     );
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
@@ -67,7 +65,7 @@ export class RevisionController {
     );
 
     const currentRevision: RevisionWithClientDTO =
-      await this.revisionService.expandCurrentRevision(revision, true);
+      await this.revisionService.expandWithClient(revision, true);
     res.status(HttpStatus.OK).json(currentRevision);
   }
 
@@ -88,9 +86,7 @@ export class RevisionController {
     });
 
     const revisionWithClient: RevisionWithClientDTO[] = await Promise.all(
-      revisions.map((r: Revision) =>
-        this.revisionService.expandCurrentRevision(r),
-      ),
+      revisions.map((r: Revision) => this.revisionService.expandWithClient(r)),
     );
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
@@ -123,7 +119,7 @@ export class RevisionController {
   @ApiResponse({ status: HttpStatus.OK, type: RevisionWithClientDTO })
   async findOne(@Req() req: CustomRequest, @Res() res: Response) {
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandCurrentRevision(req.revision, true);
+      await this.revisionService.expandWithClient(req.revision, true);
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
 

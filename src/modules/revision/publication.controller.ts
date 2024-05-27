@@ -55,7 +55,7 @@ export class PublicationController {
     console.log(revision);
     console.log({ ...revision });
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandCurrentRevision(revision);
+      await this.revisionService.expandWithClient(revision);
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
 
@@ -106,7 +106,7 @@ export class PublicationController {
     );
 
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandCurrentRevision(revision, true);
+      await this.revisionService.expandWithClient(revision, true);
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
 
@@ -130,7 +130,7 @@ export class PublicationController {
     );
 
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandCurrentRevision(revision, true);
+      await this.revisionService.expandWithClient(revision, true);
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
 }
