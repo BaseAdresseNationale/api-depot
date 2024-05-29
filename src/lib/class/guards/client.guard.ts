@@ -9,6 +9,7 @@ import { omit } from 'lodash';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { ClientService } from '@/modules/client/client.service';
+import { TOKEN_LENGTH } from '@/lib/utils/token.utils';
 
 @Injectable()
 export class ClientGuard implements CanActivate {
@@ -23,7 +24,7 @@ export class ClientGuard implements CanActivate {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    const token = req.get('Authorization').slice(7);
+    const token = req.get('Authorization').slice(-TOKEN_LENGTH);
     const client = await this.clientService.findOne({ token });
 
     if (!client) {

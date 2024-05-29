@@ -1,6 +1,6 @@
 {
-  "name": "api-depot-nest",
-  "version": "0.0.1",
+  "name": "api-depot",
+  "version": "1.0.0",
   "description": "",
   "author": "",
   "private": true,
@@ -91,6 +91,6 @@
     }
   },
   "engines": {
-    "node": ">= 16"
+    "node": ">= 18"
   }
 }
