@@ -16,7 +16,7 @@ import { CommuneCOG } from '@/lib/types/cog.type';
 import { Client } from '@/modules/client/client.schema';
 import { ApiAnnuaireService } from '@/modules/api_annuraire/api_annuraire.service';
 import { MailerService } from '@/modules/mailer/mailer.service';
-import { formatEmail as createCodePinNotificationEmail } from '@/modules/mailer/templates/code-pin-notification';
+import { formatEmail as createCodePinNotificationEmail } from '@/modules/mailer/templates/code-pin.template';
 import {
   ValidateCodePinRequestDTO,
   ValidateCodePinResponseDTO,

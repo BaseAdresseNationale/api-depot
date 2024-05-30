@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { getCommune } from '@/lib/utils/cog';
-import { formatEmail as createNotifyPartnersOnForcePublishEmail } from '@/modules/mailer/templates/notify-partners-on-force-publish';
+import { formatEmail as createNotifyPartnersOnForcePublishEmail } from '@/modules/mailer/templates/partners-on-force-publish.template';
 import { Client } from '@/modules/client/client.schema';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { ClientService } from '@/modules/client/client.service';

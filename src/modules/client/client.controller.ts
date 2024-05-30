@@ -15,6 +15,7 @@ import {
   ApiParam,
   ApiResponse,
   ApiTags,
+  OmitType,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -23,24 +24,40 @@ import { CustomRequest } from '@/lib/types/request.type';
 import { ClientService } from './client.service';
 import { Client } from './client.schema';
 import { UpdateClientDTO } from './dto/update_client.dto';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('clients')
 @Controller('clients')
 export class ClientController {
-  constructor(private clientService: ClientService) {}
+  constructor(
+    private clientService: ClientService,
+    private configService: ConfigService,
+  ) {}
+
+  isAdmin(req: CustomRequest): boolean {
+    const ADMIN_TOKEN: string = this.configService.get('ADMIN_TOKEN');
+    return (
+      req.get('Authorization') === `Token ${ADMIN_TOKEN}` ||
+      req.get('Authorization') === `Bearer ${ADMIN_TOKEN}`
+    );
+  }
 
   @Get('')
   @ApiOperation({
     summary: 'Find all clients',
     operationId: 'findMany',
   })
-  @ApiResponse({ status: HttpStatus.OK, type: Client, isArray: true })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OmitType(Client, ['token']),
+    isArray: true,
+  })
   async findMany(@Res() res: Response) {
     const clients: Client[] = await this.clientService.findMany({});
-    const clientsFiltered: Omit<Client, 'token'>[] = clients.map((c) =>
+    const clientsSafe: Omit<Client, 'token'>[] = clients.map((c) =>
       this.clientService.filterSensitiveFields(c),
     );
-    res.status(HttpStatus.OK).json(clientsFiltered);
+    res.status(HttpStatus.OK).json(clientsSafe);
   }
 
   @Post('')
@@ -49,12 +66,14 @@ export class ClientController {
     operationId: 'createOne',
   })
   @ApiBody({ type: UpdateClientDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: Client })
+  @ApiResponse({ status: HttpStatus.OK, type: OmitType(Client, ['token']) })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async createOne(@Req() req: CustomRequest, @Res() res: Response) {
     const client: Client = await this.clientService.createOne(req.body);
-    res.status(HttpStatus.OK).json(client);
+    const clientSafe: Omit<Client, 'token'> =
+      this.clientService.filterSensitiveFields(client);
+    res.status(HttpStatus.OK).json(clientSafe);
   }
 
   @Get(':clientId')
@@ -63,9 +82,17 @@ export class ClientController {
     operationId: 'findOne',
   })
   @ApiParam({ name: 'clientId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: Client })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Client,
+  })
   async findOne(@Req() req: CustomRequest, @Res() res: Response) {
-    res.status(HttpStatus.OK).json(req.client);
+    if (this.isAdmin(req)) {
+      return res.status(HttpStatus.OK).json(req.client);
+    }
+    const clientSafe: Omit<Client, 'token'> =
+      this.clientService.filterSensitiveFields(req.client);
+    res.status(HttpStatus.OK).json(clientSafe);
   }
 
   @Put(':clientId')
@@ -75,7 +102,7 @@ export class ClientController {
   })
   @ApiParam({ name: 'clientId', required: true, type: String })
   @ApiBody({ type: UpdateClientDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: Client })
+  @ApiResponse({ status: HttpStatus.OK, type: OmitType(Client, ['token']) })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
   async updateOne(@Req() req: CustomRequest, @Res() res: Response) {
@@ -83,6 +110,23 @@ export class ClientController {
       req.client._id.toString(),
       req.body,
     );
-    res.status(HttpStatus.OK).json(client);
+    const clientSafe: Omit<Client, 'token'> =
+      this.clientService.filterSensitiveFields(client);
+    res.status(HttpStatus.OK).json(clientSafe);
+  }
+
+  @Post('clients/:clientId/token/renew')
+  @ApiOperation({
+    summary: 'recreate token client',
+    operationId: 'renewToken',
+  })
+  @ApiResponse({ status: HttpStatus.OK, type: OmitType(Client, ['token']) })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async renewToken(@Req() req: CustomRequest, @Res() res: Response) {
+    const client: Client = await this.clientService.renewToken(req.client._id);
+    const clientSafe: Omit<Client, 'token'> =
+      this.clientService.filterSensitiveFields(client);
+    res.status(HttpStatus.OK).json(clientSafe);
   }
 }

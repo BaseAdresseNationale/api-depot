@@ -3,10 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, QueryWithHelpers, Types } from 'mongoose';
 import { omit } from 'lodash';
 
+import { generateToken } from '@/lib/utils/token.utils';
 import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
-import { Client } from './client.schema';
+import { formatEmail as createNewClientEmail } from '@/modules/mailer/templates/new-client.template';
+import { formatEmail as createRenewTokenEmail } from '@/modules/mailer/templates/renew-token.template';
+import { AuthorizationStrategyEnum, Client } from './client.schema';
 import { PublicClient } from './dto/public_client.dto';
+import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
+import { Mandataire } from '../mandataire/mandataire.schema';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class ClientService {
@@ -15,6 +21,7 @@ export class ClientService {
     private clientModel: Model<Client>,
     private mandataireService: MandataireService,
     private chefDeFileService: ChefDeFileService,
+    private mailerService: MailerService,
   ) {}
 
   async findMany(
@@ -64,18 +71,60 @@ export class ClientService {
   }
 
   public async createOne(body: Partial<Client>): Promise<Client> {
-    return this.clientModel.create(body);
+    let chefDeFile: ChefDeFile;
+    if (body.chefDeFile) {
+      chefDeFile = await this.chefDeFileService.findOneOrFail(body.chefDeFile);
+    }
+
+    const mandataire: Mandataire = await this.mandataireService.findOneOrFail(
+      body.mandataire,
+    );
+
+    const client: Client = await this.clientModel.create({
+      ...body,
+      token: generateToken(),
+      authorizationStrategy: body.chefDeFile
+        ? AuthorizationStrategyEnum.CHEF_DE_FILE
+        : AuthorizationStrategyEnum.HABILITATION,
+    });
+
+    // Send token to user with mandataire’s email
+    const email = createNewClientEmail({ client, mandataire, chefDeFile });
+    await this.mailerService.sendMail(email, [mandataire.email]);
+
+    return client;
   }
 
   public async updateOne(
     clientId: string,
     changes: Partial<Client>,
   ): Promise<Client> {
+    if (changes.chefDeFile) {
+      await this.chefDeFileService.findOneOrFail(changes.chefDeFile);
+    }
+    await this.mandataireService.findOneOrFail(changes.mandataire);
+
     const client: Client = await this.clientModel.findOneAndUpdate(
       { _id: clientId },
       { $set: changes },
       { returnDocument: 'after' },
     );
+
+    return client;
+  }
+
+  public async renewToken(clientId: Types.ObjectId): Promise<Client> {
+    const client: Client = await this.clientModel.findOneAndUpdate(
+      { _id: clientId },
+      { $set: { token: generateToken() } },
+      { returnDocument: 'after' },
+    );
+    const mandataire = await this.mandataireService.findOneOrFail(
+      client.mandataire,
+    );
+
+    const email = createRenewTokenEmail({ client });
+    await this.mailerService.sendMail(email, [mandataire.email]);
 
     return client;
   }
