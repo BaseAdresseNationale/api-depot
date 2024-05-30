@@ -102,7 +102,9 @@ export class ClientService {
     if (changes.chefDeFile) {
       await this.chefDeFileService.findOneOrFail(changes.chefDeFile);
     }
-    await this.mandataireService.findOneOrFail(changes.mandataire);
+    if (changes.mandataire) {
+      await this.mandataireService.findOneOrFail(changes.mandataire);
+    }
 
     const client: Client = await this.clientModel.findOneAndUpdate(
       { _id: clientId },

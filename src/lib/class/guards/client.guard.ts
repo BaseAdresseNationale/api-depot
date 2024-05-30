@@ -9,7 +9,6 @@ import { omit } from 'lodash';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { ClientService } from '@/modules/client/client.service';
-import { TOKEN_LENGTH } from '@/lib/utils/token.utils';
 
 @Injectable()
 export class ClientGuard implements CanActivate {

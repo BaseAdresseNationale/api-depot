@@ -60,11 +60,13 @@ describe('CLIENT MODULE', () => {
     await chefDefileModel.deleteMany({});
   });
 
-  function getClient(props: UpdateClientDTO): UpdateClientDTO {
+  async function getClient(props: UpdateClientDTO): Promise<UpdateClientDTO> {
+    const mandataire = await mandataireModel.create({ nom: 'mandataire' });
+    const chefDeFile = await chefDefileModel.create({ nom: 'chefDeFile' });
     return {
       ...props,
-      mandataire: new ObjectId().toHexString(),
-      chefDeFile: new ObjectId().toHexString(),
+      mandataire: mandataire._id.toHexString(),
+      chefDeFile: chefDeFile._id.toHexString(),
     };
   }
 
@@ -76,7 +78,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('POST /clients 403', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
     });
     await request(app.getHttpServer())
@@ -86,7 +88,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('POST /clients default', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
     });
     const response = await await request(app.getHttpServer())
@@ -99,7 +101,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('POST /clients', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
       active: false,
       options: {
@@ -115,7 +117,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('GET /clients/:id', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
       active: false,
       options: {
@@ -148,7 +150,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('GET /clients', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
       active: false,
       options: {
@@ -171,7 +173,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('GET /clients', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
       active: false,
       options: {
@@ -204,7 +206,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('PUT /clients', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
       active: false,
       options: {
@@ -241,7 +243,7 @@ describe('CLIENT MODULE', () => {
   });
 
   it('PUT 403 /clients', async () => {
-    const client = getClient({
+    const client = await getClient({
       nom: 'client_test',
       active: false,
       options: {
