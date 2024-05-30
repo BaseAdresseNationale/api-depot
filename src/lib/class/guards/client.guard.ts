@@ -24,7 +24,7 @@ export class ClientGuard implements CanActivate {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    const token = req.get('Authorization').slice(-TOKEN_LENGTH);
+    const [, token] = req.get('Authorization').split(' ');
     const client = await this.clientService.findOne({ token });
 
     if (!client) {
