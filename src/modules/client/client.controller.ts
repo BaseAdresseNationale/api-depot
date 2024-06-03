@@ -71,9 +71,7 @@ export class ClientController {
   @UseGuards(AdminGuard)
   async createOne(@Req() req: CustomRequest, @Res() res: Response) {
     const client: Client = await this.clientService.createOne(req.body);
-    const clientSafe: Omit<Client, 'token'> =
-      this.clientService.filterSensitiveFields(client);
-    res.status(HttpStatus.OK).json(clientSafe);
+    res.status(HttpStatus.OK).json(client);
   }
 
   @Get(':clientId')
@@ -86,6 +84,7 @@ export class ClientController {
     status: HttpStatus.OK,
     type: Client,
   })
+  @ApiBearerAuth('admin-token')
   async findOne(@Req() req: CustomRequest, @Res() res: Response) {
     if (this.isAdmin(req)) {
       return res.status(HttpStatus.OK).json(req.client);
