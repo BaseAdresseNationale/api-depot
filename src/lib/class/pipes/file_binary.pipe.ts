@@ -1,29 +1,24 @@
+import { CustomRequest } from '@/lib/types/request.type';
 import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
   HttpException,
   HttpStatus,
+  Injectable,
+  PipeTransform,
 } from '@nestjs/common';
-import * as getRawBody from 'raw-body';
-import { Request } from 'express';
 import * as hash from 'hasha';
-import * as bytes from 'bytes';
-
-const MAX_BUFFER: number = bytes('50mb');
 
 @Injectable()
-export class FileGuard implements CanActivate {
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req: Request = context.switchToHttp().getRequest<Request>();
-    const bodyBuffer: Buffer = await getRawBody(req, { limit: MAX_BUFFER });
-    console.log(req.get('Content-Type'));
-    if (!Buffer.isBuffer(bodyBuffer) || Buffer.byteLength(bodyBuffer) <= 0) {
+export class FileBinaryPipe implements PipeTransform {
+  async transform(req: CustomRequest) {
+    if (
+      !Buffer.isBuffer(req.fileBuffer) ||
+      Buffer.byteLength(req.fileBuffer) <= 0
+    ) {
       throw new HttpException('Fichier non fourni.', HttpStatus.NOT_FOUND);
     }
 
     if (req.get('Content-MD5')) {
-      const signature = await hash(bodyBuffer, { algorithm: 'md5' });
+      const signature = await hash(req.fileBuffer, { algorithm: 'md5' });
 
       if (signature !== req.get('Content-MD5')) {
         throw new HttpException(
@@ -40,7 +35,11 @@ export class FileGuard implements CanActivate {
       );
     }
 
-    if (req.get('Content-Type') && req.get('Content-Type') !== 'text/csv') {
+    if (
+      req.get('Content-Type') &&
+      req.get('Content-Type') !== 'text/csv' &&
+      req.get('Content-Type') !== 'application/octet-stream'
+    ) {
       throw new HttpException(
         'Le type du contenue dans l’en-tête ne peut être que text/csv.',
         HttpStatus.BAD_REQUEST,
@@ -49,15 +48,13 @@ export class FileGuard implements CanActivate {
 
     if (
       req.get('Content-Length') &&
-      Number(req.get('Content-Length')) !== Buffer.byteLength(bodyBuffer)
+      Number(req.get('Content-Length')) !== Buffer.byteLength(req.fileBuffer)
     ) {
       throw new HttpException(
         'La longueur de contenue dans l’en-tête ne correspond pas a la taille en octet du fichier.',
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    req.body = bodyBuffer;
-    return true;
+    return req.fileBuffer;
   }
 }

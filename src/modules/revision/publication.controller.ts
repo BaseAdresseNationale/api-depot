@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,12 +22,14 @@ import { Response } from 'express';
 import { CustomRequest } from '@/lib/types/request.type';
 import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { RevisionGuard } from '@/lib/class/guards/revision.guard';
-import { FileGuard } from '@/lib/class/guards/file.guard';
 import { File } from '@/modules/file/file.schema';
 import { Revision } from './revision.schema';
 import { RevisionService } from './revision.service';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { CreateRevisionDTO } from './dto/create_revision.dto';
+import { FileBinary } from '@/lib/class/decorators/file_binary.decorator';
+import { FileBinaryPipe } from '@/lib/class/pipes/file_binary.pipe';
+import { FileBinaryInterceptor } from '@/lib/class/interceptors/file_binary.interceptor';
 
 @ApiTags('publications')
 @Controller('')
@@ -76,11 +79,16 @@ export class PublicationController {
     type: File,
   })
   @ApiBearerAuth('client-token')
-  @UseGuards(ClientGuard, RevisionGuard, FileGuard)
-  async setfile(@Req() req: CustomRequest, @Res() res: Response) {
+  @UseInterceptors(FileBinaryInterceptor)
+  @UseGuards(ClientGuard, RevisionGuard)
+  async setfile(
+    @FileBinary(FileBinaryPipe) fileBuffer: Buffer,
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+  ) {
     const file: File = await this.revisionService.setFile(
       req.revision,
-      req.body,
+      fileBuffer,
     );
     res.status(HttpStatus.OK).json(file);
   }

@@ -161,7 +161,7 @@ describe('HABILITATION MODULE', () => {
       };
       axiosMock
         .onGet(
-          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}`,
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
         )
         .reply(200, data);
 

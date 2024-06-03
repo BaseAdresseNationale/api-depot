@@ -33,7 +33,7 @@ export class ApiAnnuaireService {
         data.results.find(
           ({ nom }) => !this.normalize(nom).includes('deleguee'),
         ) || data.results[0];
-
+      console.log(mairie);
       if (!mairie.adresse_courriel || mairie.adresse_courriel === '') {
         throw new Error('L’adresse email n’est pas trouvé');
       }

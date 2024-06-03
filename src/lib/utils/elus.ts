@@ -11,7 +11,11 @@ try {
   elusJson = JSON.parse(
     readFileSync(join(__dirname, '../../../', 'elus.json'), 'utf-8'),
   );
-} catch {}
+} catch {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('elus.json must be defined in production mode');
+  }
+}
 
 const elusByBirthdate: Record<string, Elu[]> = groupBy(
   elusJson,

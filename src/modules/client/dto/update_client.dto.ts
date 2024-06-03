@@ -11,11 +11,11 @@ import { Type } from 'class-transformer';
 
 export class UpdateClientDTO {
   @IsString()
-  @ApiProperty({ type: String, required: false })
+  @ApiProperty({ type: String, required: true })
   nom?: string;
 
   @IsMongoId()
-  @ApiProperty({ type: String, required: false })
+  @ApiProperty({ type: String, required: true })
   mandataire?: string;
 
   @IsMongoId()

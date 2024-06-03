@@ -18,4 +18,5 @@ export interface CustomRequest extends Request {
   redirectUrl?: string;
   user: { idToken: string };
   revision: Revision;
+  fileBuffer: Buffer;
 }

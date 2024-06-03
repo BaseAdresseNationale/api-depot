@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayNotEmpty,
   IsBoolean,
+  IsDefined,
   IsEmail,
   IsString,
   Length,
@@ -11,20 +12,21 @@ import { Type } from 'class-transformer';
 
 import { Perimeter } from '../chef_de_file.schema';
 
-export class UpdateChefDeFileDTO {
+export class CreateChefDeFileDTO {
   @IsString()
   @Length(3, 200)
-  @ApiProperty({ type: String, required: false })
-  nom?: string;
+  @ApiProperty({ type: String, required: true })
+  nom: string;
 
   @IsEmail()
-  @ApiProperty({ type: String, required: false })
-  email?: string;
+  @ApiProperty({ type: String, required: true })
+  email: string;
 
   @IsBoolean()
-  @ApiProperty({ type: Boolean, required: false })
+  @ApiProperty({ type: Boolean, required: false, default: true })
   isEmailPublic?: boolean;
 
+  @IsDefined()
   @ValidateNested({ each: true })
   @ArrayNotEmpty()
   @Type(() => Perimeter)

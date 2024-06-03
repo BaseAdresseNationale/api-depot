@@ -5,7 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
 
 import { CommuneMiddleware } from '@/lib/class/middlewares/commune.middleware';
-import { ApiAnnuraireModule } from '@/modules/api_annuraire/api_annuraire.module';
+import { ApiAnnuaireModule } from '@/modules/api_annuaire/api_annuaire.module';
 import { MailerModule } from '@/modules/mailer/mailer.module';
 import { ClientModule } from '@/modules/client/client.module';
 import { Habilitation, HabilitationSchema } from './habilitation.schema';
@@ -25,7 +25,7 @@ import { HabilitationMiddleware } from './habilitation.middleware';
     MongooseModule.forFeature([
       { name: Habilitation.name, schema: HabilitationSchema },
     ]),
-    ApiAnnuraireModule,
+    ApiAnnuaireModule,
     MailerModule,
     PassportModule.register({ session: true }),
     ClientModule,

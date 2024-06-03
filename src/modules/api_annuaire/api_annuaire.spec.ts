@@ -3,17 +3,17 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 
-import { ApiAnnuraireModule } from './api_annuraire.module';
-import { ApiAnnuaireService } from './api_annuraire.service';
+import { ApiAnnuaireModule } from './api_annuaire.module';
+import { ApiAnnuaireService } from './api_annuaire.service';
 
-describe('API ANNURAIRE MODULE', () => {
+describe('API ANNUAIRE MODULE', () => {
   let app: INestApplication;
   let apiAnnuaireService: ApiAnnuaireService;
   const axiosMock = new MockAdapter(axios);
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [ApiAnnuraireModule],
+      imports: [ApiAnnuaireModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -42,18 +42,17 @@ describe('API ANNURAIRE MODULE', () => {
           },
           {
             nom: 'mairie deleguee',
-            adresse_courriel: 'wrong@test.fr',
+            adresse_courriel: 'no@test.fr',
           },
         ],
       };
       axiosMock
         .onGet(
-          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}`,
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
         )
         .reply(200, data);
 
       const email = await apiAnnuaireService.getEmailCommune(codeCommune);
-
       expect(email).toBe('ok@test.fr');
     });
 
@@ -71,7 +70,7 @@ describe('API ANNURAIRE MODULE', () => {
       };
       axiosMock
         .onGet(
-          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}`,
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
         )
         .reply(200, data);
 
@@ -80,7 +79,7 @@ describe('API ANNURAIRE MODULE', () => {
       expect(email).toBe('ok@test.fr');
     });
 
-    it('getEmailCommune multi email', async () => {
+    it('getEmailCommune only mairie deleguee', async () => {
       const codeCommune = '91400';
 
       // MOCK AXIOS
@@ -88,18 +87,19 @@ describe('API ANNURAIRE MODULE', () => {
         results: [
           {
             nom: 'mairie deleguee',
-            adresse_courriel: 'ok',
+            adresse_courriel: 'ok@ok.fr',
           },
         ],
       };
       axiosMock
         .onGet(
-          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}`,
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
         )
         .reply(200, data);
 
       const email = await apiAnnuaireService.getEmailCommune(codeCommune);
-      expect(email).toBeUndefined();
+
+      expect(email).toBe('ok@ok.fr');
     });
 
     it('getEmailCommune multi email', async () => {
@@ -116,7 +116,7 @@ describe('API ANNURAIRE MODULE', () => {
       };
       axiosMock
         .onGet(
-          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}`,
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
         )
         .reply(200, data);
 
