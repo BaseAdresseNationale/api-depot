@@ -30,6 +30,7 @@ import { CreateRevisionDTO } from './dto/create_revision.dto';
 import { FileBinary } from '@/lib/class/decorators/file_binary.decorator';
 import { FileBinaryPipe } from '@/lib/class/pipes/file_binary.pipe';
 import { FileBinaryInterceptor } from '@/lib/class/interceptors/file_binary.interceptor';
+import { PublishDTO } from './dto/publish.dto';
 
 @ApiTags('publications')
 @Controller('')
@@ -122,6 +123,7 @@ export class PublicationController {
     operationId: 'publishOne',
   })
   @ApiParam({ name: 'revisionId', required: true, type: String })
+  @ApiBody({ type: PublishDTO })
   @ApiResponse({
     status: HttpStatus.OK,
     type: RevisionWithClientDTO,
