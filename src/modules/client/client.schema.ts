@@ -12,7 +12,7 @@ export enum AuthorizationStrategyEnum {
 
 @Schema({ _id: false })
 export class Options {
-  @Prop({ type: Boolean })
+  @Prop({ type: Boolean, default: false })
   @ApiProperty({ type: Boolean, required: false })
   relaxMode?: boolean;
 }
@@ -49,8 +49,11 @@ export class Client extends DateEntity {
   @ApiProperty({ required: false })
   active?: boolean;
 
-  @Prop({ type: OptionsSchema })
-  @ApiProperty({ type: () => Options, required: false })
+  @Prop({ type: OptionsSchema, default: {} })
+  @ApiProperty({
+    type: () => Options,
+    required: false,
+  })
   options?: Options;
 
   @Prop({ type: SchemaTypes.String, enum: AuthorizationStrategyEnum })

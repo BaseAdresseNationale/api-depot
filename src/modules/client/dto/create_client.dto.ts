@@ -9,26 +9,26 @@ import {
 import { Options } from '../client.schema';
 import { Type } from 'class-transformer';
 
-export class UpdateClientDTO {
+export class CreateClientDTO {
   @IsString()
-  @ApiProperty({ type: String, required: false })
-  nom?: string;
+  @ApiProperty({ type: String, required: true })
+  nom: string;
 
   @IsMongoId()
-  @ApiProperty({ type: String, required: false })
-  mandataire?: string;
+  @ApiProperty({ type: String, required: true })
+  mandataire: string;
 
   @IsMongoId()
   @ApiProperty({ type: String, required: false })
   chefDeFile?: string;
 
   @IsBoolean()
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, default: true })
   active?: boolean;
 
   @IsNotEmptyObject()
   @ValidateNested({ each: true })
   @Type(() => Options)
-  @ApiProperty({ type: () => Options, required: false })
+  @ApiProperty({ type: () => Options, required: true })
   options?: Options;
 }

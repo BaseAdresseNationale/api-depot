@@ -25,6 +25,7 @@ import { ClientService } from './client.service';
 import { Client } from './client.schema';
 import { UpdateClientDTO } from './dto/update_client.dto';
 import { ConfigService } from '@nestjs/config';
+import { CreateClientDTO } from './dto/create_client.dto';
 
 @ApiTags('clients')
 @Controller('clients')
@@ -65,7 +66,7 @@ export class ClientController {
     summary: 'create one client',
     operationId: 'createOne',
   })
-  @ApiBody({ type: UpdateClientDTO, required: true })
+  @ApiBody({ type: CreateClientDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: OmitType(Client, ['token']) })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)

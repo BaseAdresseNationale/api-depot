@@ -116,6 +116,25 @@ describe('CLIENT MODULE', () => {
     expect(response.body).toMatchObject(client);
   });
 
+  it('POST /clients', async () => {
+    const client = await getClient({
+      nom: 'client_test',
+      active: false,
+    });
+    const response = await request(app.getHttpServer())
+      .post(`/clients`)
+      .send(client)
+      .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
+      .expect(200);
+    expect(response.body).toMatchObject({
+      nom: 'client_test',
+      active: false,
+      options: {
+        relaxMode: false,
+      },
+    });
+  });
+
   it('GET /clients/:id', async () => {
     const client = await getClient({
       nom: 'client_test',

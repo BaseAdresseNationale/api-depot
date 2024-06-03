@@ -4,9 +4,9 @@ import { IsEmail, IsString } from 'class-validator';
 export class UpdateMandataireDTO {
   @IsString()
   @ApiProperty({ type: String, required: false })
-  nom: string;
+  nom?: string;
 
   @IsEmail()
   @ApiProperty({ type: String, required: false })
-  email: string;
+  email?: string;
 }

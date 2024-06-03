@@ -17,7 +17,7 @@ export class FileGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest<Request>();
     const bodyBuffer: Buffer = await getRawBody(req, { limit: MAX_BUFFER });
-    console.log(req.get('Content-Type'));
+
     if (!Buffer.isBuffer(bodyBuffer) || Buffer.byteLength(bodyBuffer) <= 0) {
       throw new HttpException('Fichier non fourni.', HttpStatus.NOT_FOUND);
     }

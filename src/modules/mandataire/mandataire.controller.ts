@@ -23,6 +23,7 @@ import { AdminGuard } from '@/lib/class/guards/admin.guard';
 import { Mandataire } from './mandataire.schema';
 import { UpdateMandataireDTO } from './dto/update_mandataire.dto';
 import { MandataireService } from './mandataire.service';
+import { CreateMandataireDTO } from './dto/create_mandataire.dto';
 
 @ApiTags('mandataires')
 @Controller('mandataires')
@@ -45,7 +46,7 @@ export class MandataireController {
     summary: 'create one mandataire',
     operationId: 'createOne',
   })
-  @ApiBody({ type: UpdateMandataireDTO, required: true })
+  @ApiBody({ type: CreateMandataireDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK, type: Mandataire })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
