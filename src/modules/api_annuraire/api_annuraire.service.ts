@@ -20,7 +20,7 @@ export class ApiAnnuaireService {
 
   public async getEmailCommune(codeCommune: string): Promise<string> {
     try {
-      const url: string = `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}`;
+      const url: string = `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`;
       const options: AxiosRequestConfig = { responseType: 'json' };
       const { data } = await firstValueFrom(
         this.httpService.get<any>(url, options).pipe(
@@ -29,9 +29,10 @@ export class ApiAnnuaireService {
           }),
         ),
       );
-      const mairie = data.results.find(
-        ({ nom }) => !this.normalize(nom).includes('deleguee'),
-      );
+      const mairie =
+        data.results.find(
+          ({ nom }) => !this.normalize(nom).includes('deleguee'),
+        ) || data.results[0];
 
       if (!mairie.adresse_courriel || mairie.adresse_courriel === '') {
         throw new Error('L’adresse email n’est pas trouvé');
