@@ -1,8 +1,11 @@
+export enum TYPE_MANDAT {
+  CONSEILLER_MUNICIPAL = 'conseiller-municipal',
+}
+
 export interface Mandat {
   dateDebutMandat: string;
   codeCommune: string;
-  typeMandat: string;
-  nomCommune: string;
+  typeMandat: TYPE_MANDAT.CONSEILLER_MUNICIPAL;
 }
 
 export interface Elu {
