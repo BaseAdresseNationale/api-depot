@@ -10,7 +10,7 @@ import { ApiAnnuaireService } from './api_annuaire.service';
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        baseURL: configService.get('API_ANNUAIRE_URL'),
+        baseURL: configService.get('API_ANNUAIRE'),
       }),
       inject: [ConfigService],
     }),
