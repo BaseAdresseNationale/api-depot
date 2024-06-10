@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsEnum, IsString } from 'class-validator';
-import { SchemaTypes, Types } from 'mongoose';
+import { SchemaTypes } from 'mongoose';
 
 import { DateEntity } from '@/lib/class/schemas/dates.schema';
 
@@ -30,10 +30,6 @@ export const PerimeterSchema = SchemaFactory.createForClass(Perimeter);
 
 @Schema({ collection: 'chefs_de_file' })
 export class ChefDeFile extends DateEntity {
-  @Prop({ type: SchemaTypes.ObjectId, auto: true })
-  @ApiProperty({ type: String, required: false })
-  _id: Types.ObjectId;
-
   @Prop({ type: String })
   @ApiProperty({ type: String, required: false })
   nom: string;

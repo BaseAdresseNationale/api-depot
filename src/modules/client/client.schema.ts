@@ -21,10 +21,6 @@ export const OptionsSchema = SchemaFactory.createForClass(Options);
 
 @Schema({ collection: 'clients' })
 export class Client extends DateEntity {
-  @Prop({ type: SchemaTypes.ObjectId, auto: true })
-  @ApiProperty({ type: String, required: false })
-  _id: Types.ObjectId;
-
   @Prop({ type: String })
   @ApiProperty({ type: String, required: false })
   id: string;

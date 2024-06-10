@@ -13,7 +13,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('API depot')
     .setDescription(
-      'API permettant le versionning des fichier BALs des commune',
+      'API permettant le versionning des fichiers BALs des commune',
     )
     .setVersion('1.0')
     .addBearerAuth(
