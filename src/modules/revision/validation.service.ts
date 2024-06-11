@@ -32,7 +32,7 @@ export class ValidationService {
   }
 
   private async checkIsInPerimetre(codeCommune: string, client: Client) {
-    if (client && client.chefDeFile) {
+    if (client?.chefDeFile) {
       const chefDeFile = await this.chefDeFileService.findOneOrFail(
         client.chefDeFile,
       );

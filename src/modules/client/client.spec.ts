@@ -91,7 +91,7 @@ describe('CLIENT MODULE', () => {
     const client = await getClient({
       nom: 'client_test',
     });
-    const response = await await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post(`/clients`)
       .send(client)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)

@@ -13,10 +13,7 @@ import { CommuneCOG, EpciCOG } from '@/lib/types/cog.type';
 function isInDepartement(departement: string, codeCommune: string): boolean {
   const communeByDepartement: CommuneCOG[] =
     getCommunesByDepartement(departement);
-  return (
-    communeByDepartement &&
-    communeByDepartement.some(({ code }) => code === codeCommune)
-  );
+  return communeByDepartement.some(({ code }) => code === codeCommune);
 }
 
 function isInEPCI(siren: string, codeCommune: string): boolean {

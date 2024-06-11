@@ -164,7 +164,7 @@ export class ClientService {
     };
 
     if (client.chefDeFile) {
-      const chefDeFile = await await this.chefDeFileService.findOneOrFail(
+      const chefDeFile = await this.chefDeFileService.findOneOrFail(
         client.chefDeFile,
       );
       publicClient.chefDeFile = chefDeFile.nom;

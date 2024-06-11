@@ -122,8 +122,8 @@ describe('STATS MODULE', () => {
         .get(`/stats/firsts-publications?from=2000-03-01&to=2000-03-28`)
         .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
         .expect(200);
-      for (let i = 0; i < response2.body.length; i++) {
-        expect(response2.body[i].totalCreations).toBe(1);
+      for (const item of response2.body) {
+        expect(item.totalCreations).toBe(1);
       }
     });
   });

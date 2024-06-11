@@ -27,7 +27,7 @@ const communesByDepartementIndex: Record<string, CommuneCOG[]> = groupBy(
 const epciByCode: Record<string, EpciCOG> = groupBy(epci, 'code');
 
 export function isCommune(codeCommune: string): boolean {
-  return communesIndex[codeCommune] ? true : false;
+  return Boolean(communesIndex[codeCommune]);
 }
 
 export function getCommune(codeCommune: string): CommuneCOG {
