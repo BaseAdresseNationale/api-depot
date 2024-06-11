@@ -17,10 +17,7 @@ import { Client } from '@/modules/client/client.schema';
 import { ApiAnnuaireService } from '@/modules/api_annuaire/api_annuaire.service';
 import { MailerService } from '@/modules/mailer/mailer.service';
 import { formatEmail as createCodePinNotificationEmail } from '@/modules/mailer/templates/code-pin.template';
-import {
-  ValidateCodePinRequestDTO,
-  ValidateCodePinResponseDTO,
-} from './dto/validate_code_pin.dto';
+import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';
 import {
   Habilitation,
   StatusHabilitationEnum,
@@ -215,7 +212,7 @@ export class HabilitationService {
   public async validateCodePin(
     habilitation: Habilitation,
     { code }: ValidateCodePinRequestDTO,
-  ): Promise<ValidateCodePinResponseDTO> {
+  ) {
     if (habilitation.status === StatusHabilitationEnum.ACCEPTED) {
       throw new HttpException(
         'Cette habilitation est déjà validée',
@@ -231,7 +228,8 @@ export class HabilitationService {
     }
 
     if (this.configService.get<string>('DEMO_MODE') && code === '000000') {
-      return { validated: true };
+      await this.acceptHabilitation(habilitation._id);
+      return;
     }
 
     if (code !== habilitation.strategy.pinCode) {
@@ -254,33 +252,26 @@ export class HabilitationService {
           },
         );
 
-        return {
-          validated: false,
-          error: 'Code non valide. Demande rejetée.',
-          remainingAttempts: 0,
-        };
+        throw new HttpException(
+          'Code non valide. Demande rejetée.',
+          HttpStatus.PRECONDITION_FAILED,
+        );
       }
 
       const plural = remainingAttempts > 1 ? 's' : '';
 
-      return {
-        validated: false,
-        error: `Code non valide, ${remainingAttempts} tentative${plural} restante${plural}`,
-        remainingAttempts,
-      };
+      throw new HttpException(
+        `Code non valide, ${remainingAttempts} tentative${plural} restante${plural}`,
+        HttpStatus.PRECONDITION_FAILED,
+      );
     }
 
     const now = new Date();
     if (now > habilitation.strategy.pinCodeExpiration) {
-      return {
-        validated: false,
-        error: 'Code expiré',
-      };
+      throw new HttpException('Code expiré', HttpStatus.PRECONDITION_FAILED);
     }
 
     await this.acceptHabilitation(habilitation._id);
-
-    return { validated: true };
   }
 
   private async getUserInfo(token: string): Promise<UserFranceConnect> {

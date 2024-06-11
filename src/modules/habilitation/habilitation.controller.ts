@@ -24,10 +24,7 @@ import { AdminGuard } from '@/lib/class/guards/admin.guard';
 import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { HabilitationService } from './habilitation.service';
 import { Habilitation, TypeStrategyEnum } from './habilitation.schema';
-import {
-  ValidateCodePinRequestDTO,
-  ValidateCodePinResponseDTO,
-} from './dto/validate_code_pin.dto';
+import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';
 import {
   FranceConnectAuthGuard,
   FranceConnectCallBackGuard,
@@ -91,14 +88,12 @@ export class HabilitationController {
     operationId: 'sendCodePin',
   })
   @ApiParam({ name: 'habilitationId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: Habilitation })
+  @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
   async sendCodePin(@Req() req: CustomRequest, @Res() res: Response) {
-    const habilitation = await this.habilitationService.sendCodePin(
-      req.habilitation,
-    );
-    res.status(HttpStatus.OK).json(omit(habilitation, 'strategy.pinCode'));
+    await this.habilitationService.sendCodePin(req.habilitation);
+    res.sendStatus(HttpStatus.OK);
   }
 
   @Post('habilitations/:habilitationId/authentication/email/validate-pin-code')
@@ -108,16 +103,12 @@ export class HabilitationController {
   })
   @ApiParam({ name: 'habilitationId', required: true, type: String })
   @ApiBody({ type: ValidateCodePinRequestDTO, required: true })
-  @ApiResponse({ status: HttpStatus.OK, type: ValidateCodePinResponseDTO })
+  @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
   async validateCodePin(@Req() req: CustomRequest, @Res() res: Response) {
-    const result: ValidateCodePinResponseDTO =
-      await this.habilitationService.validateCodePin(
-        req.habilitation,
-        req.body,
-      );
-    res.status(HttpStatus.OK).json(result);
+    await this.habilitationService.validateCodePin(req.habilitation, req.body);
+    res.sendStatus(HttpStatus.OK);
   }
 
   @Get('habilitations/:habilitationId/authentication/franceconnect')
