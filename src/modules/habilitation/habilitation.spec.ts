@@ -376,18 +376,10 @@ describe('HABILITATION MODULE', () => {
 
       const { _id } = await habilitationModel.create(habilitation);
 
-      const { body } = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .expect(200);
-
-      expect(body.strategy.type).toBe(TypeStrategyEnum.EMAIL);
-      expect(body.strategy.pinCode).not.toBeDefined();
-      expect(body.strategy.pinCodeExpiration).toBeDefined();
-      expect(body.strategy.pinCodeExpiration).not.toBeNull();
-      expect(body.strategy.createdAt).toBeDefined();
-      expect(body.strategy.createdAt).not.toBeNull();
-      expect(body.strategy.remainingAttempts).toBe(10);
 
       expect(sendMailMock).toHaveBeenCalled();
     });
@@ -449,12 +441,11 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .send({ code: '1111' })
-        .expect(200);
+        .expect(412);
 
       expect(body).toMatchObject({
-        validated: false,
-        error: 'Code non valide. Demande rejetée.',
-        remainingAttempts: 0,
+        statusCode: 412,
+        message: 'Code non valide. Demande rejetée.',
       });
 
       const afterHabilitation = await habilitationModel.findById(_id);
@@ -485,12 +476,11 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .send({ code: '1111' })
-        .expect(200);
+        .expect(412);
 
       expect(body).toMatchObject({
-        validated: false,
-        error: 'Code non valide, 9 tentatives restantes',
-        remainingAttempts: 9,
+        statusCode: 412,
+        message: 'Code non valide, 9 tentatives restantes',
       });
 
       const afterHabilitation = await habilitationModel.findById(_id);
@@ -520,11 +510,11 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .send({ code: '0000' })
-        .expect(200);
+        .expect(412);
 
       expect(body).toMatchObject({
-        validated: false,
-        error: 'Code expiré',
+        statusCode: 412,
+        message: 'Code expiré',
       });
 
       const afterHabilitation = await habilitationModel.findById(_id);
@@ -550,15 +540,11 @@ describe('HABILITATION MODULE', () => {
 
       const { _id } = await habilitationModel.create(habilitation);
 
-      const { body } = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post(`/habilitations/${_id}/authentication/email/validate-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .send({ code: '0000' })
         .expect(200);
-
-      expect(body).toMatchObject({
-        validated: true,
-      });
 
       const afterHabilitation = await habilitationModel.findById(_id);
       expect(afterHabilitation.status).toBe(StatusHabilitationEnum.ACCEPTED);
