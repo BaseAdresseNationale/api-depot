@@ -15,7 +15,10 @@ import { ClientService } from '@/modules/client/client.service';
 import { FileService } from '@/modules/file/file.service';
 import { File } from '@/modules/file/file.schema';
 import { BanService } from '@/modules/ban/ban.service';
-import { Client } from '@/modules/client/client.schema';
+import {
+  AuthorizationStrategyEnum,
+  Client,
+} from '@/modules/client/client.schema';
 import { HabilitationService } from '@/modules/habilitation/habilitation.service';
 import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.schema';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
@@ -241,30 +244,39 @@ export class RevisionService {
       current: true,
     };
 
-    if (habilitationId) {
-      const habilitation = await this.habilitationService.findOne({
-        _id: habilitationId,
-        codeCommune: revision.codeCommune,
-        client: client._id,
-        status: StatusHabilitationEnum.ACCEPTED,
-      });
+    if (
+      client.authorizationStrategy === AuthorizationStrategyEnum.HABILITATION
+    ) {
+      if (habilitationId) {
+        const habilitation = await this.habilitationService.findOne({
+          _id: habilitationId,
+          codeCommune: revision.codeCommune,
+          client: client._id,
+          status: StatusHabilitationEnum.ACCEPTED,
+        });
 
-      if (!habilitation) {
+        if (!habilitation) {
+          throw new HttpException(
+            `L’habilitation ${habilitationId} n’est pas valide`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        changes.habilitation = pick(habilitation, [
+          '_id',
+          'emailCommune',
+          'codeCommune',
+          'createdAt',
+          'updatedAt',
+          'expiresAt',
+          'strategy',
+        ]);
+      } else {
         throw new HttpException(
-          `L’habilitation ${habilitationId} n’est pas valide`,
-          HttpStatus.NOT_FOUND,
+          `Le client ${client.nom} nécessite une habilitation pour publier`,
+          HttpStatus.BAD_REQUEST,
         );
       }
-
-      changes.habilitation = pick(habilitation, [
-        '_id',
-        'emailCommune',
-        'codeCommune',
-        'createdAt',
-        'updatedAt',
-        'expiresAt',
-        'strategy',
-      ]);
     }
 
     let prevRevision = null;

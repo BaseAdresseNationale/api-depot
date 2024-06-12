@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import axios from 'axios';
 import * as nodemailer from 'nodemailer';
 
-import { Client } from '../client/client.schema';
+import { AuthorizationStrategyEnum, Client } from '../client/client.schema';
 import {
   ChefDeFile,
   TypePerimeterEnum,
@@ -550,8 +550,30 @@ describe('PUBLICATION MODULE', () => {
   });
 
   describe('POST revisions/:revisionId/publish', () => {
+    it('PUBLISH REVISION HABILITATION REQUIRED', async () => {
+      const client: Client = await createClient({
+        nom: 'test',
+        authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
+      });
+      const revision = await revisionModel.create({
+        codeCommune: '31591',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        ready: true,
+      });
+      await request(app.getHttpServer())
+        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect({
+          statusCode: 400,
+          message: 'Le client test nécessite une habilitation pour publier',
+        });
+    });
+
     it('PUBLISH REVISION BAD HABILITATION', async () => {
-      const client: Client = await createClient();
+      const client: Client = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
+      });
       const revision = await revisionModel.create({
         codeCommune: '31591',
         client: client._id.toHexString(),
@@ -570,7 +592,9 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION HABILITATION NOT VALID', async () => {
-      const client: Client = await createClient();
+      const client: Client = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
+      });
       const revision = await revisionModel.create({
         codeCommune: '31591',
         client: client._id.toHexString(),
@@ -591,7 +615,9 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION NOT READY', async () => {
-      const client: Client = await createClient();
+      const client: Client = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
+      });
       const revision = await revisionModel.create({
         codeCommune: '31591',
         client: client._id.toHexString(),
@@ -616,7 +642,9 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION ALREADY PUBLISHED', async () => {
-      const client: Client = await createClient();
+      const client: Client = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
+      });
       const revision = await revisionModel.create({
         codeCommune: '31591',
         client: client._id.toHexString(),
@@ -641,7 +669,9 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION FIRST PUBLISH', async () => {
-      const client: Client = await createClient();
+      const client: Client = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
+      });
       const revision = await revisionModel.create({
         codeCommune: '31591',
         client: client._id.toHexString(),
@@ -672,7 +702,9 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION WITHOUT HABILITATION', async () => {
-      const client: Client = await createClient();
+      const client: Client = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
+      });
       const revision = await revisionModel.create({
         codeCommune: '31591',
         client: client._id.toHexString(),
@@ -690,7 +722,9 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION MULTI REVISION', async () => {
-      const client: Client = await createClient();
+      const client: Client = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
+      });
       const revision1 = await revisionModel.create({
         codeCommune: '31591',
         client: client._id.toHexString(),
