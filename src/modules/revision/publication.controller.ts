@@ -39,10 +39,15 @@ export class PublicationController {
 
   @Post('communes/:codeCommune/revisions')
   @ApiOperation({
-    summary: 'create revision',
+    summary: 'Créer une révision ’en attente’ pour la commune',
     operationId: 'createOne',
   })
-  @ApiParam({ name: 'codeCommune', required: true, type: String })
+  @ApiParam({
+    name: 'codeCommune',
+    required: true,
+    type: String,
+    description: 'Le code INSEE de la commune',
+  })
   @ApiBody({ type: CreateRevisionDTO, required: true })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -63,10 +68,15 @@ export class PublicationController {
 
   @Put('revisions/:revisionId/files/bal')
   @ApiOperation({
-    summary: 'Attach file to revision revision',
+    summary: 'Attacher un fichier la révision ’en attente’',
     operationId: 'uploadFile',
   })
-  @ApiParam({ name: 'revisionId', required: true, type: String })
+  @ApiParam({
+    name: 'revisionId',
+    required: true,
+    type: String,
+    description: 'L’id de la revision ’en attente’',
+  })
   @ApiConsumes('text/csv')
   @ApiBody({
     type: 'binary',
@@ -96,10 +106,16 @@ export class PublicationController {
 
   @Post('revisions/:revisionId/compute')
   @ApiOperation({
-    summary: 'compute revision',
+    summary:
+      'Vérifier que les éléments de la révision ’en attente’ sont corrects',
     operationId: 'computeOne',
   })
-  @ApiParam({ name: 'revisionId', required: true, type: String })
+  @ApiParam({
+    name: 'revisionId',
+    required: true,
+    type: String,
+    description: 'L’id de la revision ’en attente’',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: RevisionWithClientDTO,
@@ -119,11 +135,20 @@ export class PublicationController {
 
   @Post('revisions/:revisionId/publish')
   @ApiOperation({
-    summary: 'publish revision',
+    summary: 'Publier la révision',
     operationId: 'publishOne',
   })
-  @ApiParam({ name: 'revisionId', required: true, type: String })
-  @ApiBody({ type: PublishDTO })
+  @ApiParam({
+    name: 'revisionId',
+    required: true,
+    type: String,
+    description: 'L’id de la revision ’en attente’',
+  })
+  @ApiBody({
+    type: PublishDTO,
+    required: false,
+    description: 'Seulement si le client a une strategie avec Habilitation',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     type: RevisionWithClientDTO,

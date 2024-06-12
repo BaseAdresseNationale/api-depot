@@ -34,6 +34,10 @@ async function bootstrap() {
       },
       'client-token',
     )
+    .addTag('publications', 'Procédure pour publier un BAL', {
+      description: 'Documentation',
+      url: 'https://adresse-data-gouv-fr.gitbook.io/bal/api-depot#publication-dune-bal',
+    })
     .build();
   app.useGlobalPipes(new ValidationPipe());
   app.use(
