@@ -135,6 +135,38 @@ export class ClientService {
     return omit(client, 'token');
   }
 
+  public async findAllPublicClients(): Promise<PublicClient[]> {
+    const clients = await this.clientModel
+      .find({}, { _id: 1, id: 1, nom: 1, chefDeFile: 1, mandataire: 1 })
+      .lean()
+      .exec();
+
+    const mandataires: Mandataire[] = await this.mandataireService.findMany({});
+    const chefDeFiles: ChefDeFile[] = await this.chefDeFileService.findMany({});
+
+    return clients.map((client: Client) => {
+      const publicClient: PublicClient = {
+        _id: client._id,
+        id: client.id,
+        nom: client.nom,
+        mandataire:
+          mandataires.find(
+            ({ _id }) => _id.toHexString() === client.mandataire.toHexString(),
+          )?.nom || null,
+      };
+      if (client.chefDeFile) {
+        const chefDeFile = chefDeFiles.find(
+          ({ _id }) => client.chefDeFile.toHexString() === _id.toHexString(),
+        );
+        publicClient.chefDeFile = chefDeFile.nom;
+        if (chefDeFile.isEmailPublic) {
+          publicClient.chefDeFileEmail = chefDeFile.email;
+        }
+      }
+      return publicClient;
+    });
+  }
+
   public async findPublicClient(
     clientId: Types.ObjectId,
   ): Promise<PublicClient> {

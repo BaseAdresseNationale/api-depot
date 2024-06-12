@@ -45,11 +45,9 @@ export class RevisionController {
   ) {
     const revisions: Revision[] =
       await this.revisionService.findCurrents(publishedSince);
-
-    const revisionWithClient: RevisionWithClientDTO[] = await Promise.all(
-      revisions.map((r: Revision) => this.revisionService.expandWithClient(r)),
-    );
-    res.status(HttpStatus.OK).json(revisionWithClient);
+    const revisionsWithClients: RevisionWithClientDTO[] =
+      await this.revisionService.expandsWithClients(revisions);
+    res.status(HttpStatus.OK).json(revisionsWithClients);
   }
 
   @Get('communes/:codeCommune/current-revision')
@@ -84,11 +82,9 @@ export class RevisionController {
     const revisions: Revision[] = await this.revisionService.findMany({
       codeCommune: req.params.codeCommune,
     });
-
-    const revisionWithClient: RevisionWithClientDTO[] = await Promise.all(
-      revisions.map((r: Revision) => this.revisionService.expandWithClient(r)),
-    );
-    res.status(HttpStatus.OK).json(revisionWithClient);
+    const revisionsWithClients: RevisionWithClientDTO[] =
+      await this.revisionService.expandsWithClients(revisions);
+    res.status(HttpStatus.OK).json(revisionsWithClients);
   }
 
   @Get('communes/:codeCommune/current-revision/files/bal/download')

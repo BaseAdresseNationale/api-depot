@@ -74,7 +74,10 @@ export class RevisionService {
       : {};
 
     const revisions: Revision[] = await this.revisionModel
-      .find({ current: true, ...publishedSinceQuery })
+      .find(
+        { current: true, ...publishedSinceQuery },
+        { _id: 1, codeCommune: 1, publishedAt: 1, client: 1 },
+      )
       .lean()
       .exec();
 
@@ -149,6 +152,19 @@ export class RevisionService {
       client,
       file,
     };
+  }
+
+  public async expandsWithClients(
+    revisions: Revision[],
+  ): Promise<RevisionWithClientDTO[]> {
+    const clients: PublicClient[] =
+      await this.clientService.findAllPublicClients();
+    return revisions.map((r: Revision) => ({
+      ...r,
+      client: clients.find(
+        ({ _id }) => r.client.toHexString() === _id.toHexString(),
+      ),
+    }));
   }
 
   public async setFile(revision: Revision, fileData: Buffer): Promise<File> {
