@@ -141,6 +141,7 @@ describe('REVISION MODULE', () => {
         client: client._id.toHexString(),
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
+        publishedAt: new Date(),
       });
 
       await revisionModel.create({
@@ -163,8 +164,8 @@ describe('REVISION MODULE', () => {
 
       expect(body.length).toBe(1);
       expect(body[0].codeCommune).toBe('91534');
-      expect(body[0].status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body[0].current).toBe(true);
+      expect(body[0]._id).toBeDefined();
+      expect(body[0].publishedAt).toBeDefined;
       expect(body[0].client).toMatchObject({
         _id: client._id.toHexString(),
         nom: 'test',

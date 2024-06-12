@@ -63,7 +63,7 @@ export class RevisionController {
     );
 
     const currentRevision: RevisionWithClientDTO =
-      await this.revisionService.expandWithClient(revision, true);
+      await this.revisionService.expandWithClientAndFile(revision);
     res.status(HttpStatus.OK).json(currentRevision);
   }
 
@@ -115,7 +115,7 @@ export class RevisionController {
   @ApiResponse({ status: HttpStatus.OK, type: RevisionWithClientDTO })
   async findOne(@Req() req: CustomRequest, @Res() res: Response) {
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandWithClient(req.revision, true);
+      await this.revisionService.expandWithClientAndFile(req.revision);
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
 

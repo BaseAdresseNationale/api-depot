@@ -62,7 +62,7 @@ export class PublicationController {
       req.body.context,
     );
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandWithClient(revision);
+      await this.revisionService.expandWithClientAndFile(revision);
     res.status(HttpStatus.CREATED).json(revisionWithClient);
   }
 
@@ -129,7 +129,7 @@ export class PublicationController {
     );
 
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandWithClient(revision, true);
+      await this.revisionService.expandWithClientAndFile(revision);
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
 
@@ -163,7 +163,7 @@ export class PublicationController {
     );
 
     const revisionWithClient: RevisionWithClientDTO =
-      await this.revisionService.expandWithClient(revision, true);
+      await this.revisionService.expandWithClientAndFile(revision);
     res.status(HttpStatus.OK).json(revisionWithClient);
   }
 }

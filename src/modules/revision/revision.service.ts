@@ -136,21 +136,13 @@ export class RevisionService {
     return revision.toObject();
   }
 
-  public async expandWithClient(
+  public async expandWithClientAndFile(
     revision: Revision,
-    withFile: boolean = false,
   ): Promise<RevisionWithClientDTO> {
-    const client: PublicClient = await this.clientService.findPublicClient(
-      revision.client,
-    );
-
-    const file: File =
-      withFile && (await this.fileService.findOneByRevision(revision._id));
-
     return {
       ...revision,
-      client,
-      file,
+      client: await this.clientService.findPublicClient(revision.client),
+      file: await this.fileService.findOneByRevision(revision._id),
     };
   }
 
