@@ -55,7 +55,7 @@ export class RevisionController {
   @Get('communes/:codeCommune/current-revision')
   @ApiOperation({
     summary: 'Find current revision by Commune',
-    operationId: 'findCurrent',
+    operationId: 'findCommuneCurrent',
   })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: RevisionWithClientDTO })
