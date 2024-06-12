@@ -50,14 +50,14 @@ describe('CHEF_DE_FILE MODULE', () => {
     await chefDeFileModel.deleteMany({});
   });
 
-  it('GET /chefs_de_file empty', async () => {
+  it('GET /chefs-de-file empty', async () => {
     const response = await request(app.getHttpServer())
-      .get(`/chefs_de_file`)
+      .get(`/chefs-de-file`)
       .expect(200);
     expect(response.body).toEqual([]);
   });
 
-  it('POST /chefs_de_file', async () => {
+  it('POST /chefs-de-file', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
@@ -65,12 +65,12 @@ describe('CHEF_DE_FILE MODULE', () => {
       perimetre: [],
     };
     await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .expect(403);
   });
 
-  it('POST /chefs_de_file', async () => {
+  it('POST /chefs-de-file', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
@@ -83,20 +83,20 @@ describe('CHEF_DE_FILE MODULE', () => {
       ],
     };
     const response = await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
     expect(response.body).toMatchObject(chef_de_file);
   });
 
-  it('POST /chefs_de_file default', async () => {
+  it('POST /chefs-de-file default', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
     };
     const response = await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
@@ -110,7 +110,7 @@ describe('CHEF_DE_FILE MODULE', () => {
     expect(response.body).toMatchObject(resExpected);
   });
 
-  it('GET /chefs_de_file/:id', async () => {
+  it('GET /chefs-de-file/:id', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
@@ -118,29 +118,29 @@ describe('CHEF_DE_FILE MODULE', () => {
       perimetre: [],
     };
     const response = await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
 
     const response2 = await request(app.getHttpServer())
-      .get(`/chefs_de_file/${response.body._id}`)
+      .get(`/chefs-de-file/${response.body._id}`)
       .expect(200);
 
     expect(response2.body).toMatchObject(chef_de_file);
   });
 
-  it('GET /chefs_de_file/:id 400', async () => {
-    await request(app.getHttpServer()).get(`/chefs_de_file/coucou`).expect(400);
+  it('GET /chefs-de-file/:id 400', async () => {
+    await request(app.getHttpServer()).get(`/chefs-de-file/coucou`).expect(400);
   });
 
-  it('GET /chefs_de_file/:id 404', async () => {
+  it('GET /chefs-de-file/:id 404', async () => {
     await request(app.getHttpServer())
-      .get(`/chefs_de_file/${new ObjectId().toHexString()}`)
+      .get(`/chefs-de-file/${new ObjectId().toHexString()}`)
       .expect(404);
   });
 
-  it('GET /chefs_de_file', async () => {
+  it('GET /chefs-de-file', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
@@ -148,19 +148,19 @@ describe('CHEF_DE_FILE MODULE', () => {
       perimetre: [],
     };
     await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
 
     const response = await request(app.getHttpServer())
-      .get(`/chefs_de_file`)
+      .get(`/chefs-de-file`)
       .expect(200);
 
     expect(response.body[0]).toMatchObject(chef_de_file);
   });
 
-  it('GET /chefs_de_file', async () => {
+  it('GET /chefs-de-file', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
@@ -168,31 +168,31 @@ describe('CHEF_DE_FILE MODULE', () => {
       perimetre: [],
     };
     await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
 
     await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
 
     await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
 
     const response2 = await request(app.getHttpServer())
-      .get(`/chefs_de_file`)
+      .get(`/chefs-de-file`)
       .expect(200);
 
     expect(response2.body.length).toBe(3);
   });
 
-  it('PUT /chefs_de_file', async () => {
+  it('PUT /chefs-de-file', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
@@ -200,7 +200,7 @@ describe('CHEF_DE_FILE MODULE', () => {
       perimetre: [],
     };
     const response = await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
@@ -218,7 +218,7 @@ describe('CHEF_DE_FILE MODULE', () => {
     };
 
     const response3 = await request(app.getHttpServer())
-      .put(`/chefs_de_file/${response.body._id}`)
+      .put(`/chefs-de-file/${response.body._id}`)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .send(change)
       .expect(200);
@@ -226,13 +226,13 @@ describe('CHEF_DE_FILE MODULE', () => {
     expect(response3.body).toMatchObject(change);
 
     const response4 = await request(app.getHttpServer())
-      .get(`/chefs_de_file/${response.body._id}`)
+      .get(`/chefs-de-file/${response.body._id}`)
       .expect(200);
 
     expect(response4.body).toMatchObject(change);
   });
 
-  it('PUT 403 /chefs_de_file', async () => {
+  it('PUT 403 /chefs-de-file', async () => {
     const chef_de_file: UpdateChefDeFileDTO = {
       nom: 'test',
       email: 'test@test.fr',
@@ -240,7 +240,7 @@ describe('CHEF_DE_FILE MODULE', () => {
       perimetre: [],
     };
     const response = await request(app.getHttpServer())
-      .post(`/chefs_de_file`)
+      .post(`/chefs-de-file`)
       .send(chef_de_file)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
@@ -258,18 +258,18 @@ describe('CHEF_DE_FILE MODULE', () => {
     };
 
     await request(app.getHttpServer())
-      .put(`/chefs_de_file/${response.body._id}`)
+      .put(`/chefs-de-file/${response.body._id}`)
       .send(change)
       .expect(403);
 
     const response4 = await request(app.getHttpServer())
-      .get(`/chefs_de_file/${response.body._id}`)
+      .get(`/chefs-de-file/${response.body._id}`)
       .expect(200);
 
     expect(response4.body).toMatchObject(chef_de_file);
   });
 
-  it('PUT /chefs_de_file/:id 404', async () => {
+  it('PUT /chefs-de-file/:id 404', async () => {
     const change: UpdateChefDeFileDTO = {
       nom: 'nom',
       email: 'nom@test.fr',
@@ -283,13 +283,13 @@ describe('CHEF_DE_FILE MODULE', () => {
     };
 
     await request(app.getHttpServer())
-      .put(`/chefs_de_file/coucou`)
+      .put(`/chefs-de-file/coucou`)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .send(change)
       .expect(400);
   });
 
-  it('PUT /chefs_de_file/:id 404', async () => {
+  it('PUT /chefs-de-file/:id 404', async () => {
     const change: UpdateChefDeFileDTO = {
       nom: 'nom',
       email: 'nom@test.fr',
@@ -303,7 +303,7 @@ describe('CHEF_DE_FILE MODULE', () => {
     };
 
     await request(app.getHttpServer())
-      .put(`/chefs_de_file/${new ObjectId().toHexString()}`)
+      .put(`/chefs-de-file/${new ObjectId().toHexString()}`)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .send(change)
       .expect(404);
