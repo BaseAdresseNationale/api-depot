@@ -16,7 +16,7 @@ import {
   StatusHabilitationEnum,
   TypeStrategyEnum,
 } from './habilitation.schema';
-import { Client } from '../client/client.schema';
+import { AuthorizationStrategyEnum, Client } from '../client/client.schema';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
 import { Mandataire } from '../mandataire/mandataire.schema';
 import { HabilitationModule } from './habilitation.module';
@@ -84,13 +84,23 @@ describe('HABILITATION MODULE', () => {
   });
 
   async function createClient(props: Partial<Client> = {}): Promise<Client> {
+    const mandataire = await mandataireModel.create({
+      nom: 'mandataire',
+      email: 'mandataire@test.fr',
+    });
+    const chefDeFile = await chefDefileModel.create({
+      nom: 'chefDeFile',
+      email: 'chefDeFile@test.fr',
+      isEmailPublic: true,
+    });
     return clientModel.create({
       ...props,
       nom: 'test',
       email: 'test@test.fr',
       token: 'xxxx',
-      mandataire: new ObjectId().toHexString(),
-      chefDeFile: new ObjectId().toHexString(),
+      authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
+      mandataire: mandataire._id,
+      chefDeFile: chefDeFile._id,
     });
   }
 
@@ -201,7 +211,7 @@ describe('HABILITATION MODULE', () => {
       const habilitation = {
         codeCommune: '94000',
         emailCommune: 'test@test.fr',
-        client: new ObjectId().toHexString(),
+        client: client._id,
         status: StatusHabilitationEnum.PENDING,
         strategy: {
           type: TypeStrategyEnum.EMAIL,
@@ -215,7 +225,18 @@ describe('HABILITATION MODULE', () => {
         .get(`/habilitations/${_id}`)
         .set('authorization', `Bearer ${client.token}`)
         .expect(200);
-      expect(body).toMatchObject(omit(habilitation, 'strategy.pinCode'));
+
+      const res = {
+        ...omit(habilitation, 'strategy.pinCode'),
+        client: {
+          _id: client._id.toHexString(),
+          nom: 'test',
+          mandataire: 'mandataire',
+          chefDeFile: 'chefDeFile',
+          chefDeFileEmail: 'chefDeFile@test.fr',
+        },
+      };
+      expect(body).toMatchObject(res);
     });
   });
 

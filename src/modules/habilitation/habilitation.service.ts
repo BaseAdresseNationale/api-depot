@@ -23,6 +23,8 @@ import {
   StatusHabilitationEnum,
   TypeStrategyEnum,
 } from './habilitation.schema';
+import { ClientService } from '../client/client.service';
+import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 
 @Injectable()
 export class HabilitationService {
@@ -32,6 +34,7 @@ export class HabilitationService {
     private httpService: HttpService,
     private apiAnnuaireService: ApiAnnuaireService,
     private mailerService: MailerService,
+    private clientService: ClientService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -53,6 +56,15 @@ export class HabilitationService {
     }
 
     return habilitation;
+  }
+
+  public async expandWithClient(
+    habilitation: Habilitation,
+  ): Promise<HabilitationWithClientDTO> {
+    return {
+      ...habilitation,
+      client: await this.clientService.findPublicClient(habilitation.client),
+    };
   }
 
   public async createOne(

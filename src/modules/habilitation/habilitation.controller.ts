@@ -11,6 +11,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiExcludeEndpoint,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -29,6 +30,7 @@ import {
   FranceConnectAuthGuard,
   FranceConnectCallBackGuard,
 } from './france_connect/france_connect.guard';
+import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 
 @ApiTags('habilitations')
 @Controller('')
@@ -58,11 +60,15 @@ export class HabilitationController {
     operationId: 'findOne',
   })
   @ApiParam({ name: 'habilitationId', required: true, type: String })
-  @ApiResponse({ status: HttpStatus.OK, type: Habilitation })
+  @ApiResponse({ status: HttpStatus.OK, type: HabilitationWithClientDTO })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
   async findOne(@Req() req: CustomRequest, @Res() res: Response) {
-    res.status(HttpStatus.OK).json(omit(req.habilitation, 'strategy.pinCode'));
+    const habilitationWithClient: HabilitationWithClientDTO =
+      await this.habilitationService.expandWithClient(req.habilitation);
+    res
+      .status(HttpStatus.OK)
+      .json(omit(habilitationWithClient, 'strategy.pinCode'));
   }
 
   @Put('habilitations/:habilitationId/validate')
@@ -111,6 +117,7 @@ export class HabilitationController {
     res.sendStatus(HttpStatus.OK);
   }
 
+  @ApiExcludeEndpoint()
   @Get('habilitations/:habilitationId/authentication/franceconnect')
   @UseGuards(FranceConnectAuthGuard)
   async authentificationFranceConnect() {
@@ -119,6 +126,7 @@ export class HabilitationController {
 
   // https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service
   // @Get('/callback')
+  @ApiExcludeEndpoint()
   @Get('/habilitations/franceconnect/callback')
   @UseGuards(FranceConnectCallBackGuard)
   franceConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {

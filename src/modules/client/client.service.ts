@@ -177,7 +177,6 @@ export class ClientService {
       )
       .lean()
       .exec();
-
     if (!client) {
       throw new HttpException(
         `Client ${clientId} not found`,
@@ -204,7 +203,6 @@ export class ClientService {
         publicClient.chefDeFileEmail = chefDeFile.email;
       }
     }
-
     return publicClient;
   }
 }
