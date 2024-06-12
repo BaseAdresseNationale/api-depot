@@ -13,6 +13,8 @@ import { PublicClient } from './dto/public_client.dto';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
 import { Mandataire } from '../mandataire/mandataire.schema';
 import { MailerService } from '../mailer/mailer.service';
+import { CreateClientDTO } from './dto/create_client.dto';
+import { UpdateClientDTO } from './dto/update_client.dto';
 
 @Injectable()
 export class ClientService {
@@ -70,7 +72,7 @@ export class ClientService {
     return client;
   }
 
-  public async createOne(body: Partial<Client>): Promise<Client> {
+  public async createOne(body: CreateClientDTO): Promise<Client> {
     let chefDeFile: ChefDeFile;
     if (body.chefDeFile) {
       chefDeFile = await this.chefDeFileService.findOneOrFail(body.chefDeFile);
@@ -97,7 +99,7 @@ export class ClientService {
 
   public async updateOne(
     clientId: string,
-    changes: Partial<Client>,
+    changes: UpdateClientDTO,
   ): Promise<Client> {
     if (changes.chefDeFile) {
       await this.chefDeFileService.findOneOrFail(changes.chefDeFile);
