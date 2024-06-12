@@ -36,17 +36,6 @@ export class FileBinaryPipe implements PipeTransform {
     }
 
     if (
-      req.get('Content-Type') &&
-      req.get('Content-Type') !== 'text/csv' &&
-      req.get('Content-Type') !== 'application/octet-stream'
-    ) {
-      throw new HttpException(
-        'Le type du contenue dans l’en-tête ne peut être que text/csv.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    if (
       req.get('Content-Length') &&
       Number(req.get('Content-Length')) !== Buffer.byteLength(req.fileBuffer)
     ) {
