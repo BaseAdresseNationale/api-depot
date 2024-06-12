@@ -26,7 +26,7 @@ import { ChefDeFile } from './chef_de_file.schema';
 import { CreateChefDeFileDTO } from './dto/create_chef_de_file.dto';
 
 @ApiTags('chefs_de_file')
-@Controller('chefs_de_file')
+@Controller('chefs-de-file')
 export class ChefDeFileController {
   constructor(private chefDeFileService: ChefDeFileService) {}
 
