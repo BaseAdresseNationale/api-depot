@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   HttpStatus,
   Post,
@@ -55,11 +56,15 @@ export class PublicationController {
   })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
-  async createOne(@Req() req: CustomRequest, @Res() res: Response) {
+  async createOne(
+    @Req() req: CustomRequest,
+    @Body() body: CreateRevisionDTO,
+    @Res() res: Response,
+  ) {
     const revision: Revision = await this.revisionService.createOne(
       req.codeCommune,
       req.client,
-      req.body.context,
+      body.context,
     );
     const revisionWithClient: RevisionWithClientDTO =
       await this.revisionService.expandWithClientAndFile(revision);
@@ -155,11 +160,15 @@ export class PublicationController {
   })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard, RevisionGuard)
-  async publishOne(@Req() req: CustomRequest, @Res() res: Response) {
+  async publishOne(
+    @Req() req: CustomRequest,
+    @Body() body: PublishDTO,
+    @Res() res: Response,
+  ) {
     const revision: Revision = await this.revisionService.publishOne(
       req.revision,
       req.client,
-      req.body.habilitationId,
+      body.habilitationId,
     );
 
     const revisionWithClient: RevisionWithClientDTO =

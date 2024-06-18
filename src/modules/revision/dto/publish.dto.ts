@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId } from 'class-validator';
+import { IsMongoId, IsOptional } from 'class-validator';
 
 export class PublishDTO {
+  @IsOptional()
   @IsMongoId()
   @ApiProperty({
     type: String,

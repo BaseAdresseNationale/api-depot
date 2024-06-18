@@ -24,7 +24,7 @@ export class ContextDTO implements Context {
   @IsObject()
   @IsNotEmptyObject()
   @ApiProperty({ type: () => Object, required: false })
-  extra?: Record<string, any>;
+  extras?: Record<string, any>;
 }
 
 export class CreateRevisionDTO {

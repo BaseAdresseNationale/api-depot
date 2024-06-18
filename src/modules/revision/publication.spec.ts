@@ -158,29 +158,15 @@ describe('PUBLICATION MODULE', () => {
         .expect(404);
     });
 
-    it('POST communes/:codeCommune/revisions', async () => {
+    it('POST communes/:codeCommune/revisions without context', async () => {
       const client: Client = await createClient();
 
       const { body } = await request(app.getHttpServer())
         .post(`/communes/91534/revisions`)
         .set('authorization', `Bearer ${client.token}`)
-        .expect(201);
+        .expect(400);
 
-      expect(body.codeCommune).toBe('91534');
-      expect(body.client).toMatchObject({
-        _id: client._id.toHexString(),
-        nom: 'test',
-        mandataire: 'mandataire',
-        chefDeFile: 'chefDeFile',
-        chefDeFileEmail: 'chefDeFile@test.fr',
-      });
-      expect(body.status).toBe(StatusRevisionEnum.PENDING);
-      expect(body.ready).toBeFalsy();
-      expect(body.validation).toEqual({});
-      expect(body.context).toEqual({});
-      expect(body.publishedAt).toBeNull();
-      expect(body.createdAt).toBeDefined();
-      expect(body.updatedAt).toBeDefined();
+      expect(body.error).toBe('Bad Request');
     });
 
     it('POST communes/:codeCommune/revisions with context', async () => {
