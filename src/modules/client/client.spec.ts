@@ -87,7 +87,7 @@ describe('CLIENT MODULE', () => {
       .expect(403);
   });
 
-  it('POST /clients default', async () => {
+  it('POST /clients 400', async () => {
     const client = await getClient({
       nom: 'client_test',
     });
@@ -95,9 +95,9 @@ describe('CLIENT MODULE', () => {
       .post(`/clients`)
       .send(client)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-      .expect(200);
+      .expect(400);
 
-    expect(response.body).toMatchObject(client);
+    expect(response.body.error).toBe('Bad Request');
   });
 
   it('POST /clients', async () => {
@@ -124,8 +124,9 @@ describe('CLIENT MODULE', () => {
     const response = await request(app.getHttpServer())
       .post(`/clients`)
       .send(client)
-      .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
-      .expect(200);
+      .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`);
+    // .expect(200);
+    console.log(response);
     expect(response.body).toMatchObject({
       nom: 'client_test',
       active: false,

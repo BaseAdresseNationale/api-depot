@@ -33,6 +33,7 @@ export class CreateClientDTO {
   @ApiProperty({ required: false, default: true })
   active?: boolean;
 
+  @IsOptional()
   @IsNotEmptyObject()
   @ValidateNested({ each: true })
   @Type(() => Options)
