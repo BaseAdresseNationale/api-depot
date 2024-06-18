@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpStatus,
@@ -50,10 +51,8 @@ export class MandataireController {
   @ApiResponse({ status: HttpStatus.OK, type: Mandataire })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async createOne(@Req() req: CustomRequest, @Res() res: Response) {
-    const mandataire: Mandataire = await this.mandataireService.createOne(
-      req.body,
-    );
+  async createOne(@Body() body: CreateMandataireDTO, @Res() res: Response) {
+    const mandataire: Mandataire = await this.mandataireService.createOne(body);
     res.status(HttpStatus.OK).json(mandataire);
   }
 
@@ -78,10 +77,14 @@ export class MandataireController {
   @ApiResponse({ status: HttpStatus.OK, type: Mandataire })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async updateOne(@Req() req: CustomRequest, @Res() res: Response) {
+  async updateOne(
+    @Req() req: CustomRequest,
+    @Body() body: UpdateMandataireDTO,
+    @Res() res: Response,
+  ) {
     const mandataire: Mandataire = await this.mandataireService.updateOne(
       req.mandataire._id.toString(),
-      req.body,
+      body,
     );
     res.status(HttpStatus.OK).json(mandataire);
   }
