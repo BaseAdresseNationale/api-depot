@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpStatus,
@@ -112,8 +113,12 @@ export class HabilitationController {
   @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
-  async validateCodePin(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.habilitationService.validateCodePin(req.habilitation, req.body);
+  async validateCodePin(
+    @Req() req: CustomRequest,
+    @Body() body: ValidateCodePinRequestDTO,
+    @Res() res: Response,
+  ) {
+    await this.habilitationService.validateCodePin(req.habilitation, body);
     res.sendStatus(HttpStatus.OK);
   }
 
