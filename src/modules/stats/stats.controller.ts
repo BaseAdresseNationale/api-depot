@@ -71,18 +71,4 @@ export class StatController {
       await this.statService.findPublications(dates);
     res.status(HttpStatus.OK).json(result);
   }
-
-  // app.get('/stats/publications', ensureIsAdmin, w(async (req, res) => {
-  //   checkQueryDateFromTo(req)
-  //   const dates = {
-  //     from: req.query.from ? startOfDay(new Date(req.query.from)) : sub(new Date(), {months: 1}),
-  //     to: req.query.to ? endOfDay(new Date(req.query.to)) : new Date()
-  //   }
-
-  //   const revisions = await Revisions.getRevisionsPublishedBetweenDate(dates)
-  //   const revisionsWithClient = mapRevisionsWithClient(revisions, clientsToMonitorIndex)
-  //   const balsByDays = StatsService.getBalsByDays(revisionsWithClient)
-
-  //   res.send(balsByDays)
-  // }))
 }
