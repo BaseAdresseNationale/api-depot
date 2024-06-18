@@ -40,7 +40,9 @@ export class PublicationController {
 
   @Post('communes/:codeCommune/revisions')
   @ApiOperation({
-    summary: 'Créer une révision ’en attente’ pour la commune',
+    summary: 'Créer une révision',
+    description:
+      'Cette route permet de créer une révision vide `en attente` pour la commune',
     operationId: 'createOne',
   })
   @ApiParam({
@@ -73,7 +75,8 @@ export class PublicationController {
 
   @Put('revisions/:revisionId/files/bal')
   @ApiOperation({
-    summary: 'Attacher un fichier la révision ’en attente’',
+    summary: 'Attacher un fichier',
+    description: 'Attacher un fichier csv BAL a la révision `en attente`',
     operationId: 'uploadFile',
   })
   @ApiParam({
@@ -111,8 +114,9 @@ export class PublicationController {
 
   @Post('revisions/:revisionId/compute')
   @ApiOperation({
-    summary:
-      'Vérifier que les éléments de la révision ’en attente’ sont corrects',
+    summary: 'Vérifier la révision',
+    description:
+      'Vérifier que le fichier et les autres éléments de la révision `en attente` sont valide',
     operationId: 'computeOne',
   })
   @ApiParam({
@@ -141,6 +145,7 @@ export class PublicationController {
   @Post('revisions/:revisionId/publish')
   @ApiOperation({
     summary: 'Publier la révision',
+    description: 'Publier la révision: celle ci devient la révision `courante`',
     operationId: 'publishOne',
   })
   @ApiParam({
