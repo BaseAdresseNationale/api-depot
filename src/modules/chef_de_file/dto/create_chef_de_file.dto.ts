@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  ArrayNotEmpty,
   IsBoolean,
-  IsDefined,
   IsEmail,
+  IsOptional,
   IsString,
   Length,
   ValidateNested,
@@ -22,13 +21,13 @@ export class CreateChefDeFileDTO {
   @ApiProperty({ type: String, required: true })
   email: string;
 
+  @IsOptional()
   @IsBoolean()
   @ApiProperty({ type: Boolean, required: false, default: true })
   isEmailPublic?: boolean;
 
-  @IsDefined()
+  @IsOptional()
   @ValidateNested({ each: true })
-  @ArrayNotEmpty()
   @Type(() => Perimeter)
   @ApiProperty({
     type: () => Perimeter,

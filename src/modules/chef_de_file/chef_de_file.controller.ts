@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpStatus,
@@ -50,10 +51,8 @@ export class ChefDeFileController {
   @ApiResponse({ status: HttpStatus.OK, type: ChefDeFile })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async createOne(@Req() req: CustomRequest, @Res() res: Response) {
-    const chefDeFile: ChefDeFile = await this.chefDeFileService.createOne(
-      req.body,
-    );
+  async createOne(@Body() body: CreateChefDeFileDTO, @Res() res: Response) {
+    const chefDeFile: ChefDeFile = await this.chefDeFileService.createOne(body);
     res.status(HttpStatus.OK).json(chefDeFile);
   }
 
@@ -78,10 +77,14 @@ export class ChefDeFileController {
   @ApiResponse({ status: HttpStatus.OK, type: ChefDeFile })
   @ApiBearerAuth('admin-token')
   @UseGuards(AdminGuard)
-  async updateOne(@Req() req: CustomRequest, @Res() res: Response) {
+  async updateOne(
+    @Req() req: CustomRequest,
+    @Body() body: UpdateChefDeFileDTO,
+    @Res() res: Response,
+  ) {
     const chefDeFile: ChefDeFile = await this.chefDeFileService.updateOne(
       req.chefDeFile._id.toString(),
-      req.body,
+      body,
     );
     res.status(HttpStatus.OK).json(chefDeFile);
   }
