@@ -8,10 +8,16 @@ import { ChefDeFileModule } from '@/modules/chef_de_file/chef_de_file.module';
 import { ClientModule } from '@/modules/client/client.module';
 import { RevisionModule } from '@/modules/revision/revision.module';
 import { StatModule } from '@/modules/stats/stats.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../'),
+      renderPath: 'public/',
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({

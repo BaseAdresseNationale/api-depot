@@ -7,6 +7,7 @@ import { Email } from './mailer.types';
 @Injectable()
 export class MailerService {
   private transport: nodemailer.Transporter;
+  private apiUrl: string;
 
   constructor(private configService: ConfigService) {
     if (
@@ -30,6 +31,20 @@ export class MailerService {
           newline: 'unix',
           buffer: true,
         });
+
+    this.apiUrl = this.initApiUrl();
+  }
+
+  private initApiUrl() {
+    if (process.env.API_DEPOT_URL) {
+      return process.env.API_DEPOT_URL;
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('API_DEPOT_URL must be defined in production mode');
+    }
+
+    return 'https://plateforme-bal.adresse.data.gouv.fr.local';
   }
 
   async sendMail(email: Email, recipients: string[]): Promise<void> {
@@ -37,8 +52,8 @@ export class MailerService {
       throw new Error('At least one recipient must be provided');
     }
 
+    email.html = email.html.replace(/\$\$API_URL\$\$/g, this.apiUrl);
     const { text, html, subject } = email;
-
     const info = await this.transport.sendMail({
       text,
       html,
