@@ -1,10 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  Global,
+  INestApplication,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
+import { MailerService } from '@nestjs-modules/mailer';
 
 import { Client } from './client.schema';
 import { ClientModule } from './client.module';
@@ -14,6 +20,20 @@ import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
+
+@Global()
+@Module({
+  providers: [
+    {
+      provide: MailerService,
+      useValue: {
+        sendMail: jest.fn(),
+      },
+    },
+  ],
+  exports: [MailerService],
+})
+class MailerModule {}
 
 describe('CLIENT MODULE', () => {
   let app: INestApplication;
@@ -30,7 +50,7 @@ describe('CLIENT MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), ClientModule],
+      imports: [MongooseModule.forRoot(uri), ClientModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -61,8 +81,14 @@ describe('CLIENT MODULE', () => {
   });
 
   async function getClient(props: UpdateClientDTO): Promise<UpdateClientDTO> {
-    const mandataire = await mandataireModel.create({ nom: 'mandataire' });
-    const chefDeFile = await chefDefileModel.create({ nom: 'chefDeFile' });
+    const mandataire = await mandataireModel.create({
+      nom: 'mandataire',
+      email: 'mandataire@test.com',
+    });
+    const chefDeFile = await chefDefileModel.create({
+      nom: 'chefDeFile',
+      email: 'chefDeFile@test.com',
+    });
     return {
       ...props,
       mandataire: mandataire._id.toHexString(),

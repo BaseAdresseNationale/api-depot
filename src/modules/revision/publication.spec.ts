@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  Global,
+  INestApplication,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
@@ -9,7 +14,6 @@ import MockAdapter from 'axios-mock-adapter';
 import { add } from 'date-fns';
 import * as fs from 'fs';
 import axios from 'axios';
-import * as nodemailer from 'nodemailer';
 
 import { AuthorizationStrategyEnum, Client } from '../client/client.schema';
 import {
@@ -26,12 +30,24 @@ import { Context, Revision, StatusRevisionEnum } from './revision.schema';
 import { S3Service } from '../file/s3.service';
 import { File } from '../file/file.schema';
 import { join } from 'path';
+import { MailerService } from '@nestjs-modules/mailer';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
 
-jest.mock('nodemailer');
-const createTransport = nodemailer.createTransport;
+@Global()
+@Module({
+  providers: [
+    {
+      provide: MailerService,
+      useValue: {
+        sendMail: jest.fn(),
+      },
+    },
+  ],
+  exports: [MailerService],
+})
+class MailerModule {}
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
@@ -45,9 +61,6 @@ describe('PUBLICATION MODULE', () => {
   let revisionModel: Model<Revision>;
   let fileModel: Model<File>;
   let s3Service: S3Service;
-  // NODEMAILER
-  const sendMailMock = jest.fn();
-  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -56,7 +69,7 @@ describe('PUBLICATION MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), RevisionModule],
+      imports: [MongooseModule.forRoot(uri), RevisionModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -94,7 +107,6 @@ describe('PUBLICATION MODULE', () => {
     await habilitationModel.deleteMany({});
     await revisionModel.deleteMany({});
     await fileModel.deleteMany({});
-    sendMailMock.mockReset();
   });
 
   function readFile(relativePath: string) {

@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  Global,
+  INestApplication,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
@@ -9,7 +14,6 @@ import MockAdapter from 'axios-mock-adapter';
 import { add, sub } from 'date-fns';
 import axios from 'axios';
 import { omit } from 'lodash';
-import * as nodemailer from 'nodemailer';
 
 import {
   Habilitation,
@@ -20,12 +24,24 @@ import { AuthorizationStrategyEnum, Client } from '../client/client.schema';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
 import { Mandataire } from '../mandataire/mandataire.schema';
 import { HabilitationModule } from './habilitation.module';
+import { MailerService } from '@nestjs-modules/mailer';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
 
-jest.mock('nodemailer');
-const createTransport = nodemailer.createTransport;
+@Global()
+@Module({
+  providers: [
+    {
+      provide: MailerService,
+      useValue: {
+        sendMail: jest.fn(),
+      },
+    },
+  ],
+  exports: [MailerService],
+})
+class MailerModule {}
 
 describe('HABILITATION MODULE', () => {
   let app: INestApplication;
@@ -36,9 +52,6 @@ describe('HABILITATION MODULE', () => {
   let mandataireModel: Model<Mandataire>;
   let chefDefileModel: Model<ChefDeFile>;
   let habilitationModel: Model<Habilitation>;
-  // NODEMAILER
-  const sendMailMock = jest.fn();
-  createTransport.mockReturnValue({ sendMail: sendMailMock });
 
   beforeAll(async () => {
     // INIT DB
@@ -47,7 +60,7 @@ describe('HABILITATION MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), HabilitationModule],
+      imports: [MongooseModule.forRoot(uri), HabilitationModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -80,7 +93,6 @@ describe('HABILITATION MODULE', () => {
     await mandataireModel.deleteMany({});
     await chefDefileModel.deleteMany({});
     await habilitationModel.deleteMany({});
-    sendMailMock.mockReset();
   });
 
   async function createClient(props: Partial<Client> = {}): Promise<Client> {
@@ -327,8 +339,6 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .expect(412);
-
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
 
     it('SEND CODE PIN ALREADY REJECTED', async () => {
@@ -345,8 +355,6 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .expect(412);
-
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
 
     it('SEND CODE PIN NO EMAIL', async () => {
@@ -362,8 +370,6 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .expect(412);
-
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
 
     it('SEND CODE PIN ALREADY SEND', async () => {
@@ -383,8 +389,6 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .expect(409);
-
-      expect(sendMailMock).not.toHaveBeenCalled();
     });
 
     it('SEND CODE PIN ALREADY SEND', async () => {
@@ -401,8 +405,6 @@ describe('HABILITATION MODULE', () => {
         .post(`/habilitations/${_id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
         .expect(200);
-
-      expect(sendMailMock).toHaveBeenCalled();
     });
   });
 

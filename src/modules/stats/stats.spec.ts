@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  Global,
+  INestApplication,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Connection, connect, Model } from 'mongoose';
@@ -10,9 +15,24 @@ import { parse } from 'date-fns';
 import { Client } from '@/modules/client/client.schema';
 import { Revision } from '@/modules/revision/revision.schema';
 import { StatModule } from './stats.module';
+import { MailerService } from '@nestjs-modules/mailer';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
+
+@Global()
+@Module({
+  providers: [
+    {
+      provide: MailerService,
+      useValue: {
+        sendMail: jest.fn(),
+      },
+    },
+  ],
+  exports: [MailerService],
+})
+class MailerModule {}
 
 describe('STATS MODULE', () => {
   let app: INestApplication;
@@ -28,7 +48,7 @@ describe('STATS MODULE', () => {
     mongoConnection = (await connect(uri)).connection;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), StatModule],
+      imports: [MongooseModule.forRoot(uri), StatModule, MailerModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
