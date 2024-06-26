@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 import { HabilitationModule } from '@/modules/habilitation/habilitation.module';
 import { MandataireModule } from '@/modules/mandataire/mandataire.module';
@@ -25,6 +27,31 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         dbName: config.get('MONGODB_DBNAME'),
       }),
       inject: [ConfigService],
+    }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        transport: {
+          host: config.get('SMTP_HOST'),
+          port: config.get('SMTP_PORT'),
+          secure: config.get('SMTP_SECURE') === 'YES',
+          auth: {
+            user: config.get('SMTP_USER'),
+            pass: config.get('SMTP_PASS'),
+          },
+        },
+        defaults: {
+          from: config.get('SMTP_FROM'),
+        },
+        template: {
+          dir: __dirname + '/email-templates',
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
     }),
     HabilitationModule,
     ChefDeFileModule,

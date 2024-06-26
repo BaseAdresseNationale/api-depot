@@ -7,7 +7,6 @@ import { ClientModule } from '@/modules/client/client.module';
 import { FileModule } from '@/modules/file/file.module';
 import { ChefDeFileModule } from '@/modules/chef_de_file/chef_de_file.module';
 import { BanModule } from '@/modules/ban/ban.module';
-import { MailerModule } from '@/modules/mailer/mailer.module';
 import { HabilitationModule } from '@/modules/habilitation/habilitation.module';
 import { MandataireModule } from '@/modules/mandataire/mandataire.module';
 import { RevisionMiddleware } from './revision.middleware';
@@ -28,7 +27,6 @@ import { PublicationController } from './publication.controller';
     FileModule,
     ChefDeFileModule,
     BanModule,
-    MailerModule,
     HabilitationModule,
     MandataireModule,
   ],

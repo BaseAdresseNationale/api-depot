@@ -19,7 +19,7 @@ export class BanService {
       );
     } catch (error) {
       console.error(
-        `ERROR BAN COMPOSE : ${error.response.status} : ${error.response.statusText}`,
+        `ERROR BAN COMPOSE : ${error.response?.status} : ${error.response?.statusText}`,
       );
     }
   }

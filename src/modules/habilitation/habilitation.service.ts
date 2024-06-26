@@ -15,8 +15,6 @@ import { getCommune } from '@/lib/utils/cog';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { Client } from '@/modules/client/client.schema';
 import { ApiAnnuaireService } from '@/modules/api_annuaire/api_annuaire.service';
-import { MailerService } from '@/modules/mailer/mailer.service';
-import { formatEmail as createCodePinNotificationEmail } from '@/modules/mailer/templates/code-pin.template';
 import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';
 import {
   Habilitation,
@@ -25,6 +23,7 @@ import {
 } from './habilitation.schema';
 import { ClientService } from '../client/client.service';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class HabilitationService {
@@ -33,9 +32,9 @@ export class HabilitationService {
     private habilitationModel: Model<Habilitation>,
     private httpService: HttpService,
     private apiAnnuaireService: ApiAnnuaireService,
-    private mailerService: MailerService,
     private clientService: ClientService,
     private readonly configService: ConfigService,
+    private readonly mailerService: MailerService,
   ) {}
 
   public async findOne(filter): Promise<Habilitation> {
@@ -210,13 +209,18 @@ export class HabilitationService {
       .lean();
     const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
 
-    const templateEmail = createCodePinNotificationEmail({
-      pinCode,
-      nomCommune: nom,
-    });
-    await this.mailerService.sendMail(templateEmail, [
-      habilitation.emailCommune,
-    ]);
+    if (habilitation.emailCommune) {
+      await this.mailerService.sendMail({
+        to: habilitation.emailCommune,
+        subject: 'Demande de code d’identification',
+        template: 'code-pin',
+        context: {
+          apiUrl: this.configService.get('API_DEPOT_URL'),
+          pinCode,
+          nomCommune: nom,
+        },
+      });
+    }
 
     return habilitation;
   }

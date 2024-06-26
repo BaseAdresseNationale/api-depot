@@ -119,19 +119,4 @@ export class ClientController {
       this.clientService.filterSensitiveFields(client);
     res.status(HttpStatus.OK).json(clientSafe);
   }
-
-  @Post('clients/:clientId/token/renew')
-  @ApiOperation({
-    summary: 'recreate token client',
-    operationId: 'renewToken',
-  })
-  @ApiResponse({ status: HttpStatus.OK, type: OmitType(Client, ['token']) })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
-  async renewToken(@Req() req: CustomRequest, @Res() res: Response) {
-    const client: Client = await this.clientService.renewToken(req.client._id);
-    const clientSafe: Omit<Client, 'token'> =
-      this.clientService.filterSensitiveFields(client);
-    res.status(HttpStatus.OK).json(clientSafe);
-  }
 }

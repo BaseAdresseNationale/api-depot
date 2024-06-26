@@ -8,7 +8,6 @@ import { Client, ClientSchema } from './client.schema';
 import { ClientService } from './client.service';
 import { ClientController } from './client.controller';
 import { ClientMiddleware } from './client.middleware';
-import { MailerModule } from '../mailer/mailer.module';
 
 @Module({
   imports: [
@@ -16,7 +15,6 @@ import { MailerModule } from '../mailer/mailer.module';
     MongooseModule.forFeature([{ name: Client.name, schema: ClientSchema }]),
     MandataireModule,
     ChefDeFileModule,
-    MailerModule,
   ],
   providers: [ClientService],
   controllers: [ClientController],

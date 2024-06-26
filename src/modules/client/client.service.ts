@@ -6,15 +6,14 @@ import { omit } from 'lodash';
 import { generateToken } from '@/lib/utils/token.utils';
 import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
-import { formatEmail as createNewClientEmail } from '@/modules/mailer/templates/new-client.template';
-import { formatEmail as createRenewTokenEmail } from '@/modules/mailer/templates/renew-token.template';
 import { AuthorizationStrategyEnum, Client } from './client.schema';
 import { PublicClient } from './dto/public_client.dto';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
 import { Mandataire } from '../mandataire/mandataire.schema';
-import { MailerService } from '../mailer/mailer.service';
+import { MailerService } from '@nestjs-modules/mailer';
 import { CreateClientDTO } from './dto/create_client.dto';
 import { UpdateClientDTO } from './dto/update_client.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ClientService {
@@ -23,6 +22,7 @@ export class ClientService {
     private clientModel: Model<Client>,
     private mandataireService: MandataireService,
     private chefDeFileService: ChefDeFileService,
+    private readonly configService: ConfigService,
     private mailerService: MailerService,
   ) {}
 
@@ -82,17 +82,24 @@ export class ClientService {
       body.mandataire,
     );
 
-    const client: Client = await this.clientModel.create({
+    const client = await this.clientModel.create({
       ...body,
       token: generateToken(),
       authorizationStrategy: body.chefDeFile
         ? AuthorizationStrategyEnum.CHEF_DE_FILE
         : AuthorizationStrategyEnum.HABILITATION,
     });
-
-    // Send token to user with mandataire’s email
-    const email = createNewClientEmail({ client, mandataire, chefDeFile });
-    await this.mailerService.sendMail(email, [mandataire.email]);
+    await this.mailerService.sendMail({
+      to: mandataire.email,
+      subject: 'Accès à l’API dépôt d’une Base Adresse Locale',
+      template: 'new-client',
+      context: {
+        apiUrl: this.configService.get('API_DEPOT_URL'),
+        client: client.toObject(),
+        mandataire,
+        chefDeFile,
+      },
+    });
 
     return client;
   }
@@ -113,22 +120,6 @@ export class ClientService {
       { $set: changes },
       { returnDocument: 'after' },
     );
-
-    return client;
-  }
-
-  public async renewToken(clientId: Types.ObjectId): Promise<Client> {
-    const client: Client = await this.clientModel.findOneAndUpdate(
-      { _id: clientId },
-      { $set: { token: generateToken() } },
-      { returnDocument: 'after' },
-    );
-    const mandataire = await this.mandataireService.findOneOrFail(
-      client.mandataire,
-    );
-
-    const email = createRenewTokenEmail({ client });
-    await this.mailerService.sendMail(email, [mandataire.email]);
 
     return client;
   }

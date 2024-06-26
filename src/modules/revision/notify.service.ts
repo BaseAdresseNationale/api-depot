@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
 import { getCommune } from '@/lib/utils/cog';
-import { formatEmail as createNotifyPartnersOnForcePublishEmail } from '@/modules/mailer/templates/partners-on-force-publish.template';
 import { Client } from '@/modules/client/client.schema';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { ClientService } from '@/modules/client/client.service';
 import { MandataireService } from '@/modules/mandataire/mandataire.service';
-import { MailerService } from '@/modules/mailer/mailer.service';
+import { MailerService } from '@nestjs-modules/mailer';
 import { Revision } from './revision.schema';
+import { ConfigService } from '@nestjs/config';
 
 const MANAGED_CLIENTS = {
   MES_ADRESSES: 'mes-adresses',
@@ -22,6 +22,7 @@ export class NotifyService {
     private clientService: ClientService,
     private chefDeFileService: ChefDeFileService,
     private mandataireService: MandataireService,
+    private configService: ConfigService,
     private mailerService: MailerService,
   ) {}
 
@@ -37,7 +38,6 @@ export class NotifyService {
     if (!prevRevision) {
       return;
     }
-
     try {
       const currentClient: Client = await this.clientService.findOneOrFail(
         currentRevision.client,
@@ -73,11 +73,16 @@ export class NotifyService {
           const commune = getCommune(currentRevision.codeCommune);
           const balId = currentRevision.context?.extras?.balId;
 
-          const email = createNotifyPartnersOnForcePublishEmail({
-            commune,
-            balId,
+          await this.mailerService.sendMail({
+            to: contactEmail,
+            subject: `La commune de ${commune.nom} a repris la main sur sa Base Adresse Locale`,
+            template: 'partners-on-force-publish',
+            context: {
+              apiUrl: this.configService.get('API_DEPOT_URL'),
+              commune,
+              balId,
+            },
           });
-          await this.mailerService.sendMail(email, [contactEmail]);
         }
       }
     } catch (error) {

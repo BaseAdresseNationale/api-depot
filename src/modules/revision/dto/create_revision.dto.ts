@@ -1,9 +1,9 @@
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDefined,
   IsNotEmptyObject,
   IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -12,16 +12,17 @@ import { Context } from '../revision.schema';
 
 export class ContextDTO implements Context {
   @IsString()
-  @IsDefined()
+  @IsOptional()
   @ApiProperty({ type: String, required: false })
   nomComplet?: string;
 
   @IsString()
-  @IsDefined()
+  @IsOptional()
   @ApiProperty({ type: String, required: false })
   organisation?: string;
 
   @IsObject()
+  @IsOptional()
   @IsNotEmptyObject()
   @ApiProperty({ type: () => Object, required: false })
   extras?: Record<string, any>;

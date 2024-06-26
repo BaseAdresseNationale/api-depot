@@ -6,7 +6,6 @@ import { PassportModule } from '@nestjs/passport';
 
 import { CommuneMiddleware } from '@/lib/class/middlewares/commune.middleware';
 import { ApiAnnuaireModule } from '@/modules/api_annuaire/api_annuaire.module';
-import { MailerModule } from '@/modules/mailer/mailer.module';
 import { ClientModule } from '@/modules/client/client.module';
 import { Habilitation, HabilitationSchema } from './habilitation.schema';
 import { HabilitationService } from './habilitation.service';
@@ -26,7 +25,6 @@ import { HabilitationMiddleware } from './habilitation.middleware';
       { name: Habilitation.name, schema: HabilitationSchema },
     ]),
     ApiAnnuaireModule,
-    MailerModule,
     PassportModule.register({ session: true }),
     ClientModule,
   ],
