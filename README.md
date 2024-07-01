@@ -77,18 +77,22 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | ------------------ | -------------------------------------------------------------------------------------------------- |
 | `MONGODB_URL`      | Paramètre de connexion à MongoDB                                                                   |
 | `MONGODB_DBNAME`   | Nom de la base de données à utiliser                                                               |
+| ---                | ---                                                                                                |
 | `PORT`             | Port à utiliser pour l'API                                                                         |
-| `SHOW_EMAILS`      | Indique si les courriels doivent être affichés dans les logs (`YES`)                               |
+| `ADMIN_TOKEN`      | Token pour accéder au route protégé par Admin()                                                    |
+| `DEMO_MODE`        | Si il est a 1 aucun mail n'est envoyé et le code de validation de habilitation par mail est 000000 |
+| ---                | ---                                                                                                |
 | `API_DEPOT_URL`    | URL de l'api-depot                                                                                 |
 | `API_ANNURAIRE`    | URL de base de l’API des batiments publique                                                        |
+| ---                | ---                                                                                                |
 | `FC_SERVICE_URL`   | URL de base du service france connect                                                              |
 | `FC_FS_ID`         | Id de l'application dans france connect                                                            |
-| `SESSION_SECRET`   | Champ `secret` de la session des route habilitation                                                |
-| `ADMIN_TOKEN`      | Token pour accéder au route protégé par ensureIsAdmin()                                            |
+| `FC_FS_SECRET`     | Secret de l'application dans france connect                                                        |
+| `FC_FS_CALLBACK`   | Callback de l'application dans france connect                                                      |
+| ---                | ---                                                                                                |
 | `BAN_API_URL`      | URL de base de ban-plateforme                                                                      |
 | `BAN_API_TOKEN`    | Token pour les requète vers ban-plateforme                                                         |
 | `NOTIFY_BAN`       | Indique si une requète doit être lancer à ban-plateforme si une BAL est publiée (1)                |
-| `DEMO_MODE`        | Si il est a 1 aucun mail n'est envoyé et le code de validation de habilitation par mail est 000000 |
 | ---                | ---                                                                                                |
 | `SMTP_HOST`        | Nom d'hôte du serveur SMTP                                                                         |
 | `SMTP_PORT`        | Port du serveur SMTP                                                                               |
