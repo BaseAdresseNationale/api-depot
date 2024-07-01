@@ -33,13 +33,17 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         transport: {
-          host: config.get('SMTP_HOST'),
-          port: config.get('SMTP_PORT'),
-          secure: config.get('SMTP_SECURE') === 'YES',
-          auth: {
-            user: config.get('SMTP_USER'),
-            pass: config.get('SMTP_PASS'),
-          },
+          ...(config.get('SMTP_HOST')
+            ? {
+                host: config.get('SMTP_HOST'),
+                port: config.get('SMTP_PORT'),
+                secure: config.get('SMTP_SECURE') === 'YES',
+                auth: {
+                  user: config.get('SMTP_USER'),
+                  pass: config.get('SMTP_PASS'),
+                },
+              }
+            : { streamTransport: true, newline: 'unix', buffer: true }),
         },
         defaults: {
           from: config.get('SMTP_FROM'),
