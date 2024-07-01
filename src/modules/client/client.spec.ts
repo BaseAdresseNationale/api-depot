@@ -17,6 +17,7 @@ import { ClientModule } from './client.module';
 import { UpdateClientDTO } from './dto/update_client.dto';
 import { Mandataire } from '../mandataire/mandataire.schema';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
+import { TOKEN_LENGTH } from '@/lib/utils/token.utils';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
@@ -139,7 +140,9 @@ describe('CLIENT MODULE', () => {
       .send(client)
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
+
     expect(response.body).toMatchObject(client);
+    expect(response.body.token).toHaveLength(TOKEN_LENGTH);
   });
 
   it('POST /clients', async () => {
@@ -153,6 +156,7 @@ describe('CLIENT MODULE', () => {
       .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
       .expect(200);
 
+    expect(response.body.token).toHaveLength(TOKEN_LENGTH);
     expect(response.body).toMatchObject({
       nom: 'client_test',
       active: false,
