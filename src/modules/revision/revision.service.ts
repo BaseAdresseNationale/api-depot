@@ -332,6 +332,47 @@ export class RevisionService {
     return revisionPublished;
   }
 
+  public async changeCurrentOne(revision: Revision): Promise<Revision> {
+    if (revision.status !== StatusRevisionEnum.PUBLISHED || revision.current) {
+      throw new HttpException(
+        'La révision ne peut pas devenir courante',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    const now = new Date();
+    const changes: Partial<Revision> = {
+      publishedAt: now,
+      updatedAt: now,
+      current: true,
+    };
+
+    // On supprime le flag current pour toutes les anciennes révisions publiées de cette commune
+    await this.revisionModel.updateMany(
+      {
+        codeCommune: revision.codeCommune,
+        current: true,
+      },
+      { $set: { current: false } },
+    );
+
+    // On publie la révision
+    const revisionCurrent: Revision = await this.revisionModel
+      .findOneAndUpdate(
+        { _id: revision._id },
+        { $set: changes },
+        { returnDocument: 'after' },
+      )
+      .lean()
+      .exec();
+
+    if (process.env.NOTIFY_BAN === '1') {
+      this.banService.composeCommune(revision.codeCommune);
+    }
+
+    return revisionCurrent;
+  }
+
   async aggregate(pipeline?: PipelineStage[]): Promise<any> {
     return this.revisionModel.aggregate(pipeline);
   }

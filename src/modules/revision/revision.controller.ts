@@ -3,11 +3,14 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Put,
   Query,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -22,6 +25,7 @@ import { FileService } from '@/modules/file/file.service';
 import { Revision, StatusRevisionEnum } from './revision.schema';
 import { RevisionService } from './revision.service';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
 
 @ApiTags('revisions')
 @Controller('')
@@ -139,5 +143,33 @@ export class RevisionController {
     res.attachment(`bal-${req.revision.codeCommune}.csv`);
     res.setHeader('Content-Type', 'text/csv');
     res.send(data);
+  }
+
+  @Put('revisions/:revisionId/current')
+  @ApiOperation({
+    summary: 'Changer la révision courante',
+    description: 'Changer la révision courante',
+    operationId: 'changeCurrentOne',
+  })
+  @ApiParam({
+    name: 'revisionId',
+    required: true,
+    type: String,
+    description: 'L’id de la revision ’published’',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: RevisionWithClientDTO,
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async changeCurrentOne(@Req() req: CustomRequest, @Res() res: Response) {
+    const revision: Revision = await this.revisionService.changeCurrentOne(
+      req.revision,
+    );
+
+    const revisionWithClient: RevisionWithClientDTO =
+      await this.revisionService.expandWithClientAndFile(revision);
+    res.status(HttpStatus.OK).json(revisionWithClient);
   }
 }
