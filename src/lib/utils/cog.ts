@@ -1,7 +1,7 @@
 import { keyBy, groupBy } from 'lodash';
 import * as communes from '@etalab/decoupage-administratif/data/communes.json';
-import departements from '@etalab/decoupage-administratif/data/departements.json';
-import epci from '@etalab/decoupage-administratif/data/epci.json';
+import * as departements from '@etalab/decoupage-administratif/data/departements.json';
+import * as epci from '@etalab/decoupage-administratif/data/epci.json';
 
 import { CommuneCOG, DepartementCOG, EpciCOG } from '@/lib/types/cog.type';
 
@@ -19,12 +19,12 @@ const departementsIndex: Record<string, DepartementCOG> = keyBy(
   'code',
 );
 
+const epciIndex: Record<string, EpciCOG> = keyBy(epci, 'code');
+
 const communesByDepartementIndex: Record<string, CommuneCOG[]> = groupBy(
   communes,
   'departement',
 );
-
-const epciByCode: Record<string, EpciCOG> = groupBy(epci, 'code');
 
 export function isCommune(codeCommune: string): boolean {
   return Boolean(communesIndex[codeCommune]);
@@ -45,7 +45,7 @@ export function getDepartement(codeDepartement: string): DepartementCOG {
 }
 
 export function getEPCI(siren: string): EpciCOG {
-  return epciByCode[siren];
+  return epciIndex[siren];
 }
 
 export function isArrondissement(codeArrondissement: string): boolean {
