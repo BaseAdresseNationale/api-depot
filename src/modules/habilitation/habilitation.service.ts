@@ -329,13 +329,12 @@ export class HabilitationService {
   }
 
   public async franceConnectCallback(
-    token: string,
+    user: UserFranceConnect,
     habilitationId: string,
   ): Promise<void> {
     const habilitation = await this.findOneOrFail(habilitationId);
 
     if (habilitation.status === StatusHabilitationEnum.PENDING) {
-      const user = await this.getUserInfo(token);
       const mandats: Mandat[] = getMandatsByUser(user);
       const mandat: Mandat = mandats.find(
         (m) => m.codeCommune === habilitation.codeCommune,

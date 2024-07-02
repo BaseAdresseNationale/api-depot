@@ -29,8 +29,6 @@ export class FranceConnectStrategy extends PassportStrategy(
         scope: ['openid', 'profile'],
       },
       (accessToken, refreshToken, params, profile, done) => {
-        profile.idToken = params.id_token;
-        console.log('PROFILE', profile);
         done(null, profile);
       },
     );
@@ -41,7 +39,6 @@ export class FranceConnectStrategy extends PassportStrategy(
   };
 
   userProfile = callbackify(async (token) => {
-    console.log('callbackify');
     const url: string = `${this.configService.get<string>('FC_SERVICE_URL')}/api/v1/userinfo?schema=openid`;
     const options: AxiosRequestConfig = {
       headers: {
@@ -61,7 +58,7 @@ export class FranceConnectStrategy extends PassportStrategy(
         }),
       ),
     );
-    console.log(data);
+
     return data;
   });
 }

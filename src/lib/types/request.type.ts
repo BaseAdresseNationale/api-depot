@@ -5,6 +5,7 @@ import { Client } from '@/modules/client/client.schema';
 import { Habilitation } from '@/modules/habilitation/habilitation.schema';
 import { Mandataire } from '@/modules/mandataire/mandataire.schema';
 import { Revision } from '@/modules/revision/revision.schema';
+import { UserFranceConnect } from './user_france_connect.type';
 
 export interface CustomRequest extends Request {
   token?: string;
@@ -16,7 +17,7 @@ export interface CustomRequest extends Request {
   habilitation?: Habilitation;
   habilitationId?: string;
   redirectUrl?: string;
-  user: { idToken: string };
+  user: UserFranceConnect;
   revision: Revision;
   fileBuffer: Buffer;
 }
