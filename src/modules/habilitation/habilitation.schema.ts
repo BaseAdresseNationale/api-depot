@@ -46,8 +46,8 @@ export class Strategy {
   @ApiProperty({ type: Object, required: false })
   mandat?: Mandat;
 
-  @Prop({ type: Date })
-  @ApiProperty({ type: Date, required: false })
+  @Prop({ type: String })
+  @ApiProperty({ type: String, required: false })
   authenticationError?: string;
 }
 

@@ -336,7 +336,7 @@ export class HabilitationService {
 
     if (habilitation.status === StatusHabilitationEnum.PENDING) {
       const mandats: Mandat[] = getMandatsByUser(user);
-      const mandat: Mandat = mandats.find(
+      const mandat: Mandat = mandats?.find(
         (m) => m.codeCommune === habilitation.codeCommune,
       );
       if (mandat) {
