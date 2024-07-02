@@ -9,9 +9,9 @@ export class BanService {
 
   public async composeCommune(codeCommune: string) {
     try {
-      const url: string = `communes/${codeCommune}/compose`;
+      const url: string = `/communes/${codeCommune}/compose`;
       await firstValueFrom(
-        this.httpService.get<any>(url).pipe(
+        this.httpService.post<any>(url).pipe(
           catchError((error: AxiosError) => {
             throw error;
           }),
