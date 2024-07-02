@@ -18,7 +18,7 @@ export class FileBinaryPipe implements PipeTransform {
     }
 
     if (req.get('Content-MD5')) {
-      const signature = await hash(req.fileBuffer, { algorithm: 'md5' });
+      const signature = hash(req.fileBuffer, { algorithm: 'md5' });
 
       if (signature !== req.get('Content-MD5')) {
         throw new HttpException(

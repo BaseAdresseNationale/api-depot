@@ -1,15 +1,14 @@
-import * as crypto from 'crypto';
 
 export const TOKEN_LENGTH = 32;
 
 export function generateToken(): string {
-  const charset: string =
-    'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const charset =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-  const buffer = crypto.randomBytes(TOKEN_LENGTH);
   let token = '';
-  for (let i = 0; i < buffer.length; i++) {
-    token += charset.charAt(Math.floor(buffer[i] % TOKEN_LENGTH));
+  for (let i = 0, n = charset.length; i < TOKEN_LENGTH; ++i) {
+    token += charset.charAt(Math.floor(Math.random() * n));
   }
+
   return token;
 }
