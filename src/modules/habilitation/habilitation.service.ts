@@ -308,6 +308,13 @@ export class HabilitationService {
         ),
       );
 
+      if (!data) {
+        throw new HttpException(
+          'Profil non valide',
+          HttpStatus.FAILED_DEPENDENCY,
+        );
+      }
+
       if (!data.sub) {
         throw new HttpException(
           'Cette habilitation est déjà validée',
