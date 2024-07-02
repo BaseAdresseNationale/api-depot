@@ -291,41 +291,41 @@ export class HabilitationService {
   }
 
   private async getUserInfo(token: string): Promise<UserFranceConnect> {
-    try {
-      const url: string = `${this.configService.get<string>('FC_SERVICE_URL')}/api/v1/userinfo?schema=openid`;
-      const options: AxiosRequestConfig = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        responseType: 'json',
-      };
+    const url: string = `${this.configService.get<string>('FC_SERVICE_URL')}/api/v1/userinfo?schema=openid`;
+    const options: AxiosRequestConfig = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      responseType: 'json',
+    };
 
-      const { data } = await firstValueFrom(
-        this.httpService.get<UserFranceConnect>(url, options).pipe(
-          catchError((error: AxiosError) => {
-            throw error;
-          }),
-        ),
+    const { data } = await firstValueFrom(
+      this.httpService.get<UserFranceConnect>(url, options).pipe(
+        catchError((error: AxiosError) => {
+          console.error(error);
+          throw new HttpException(
+            'Impossible de récupérer le profile',
+            HttpStatus.FAILED_DEPENDENCY,
+          );
+        }),
+      ),
+    );
+
+    if (!data) {
+      throw new HttpException(
+        'Impossible de récupérer le profile',
+        HttpStatus.FAILED_DEPENDENCY,
       );
-
-      if (!data) {
-        throw new HttpException(
-          'Impossible de récupérer le profile',
-          HttpStatus.FAILED_DEPENDENCY,
-        );
-      }
-
-      if (!data.sub) {
-        throw new HttpException(
-          'Cette habilitation est déjà validée',
-          HttpStatus.FAILED_DEPENDENCY,
-        );
-      }
-
-      return data;
-    } catch (error) {
-      console.error(error);
     }
+
+    if (!data.sub) {
+      throw new HttpException(
+        'Cette habilitation est déjà validée',
+        HttpStatus.FAILED_DEPENDENCY,
+      );
+    }
+
+    return data;
   }
 
   public async franceConnectCallback(

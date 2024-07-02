@@ -126,7 +126,7 @@ export class HabilitationController {
   @Get('habilitations/:habilitationId/authentication/franceconnect')
   @UseGuards(FranceConnectAuthGuard)
   async authentificationFranceConnect() {
-    console.log('habilitations/:habilitationId/authentication/franceconnect')
+    console.log('habilitations/:habilitationId/authentication/franceconnect');
     return;
   }
 
@@ -136,7 +136,8 @@ export class HabilitationController {
   @Get('/habilitations/franceconnect/callback')
   @UseGuards(FranceConnectCallBackGuard)
   franceConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
-    console.log('CALLBACK', req.user.idToken, req.habilitationId)
+    console.log('CALLBACK', req.user.idToken, req.habilitationId);
+    console.log('USER', req.user);
     this.habilitationService.franceConnectCallback(
       req.user.idToken,
       req.habilitationId,

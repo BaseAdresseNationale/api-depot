@@ -22,6 +22,7 @@ export class FranceConnectStrategy extends PassportStrategy(
       },
       (accessToken, refreshToken, params, profile, done) => {
         profile.idToken = params.id_token;
+        console.log('PROFILE', profile);
         done(null, profile);
       },
     );
