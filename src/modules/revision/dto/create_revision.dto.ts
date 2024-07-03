@@ -30,7 +30,6 @@ export class ContextDTO implements Context {
 
 export class CreateRevisionDTO {
   @IsObject()
-  @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => ContextDTO)
   @ApiProperty({ type: () => ContextDTO, required: true })
