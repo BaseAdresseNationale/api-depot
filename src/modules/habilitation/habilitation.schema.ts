@@ -2,8 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { SchemaTypes, Types } from 'mongoose';
 
-import { Mandat } from '@/lib/types/elu.type';
-
 export enum StatusHabilitationEnum {
   ACCEPTED = 'accepted',
   PENDING = 'pending',
@@ -14,6 +12,12 @@ export enum TypeStrategyEnum {
   EMAIL = 'email',
   FRANCECONNECT = 'franceconnect',
   INTERNAL = 'internal',
+}
+
+export interface Mandat {
+  nomMarital: string;
+  nomNaissance: string;
+  prenom: string;
 }
 
 @Schema({ _id: false })

@@ -3,7 +3,7 @@ import { UserFranceConnect } from '../types/user_france_connect.type';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { Elu, Mandat } from '@/lib/types/elu.type';
+import { Elu } from '@/lib/types/elu.type';
 
 let elusJson: Elu[] = [];
 
@@ -28,9 +28,7 @@ function normalize(str) {
     .replace(/[^A-Z]+/g, ' ');
 }
 
-export function getMandatsByUser(
-  user: UserFranceConnect,
-): Mandat[] | undefined {
+export function getElu(user: UserFranceConnect): Elu | undefined {
   const nNomNaissance: string = normalize(user.family_name);
   const nPrenom: string = normalize(user.given_name);
   const sexe: 'M' | 'F' = user.gender === 'male' ? 'M' : 'F';
@@ -41,11 +39,5 @@ export function getMandatsByUser(
       nPrenom.startsWith(normalize(e.prenom)),
   );
 
-  if (!elu) {
-    return;
-  }
-
-  return elu?.mandats.filter(
-    (m: Mandat) => m.typeMandat === 'conseiller-municipal',
-  );
+  return elu;
 }

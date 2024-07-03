@@ -4,13 +4,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as randomNumber from 'random-number-csprng';
 import { ConfigService } from '@nestjs/config';
-import { AxiosError, AxiosRequestConfig } from 'axios';
-import { catchError, firstValueFrom } from 'rxjs';
-import { HttpService } from '@nestjs/axios';
 
 import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
-import { getMandatsByUser } from '@/lib/utils/elus';
-import { Mandat } from '@/lib/types/elu.type';
+import { getElu } from '@/lib/utils/elus';
 import { getCommune } from '@/lib/utils/cog';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { Client } from '@/modules/client/client.schema';
@@ -24,13 +20,13 @@ import {
 import { ClientService } from '../client/client.service';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { MailerService } from '@nestjs-modules/mailer';
+import { Elu } from '@/lib/types/elu.type';
 
 @Injectable()
 export class HabilitationService {
   constructor(
     @InjectModel(Habilitation.name)
     private habilitationModel: Model<Habilitation>,
-    private httpService: HttpService,
     private apiAnnuaireService: ApiAnnuaireService,
     private clientService: ClientService,
     private readonly configService: ConfigService,
@@ -290,44 +286,6 @@ export class HabilitationService {
     await this.acceptHabilitation(habilitation._id);
   }
 
-  private async getUserInfo(token: string): Promise<UserFranceConnect> {
-    const url: string = `${this.configService.get<string>('FC_SERVICE_URL')}/api/v1/userinfo?schema=openid`;
-    const options: AxiosRequestConfig = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      responseType: 'json',
-    };
-
-    const { data } = await firstValueFrom(
-      this.httpService.get<UserFranceConnect>(url, options).pipe(
-        catchError((error: AxiosError) => {
-          console.error(error);
-          throw new HttpException(
-            'Impossible de récupérer le profile',
-            HttpStatus.FAILED_DEPENDENCY,
-          );
-        }),
-      ),
-    );
-
-    if (!data) {
-      throw new HttpException(
-        'Impossible de récupérer le profile',
-        HttpStatus.FAILED_DEPENDENCY,
-      );
-    }
-
-    if (!data.sub) {
-      throw new HttpException(
-        'Cette habilitation est déjà validée',
-        HttpStatus.FAILED_DEPENDENCY,
-      );
-    }
-
-    return data;
-  }
-
   public async franceConnectCallback(
     user: UserFranceConnect,
     habilitationId: string,
@@ -335,15 +293,21 @@ export class HabilitationService {
     const habilitation = await this.findOneOrFail(habilitationId);
 
     if (habilitation.status === StatusHabilitationEnum.PENDING) {
-      const mandats: Mandat[] = getMandatsByUser(user);
-      const mandat: Mandat = mandats?.find(
-        (m) => m.codeCommune === habilitation.codeCommune,
+      const elu: Elu = getElu(user);
+
+      const haveMandat: boolean = elu?.codeCommune.includes(
+        habilitation.codeCommune,
       );
-      if (mandat) {
+
+      if (haveMandat) {
         await this.acceptHabilitation(habilitation._id, {
           strategy: {
             type: TypeStrategyEnum.FRANCECONNECT,
-            mandat,
+            mandat: {
+              prenom: user.given_name,
+              nomNaissance: user.family_name,
+              nomMarital: user.preferred_username,
+            },
           },
         });
       } else {

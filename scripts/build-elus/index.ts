@@ -4,7 +4,7 @@ import axios from 'axios';
 import * as csvParser from 'csv-parser';
 import { outputFile } from 'fs-extra';
 
-import { Elu, Mandat } from '../../src/lib/types/elu.type';
+import { Elu } from '../../src/lib/types/elu.type';
 import * as eluUtils from './elu.utils';
 import * as mandatUtils from './mandat.utils';
 import { normalizeStr } from './util';
@@ -45,12 +45,11 @@ async function loadElus(): Promise<Elu[]> {
       )
       .on('data', (row: RowElu) => {
         const elu: Elu = eluUtils.prepare(row);
-        const mandat: Mandat = mandatUtils.prepare(row);
         const eluId: string = `${elu.dateNaissance}@${elu.sexe}@${normalizeStr(elu.nomNaissance)}@${normalizeStr(elu.prenom)}`;
         if (!elus[eluId]) {
           elus[eluId] = elu;
         }
-        elus[eluId].mandats.push(mandat);
+        elus[eluId].codeCommune.push(row.codeCommune);
       })
       .on('end', () => {
         resolve(Object.values(elus));
