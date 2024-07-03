@@ -72,6 +72,6 @@ export function prepare({
     nomNaissance,
     prenom,
     dateNaissance: normalizedDateNaissance,
-    mandats: [],
+    codeCommune: [],
   };
 }
