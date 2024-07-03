@@ -15,6 +15,11 @@ async function bootstrap() {
     .setDescription(
       'API permettant le versionning des fichiers BALs des communes',
     )
+    .setExternalDoc(
+      'Documentation technique',
+      'https://adresse-data-gouv-fr.gitbook.io/bal/api-depot',
+    )
+    .addServer(process.env.API_DEPOT_URL)
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -35,7 +40,7 @@ async function bootstrap() {
       'client-token',
     )
     .addTag('publications', 'Procédure pour publier un BAL', {
-      description: 'Documentation',
+      description: 'Documentation publication',
       url: 'https://adresse-data-gouv-fr.gitbook.io/bal/api-depot#publication-dune-bal',
     })
     .build();
