@@ -9,5 +9,5 @@ export class RevisionWithClientDTO extends OmitType(Revision, ['client']) {
   client?: PublicClient;
 
   @ApiProperty({ type: () => File, required: false })
-  file?: File;
+  files?: File[];
 }

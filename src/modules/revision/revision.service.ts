@@ -142,7 +142,7 @@ export class RevisionService {
     return {
       ...revision,
       client: await this.clientService.findPublicClient(revision.client),
-      file: await this.fileService.findOneByRevision(revision._id),
+      files: [await this.fileService.findOneByRevision(revision._id)],
     };
   }
 
