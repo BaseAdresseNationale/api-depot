@@ -72,15 +72,21 @@ export class RevisionController {
     summary: 'Find revisions by Commune',
     operationId: 'findByCommune',
   })
+  @ApiQuery({ name: 'status', required: false, enum: StatusRevisionEnum })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
     type: RevisionWithClientDTO,
     isArray: true,
   })
-  async findByCommune(@Req() req: CustomRequest, @Res() res: Response) {
+  async findByCommune(
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+    @Query('status') status: StatusRevisionEnum,
+  ) {
     const revisions: Revision[] = await this.revisionService.findMany({
       codeCommune: req.params.codeCommune,
+      ...((status && { status }) || {}),
     });
     const revisionsWithClients: RevisionWithClientDTO[] =
       await this.revisionService.expandsWithClients(revisions);
