@@ -49,7 +49,9 @@ async function loadElus(): Promise<Elu[]> {
         if (!elus[eluId]) {
           elus[eluId] = elu;
         }
-        elus[eluId].codeCommune.push(row.codeCommune);
+        const codeCommune =
+          (row.codeCommune.length === 4 ? '0' : '') + row.codeCommune;
+        elus[eluId].codeCommune.push(codeCommune);
       })
       .on('end', () => {
         resolve(Object.values(elus));
