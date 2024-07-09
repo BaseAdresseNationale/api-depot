@@ -99,7 +99,7 @@ export class ValidationService {
     }
 
     const rowsCount: number = rows.length;
-    if (!(await this.checkRemoveLotNumeros(codeCommune, rowsCount))) {
+    if (await this.checkRemoveLotNumeros(codeCommune, rowsCount)) {
       warnings.push('rows.delete_many_addresses');
     }
 
