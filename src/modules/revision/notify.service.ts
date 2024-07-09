@@ -77,6 +77,7 @@ export class NotifyService {
             to: contactEmail,
             subject: `La commune de ${commune.nom} a repris la main sur sa Base Adresse Locale`,
             template: 'partners-on-force-publish',
+            bcc: this.configService.get('SMTP_BCC'),
             context: {
               apiUrl: this.configService.get('API_DEPOT_URL'),
               commune,

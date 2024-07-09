@@ -93,6 +93,7 @@ export class ClientService {
       to: mandataire.email,
       subject: 'Accès à l’API dépôt d’une Base Adresse Locale',
       template: 'new-client',
+      bcc: this.configService.get('SMTP_BCC'),
       context: {
         apiUrl: this.configService.get('API_DEPOT_URL'),
         client: client.toObject(),

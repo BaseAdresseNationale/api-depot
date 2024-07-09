@@ -210,6 +210,7 @@ export class HabilitationService {
         to: habilitation.emailCommune,
         subject: 'Demande de code d’identification',
         template: 'code-pin',
+        bcc: this.configService.get('SMTP_BCC'),
         context: {
           apiUrl: this.configService.get('API_DEPOT_URL'),
           pinCode,
