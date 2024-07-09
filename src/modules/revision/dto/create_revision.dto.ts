@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsNotEmptyObject,
   IsObject,
   IsOptional,
   IsString,
@@ -23,7 +22,6 @@ export class ContextDTO implements Context {
 
   @IsObject()
   @IsOptional()
-  @IsNotEmptyObject()
   @ApiProperty({ type: () => Object, required: false })
   extras?: Record<string, any>;
 }
