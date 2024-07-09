@@ -25,6 +25,7 @@ import { RevisionModule } from './revision.module';
 import {
   Habilitation,
   StatusHabilitationEnum,
+  TypeStrategyEnum,
 } from '../habilitation/habilitation.schema';
 import { Context, Revision, StatusRevisionEnum } from './revision.schema';
 import { S3Service } from '../file/s3.service';
@@ -682,12 +683,16 @@ describe('PUBLICATION MODULE', () => {
         expiresAt,
         codeCommune: '31591',
         client: client._id,
+        strategy: {
+          type: TypeStrategyEnum.EMAIL,
+        },
       });
       const { body } = await request(app.getHttpServer())
         .post(`/revisions/${revision._id.toHexString()}/publish`)
         .send({ habilitationId: habilitation._id.toHexString() })
         .set('Authorization', `Bearer ${client.token}`)
         .expect(200);
+
       expect(body.publishedAt).toBeDefined();
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
       expect(body.current).toBeTruthy();

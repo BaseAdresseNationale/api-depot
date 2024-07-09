@@ -8,6 +8,9 @@ import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Revision } from './revision.schema';
 import { ConfigService } from '@nestjs/config';
+import { TypeStrategyEnum } from '../habilitation/habilitation.schema';
+import { CommuneCOG } from '@/lib/types/cog.type';
+import { SlackService } from 'nestjs-slack';
 
 const MANAGED_CLIENTS = {
   MES_ADRESSES: 'mes-adresses',
@@ -24,10 +27,44 @@ export class NotifyService {
     private mandataireService: MandataireService,
     private configService: ConfigService,
     private mailerService: MailerService,
+    private slackService: SlackService,
   ) {}
 
   private wasPublishedByManagedClient(client: Client) {
     return Object.values(MANAGED_CLIENTS).includes(client.id);
+  }
+
+  public async notifySlack(
+    codeCommune: string,
+    isUpdate: boolean,
+    habilitationStrategy: TypeStrategyEnum | null,
+    client: Client,
+  ) {
+    if (!process.env.SLACK_TOKEN || !process.env.SLACK_CHANNEL) {
+      return;
+    }
+
+    const commune: CommuneCOG = getCommune(codeCommune);
+    const operationFr = isUpdate ? 'Mise à jour' : 'Initialisation';
+
+    let habilitationText = '';
+
+    if (habilitationStrategy === TypeStrategyEnum.FRANCECONNECT) {
+      habilitationText = 'Habilitation via FranceConnect :fr:';
+    } else if (habilitationStrategy === TypeStrategyEnum.EMAIL) {
+      habilitationText = 'Habilitation par email :email:';
+    }
+
+    const meta = [`Application : ${client.nom}`, habilitationText].filter(
+      Boolean,
+    );
+
+    const text = `${operationFr} d’une Base Adresse Locale - *${commune.nom}* (${commune.code})
+    _${meta.join(' - ')}_`;
+
+    this.slackService.sendText(text, {
+      channel: this.configService.get('SLACK_CHANNEL'),
+    });
   }
 
   public async onForcePublish(
