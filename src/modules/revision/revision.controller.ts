@@ -72,7 +72,26 @@ export class RevisionController {
     summary: 'Find revisions by Commune',
     operationId: 'findByCommune',
   })
-  @ApiQuery({ name: 'status', required: false, enum: StatusRevisionEnum })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    type: String,
+    description: 'Filter revisions by status, default to published revisions',
+    examples: {
+      published: {
+        value: 'published',
+        summary: 'Published revisions',
+      },
+      all: {
+        value: 'all',
+        summary: 'All revisions',
+      },
+      pending: {
+        value: 'pending',
+        summary: 'Pending revisions',
+      },
+    },
+  })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -82,11 +101,19 @@ export class RevisionController {
   async findByCommune(
     @Req() req: CustomRequest,
     @Res() res: Response,
-    @Query('status') status: StatusRevisionEnum,
+    @Query('status') status: StatusRevisionEnum | 'all',
   ) {
+    let statusQuery: { status?: StatusRevisionEnum } = {
+      status: StatusRevisionEnum.PUBLISHED,
+    };
+    if (status === 'all') {
+      statusQuery = {};
+    } else if (status) {
+      statusQuery = { status };
+    }
     const revisions: Revision[] = await this.revisionService.findMany({
       codeCommune: req.params.codeCommune,
-      ...((status && { status }) || {}),
+      ...statusQuery,
     });
     const revisionsWithClients: RevisionWithClientDTO[] =
       await this.revisionService.expandsWithClients(revisions);

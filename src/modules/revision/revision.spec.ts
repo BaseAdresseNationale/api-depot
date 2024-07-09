@@ -286,7 +286,7 @@ describe('REVISION MODULE', () => {
         .get(`/communes/91534/revisions`)
         .expect(200);
 
-      expect(body.length).toBe(3);
+      expect(body.length).toBe(2);
       expect(body[0].codeCommune).toBe('91534');
       expect(body[0].status).toBe(StatusRevisionEnum.PUBLISHED);
       expect(body[0].current).toBe(true);
@@ -372,6 +372,47 @@ describe('REVISION MODULE', () => {
       expect(body[0].codeCommune).toBe('91534');
       expect(body[0].status).toBe(StatusRevisionEnum.PENDING);
       expect(body[0].current).toBe(false);
+      expect(body[0].client).toMatchObject({
+        _id: client._id.toHexString(),
+        nom: 'test',
+        mandataire: 'mandataire',
+        chefDeFile: 'chefDeFile',
+        chefDeFileEmail: 'chefDeFile@test.fr',
+      });
+    });
+
+    it('GET /communes/:codeCommune/revisions?status=all', async () => {
+      const client: Client = await createClient();
+
+      await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: true,
+      });
+
+      await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PUBLISHED,
+        current: false,
+      });
+
+      await revisionModel.create({
+        codeCommune: '91534',
+        client: client._id.toHexString(),
+        status: StatusRevisionEnum.PENDING,
+        current: false,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/communes/91534/revisions?status=all`)
+        .expect(200);
+
+      expect(body.length).toBe(3);
+      expect(body[0].codeCommune).toBe('91534');
+      expect(body[0].status).toBe(StatusRevisionEnum.PUBLISHED);
+      expect(body[0].current).toBe(true);
       expect(body[0].client).toMatchObject({
         _id: client._id.toHexString(),
         nom: 'test',
