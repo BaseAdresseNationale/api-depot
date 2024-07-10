@@ -41,6 +41,7 @@
     "hasha": "^5.2.2",
     "lodash": "^4.17.21",
     "mongoose": "^8.3.1",
+    "nestjs-slack": "^2.0.0",
     "nodemailer": "^6.9.13",
     "passport": "^0.7.0",
     "passport-oauth2": "^1.8.0",
