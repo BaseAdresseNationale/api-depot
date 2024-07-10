@@ -43,14 +43,14 @@ async function run() {
     const newNbRows = revision?.validation?.rowsCount || 0;
     // Check si il y a eu pluys de 20% de suppression
     if (prevNbRows * 0.2 < prevNbRows - newNbRows) {
-      Revision.updateOne(
+      await Revision.updateOne(
         { _id: revision._id },
         {
           $push: { 'validation.warnings': 'rows.delete_many_addresses' },
         },
       );
     } else {
-      Revision.updateOne(
+      await Revision.updateOne(
         { _id: revision._id },
         {
           $pull: { 'validation.warnings': 'rows.delete_many_addresses' },
