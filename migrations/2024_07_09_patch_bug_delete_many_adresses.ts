@@ -29,6 +29,7 @@ async function run() {
   // Récupère les révision depuis la migration nestJs
   const revisions = await Revision.find({
     createdAt: { $gte: new Date('2024-07-01T00:00:00.000Z') },
+    validation: { $exists: true },
   }).lean();
   for (const revision of revisions) {
     // Récupère la reivision précédente
