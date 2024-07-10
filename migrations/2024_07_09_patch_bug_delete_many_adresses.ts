@@ -40,23 +40,25 @@ async function run() {
     })
       .sort({ createdAt: -1 })
       .lean();
-    const prevNbRows = prevRevision?.validation?.rowsCount || 0;
-    const newNbRows = revision?.validation?.rowsCount || 0;
-    // Check si il y a eu pluys de 20% de suppression
-    if (prevNbRows * 0.2 < prevNbRows - newNbRows) {
-      await Revision.updateOne(
-        { _id: revision._id },
-        {
-          $push: { 'validation.warnings': 'rows.delete_many_addresses' },
-        },
-      );
-    } else {
-      await Revision.updateOne(
-        { _id: revision._id },
-        {
-          $pull: { 'validation.warnings': 'rows.delete_many_addresses' },
-        },
-      );
+    if (prevRevision.validation && revision.validation) {
+      const prevNbRows = prevRevision?.validation?.rowsCount || 0;
+      const newNbRows = revision?.validation?.rowsCount || 0;
+      // Check si il y a eu pluys de 20% de suppression
+      if (prevNbRows * 0.2 < prevNbRows - newNbRows) {
+        await Revision.updateOne(
+          { _id: revision._id },
+          {
+            $push: { 'validation.warnings': 'rows.delete_many_addresses' },
+          },
+        );
+      } else {
+        await Revision.updateOne(
+          { _id: revision._id },
+          {
+            $pull: { 'validation.warnings': 'rows.delete_many_addresses' },
+          },
+        );
+      }
     }
   }
 
