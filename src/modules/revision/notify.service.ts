@@ -44,27 +44,31 @@ export class NotifyService {
       return;
     }
 
-    const commune: CommuneCOG = getCommune(codeCommune);
-    const operationFr = isUpdate ? 'Mise à jour' : 'Initialisation';
+    try {
+      const commune: CommuneCOG = getCommune(codeCommune);
+      const operationFr = isUpdate ? 'Mise à jour' : 'Initialisation';
 
-    let habilitationText = '';
+      let habilitationText = '';
 
-    if (habilitationStrategy === TypeStrategyEnum.FRANCECONNECT) {
-      habilitationText = 'Habilitation via FranceConnect :fr:';
-    } else if (habilitationStrategy === TypeStrategyEnum.EMAIL) {
-      habilitationText = 'Habilitation par email :email:';
+      if (habilitationStrategy === TypeStrategyEnum.FRANCECONNECT) {
+        habilitationText = 'Habilitation via FranceConnect :fr:';
+      } else if (habilitationStrategy === TypeStrategyEnum.EMAIL) {
+        habilitationText = 'Habilitation par email :email:';
+      }
+
+      const meta = [`Application : ${client.nom}`, habilitationText].filter(
+        Boolean,
+      );
+
+      const text = `${operationFr} d’une Base Adresse Locale - *${commune.nom}* (${commune.code})
+      _${meta.join(' - ')}_`;
+
+      this.slackService.sendText(text, {
+        channel: this.configService.get('SLACK_CHANNEL'),
+      });
+    } catch (error) {
+      console.error('ERROR notifySlack :', error);
     }
-
-    const meta = [`Application : ${client.nom}`, habilitationText].filter(
-      Boolean,
-    );
-
-    const text = `${operationFr} d’une Base Adresse Locale - *${commune.nom}* (${commune.code})
-    _${meta.join(' - ')}_`;
-
-    this.slackService.sendText(text, {
-      channel: this.configService.get('SLACK_CHANNEL'),
-    });
   }
 
   public async onForcePublish(
@@ -124,7 +128,7 @@ export class NotifyService {
         }
       }
     } catch (error) {
-      console.error(error);
+      console.error('ERROR onForcePublish :', error);
     }
   }
 }
