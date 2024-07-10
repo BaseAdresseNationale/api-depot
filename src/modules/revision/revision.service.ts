@@ -293,7 +293,7 @@ export class RevisionService {
     } catch {}
 
     // On supprime le flag current pour toutes les anciennes révisions publiées de cette commune
-    await this.revisionModel.updateMany(
+    const removeCurrentRes = await this.revisionModel.updateMany(
       {
         codeCommune: revision.codeCommune,
         current: true,
@@ -325,9 +325,16 @@ export class RevisionService {
       this.banService.composeCommune(revision.codeCommune);
     }
 
+    await this.notifyService.notifySlack(
+      revision.codeCommune,
+      removeCurrentRes.matchedCount > 0,
+      revisionPublished.habilitation?.strategy.type,
+      client,
+    );
+
     // On notifie les partenaires si une commune qui était gérée par un partenaire
     // force une publication via mes-adresses
-    this.notifyService.onForcePublish(prevRevision, revisionPublished);
+    await this.notifyService.onForcePublish(prevRevision, revisionPublished);
 
     return revisionPublished;
   }

@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { CommuneMiddleware } from '@/lib/class/middlewares/commune.middleware';
 import { ClientModule } from '@/modules/client/client.module';
@@ -16,6 +16,7 @@ import { RevisionService } from './revision.service';
 import { RevisionController } from './revision.controller';
 import { NotifyService } from './notify.service';
 import { PublicationController } from './publication.controller';
+import { SlackModule } from 'nestjs-slack';
 
 @Module({
   imports: [
@@ -29,6 +30,14 @@ import { PublicationController } from './publication.controller';
     BanModule,
     HabilitationModule,
     MandataireModule,
+    SlackModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'api',
+        token: config.get('SLACK_TOKEN'),
+      }),
+    }),
   ],
   providers: [RevisionService, ValidationService, NotifyService],
   controllers: [RevisionController, PublicationController],
