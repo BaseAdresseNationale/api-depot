@@ -43,13 +43,13 @@ export class HabilitationModule {
       .apply(HabilitationMiddleware)
       .exclude({
         path: 'communes/:codeCommune/habilitations',
-        method: RequestMethod.POST,
+        method: RequestMethod.ALL,
       })
       .forRoutes(HabilitationController);
 
     consumer.apply(CommuneMiddleware).forRoutes({
       path: 'communes/:codeCommune/habilitations',
-      method: RequestMethod.POST,
+      method: RequestMethod.ALL,
     });
   }
 }
