@@ -18,8 +18,12 @@ export class FileService {
     revisionId: Types.ObjectId,
     fileData: Buffer,
   ): Promise<File> {
+    const now = Date.now();
+    console.log(
+      `START UPLOAD FILE S3 for ${revisionId}, size ${Buffer.byteLength(fileData)} at ${new Date(now).toDateString()}`,
+    );
     const _id = await this.s3Service.writeFile(fileData);
-
+    console.log(`END UPLOAD FILE S3 for ${revisionId} in ${Date.now() - now}`);
     const newfile: Partial<File> = {
       _id,
       revisionId,
