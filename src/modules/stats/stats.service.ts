@@ -6,9 +6,10 @@ import { DateFromToQueryTransformed } from '@/lib/class/pipes/date_from_to.pipe'
 import { RevisionService } from '@/modules/revision/revision.service';
 import { Revision } from '@/modules/revision/revision.schema';
 import { ClientService } from '@/modules/client/client.service';
-import { Client } from '@/modules/client/client.schema';
 import { FirstPublicationDTO } from './dto/first_pulication.dto';
 import { PublicationDTO } from './dto/publication.dto';
+import { Client } from '../client/client.entity';
+import { In } from 'typeorm';
 
 const CLIENTS_TO_MONITOR = {
   mesAdresses: 'mes-adresses',
@@ -33,7 +34,7 @@ export class StatService {
 
   private async initClients() {
     const clientsToMonitor: Client[] = await this.clientService.findMany({
-      id: { $in: Object.values(CLIENTS_TO_MONITOR) },
+      specId: In(Object.values(CLIENTS_TO_MONITOR)),
     });
 
     this.clientsToMonitorIndex = keyBy(clientsToMonitor, '_id');

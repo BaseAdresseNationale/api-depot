@@ -4,10 +4,10 @@ import { version as validatorVersion } from '@ban-team/validateur-bal/package.js
 
 import { LevelEnum, Row, ValidationBal } from '@/lib/types/validator.types';
 import { communeIsInPerimeters } from '@/lib/utils/perimeters';
-import { Client } from '@/modules/client/client.schema';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { RevisionService } from './revision.service';
 import { Validation } from './revision.schema';
+import { Client } from '../client/client.entity';
 
 @Injectable()
 export class ValidationService {
@@ -34,7 +34,7 @@ export class ValidationService {
   private async checkIsInPerimetre(codeCommune: string, client: Client) {
     if (client?.chefDeFile) {
       const chefDeFile = await this.chefDeFileService.findOneOrFail(
-        client.chefDeFile.toHexString(),
+        client.chefDeFileId,
       );
       return (
         chefDeFile.perimeters &&
@@ -69,7 +69,7 @@ export class ValidationService {
   ): Promise<Validation> {
     const { parseOk, parseErrors, profilErrors, rows }: ValidationBal =
       await validate(fileData, {
-        profile: client?.options?.relaxMode ? '1.3-relax' : '1.3',
+        profile: client?.modeRelax ? '1.3-relax' : '1.3',
       });
 
     if (!parseOk) {

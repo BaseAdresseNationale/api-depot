@@ -12,7 +12,7 @@ export class ChefDeFile extends IdEntity {
 
   @ApiProperty()
   @Column('text', { nullable: false })
-  email: string;
+  email?: string;
 
   @ApiProperty()
   @Column('boolean', { nullable: true, default: true, name: 'is_email_public' })

@@ -9,7 +9,6 @@ import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
 import { getElu } from '@/lib/utils/elus';
 import { getCommune } from '@/lib/utils/cog';
 import { CommuneCOG } from '@/lib/types/cog.type';
-import { Client } from '@/modules/client/client.schema';
 import { ApiAnnuaireService } from '@/modules/api_annuaire/api_annuaire.service';
 import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';
 import {
@@ -21,6 +20,7 @@ import { ClientService } from '../client/client.service';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Elu } from '@/lib/types/elu.type';
+import { Client } from '../client/client.entity';
 
 @Injectable()
 export class HabilitationService {
@@ -77,7 +77,7 @@ export class HabilitationService {
       emailCommune,
       franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${_id}/authentication/franceconnect`,
       strategy: null,
-      client: client._id,
+      client: client.id,
       status: StatusHabilitationEnum.PENDING,
       expiresAt: null,
     };

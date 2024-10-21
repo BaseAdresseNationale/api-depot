@@ -73,7 +73,7 @@ export class Habilitation {
 
   @Prop({ type: SchemaTypes.ObjectId })
   @ApiProperty({ type: String, required: false })
-  client: Types.ObjectId;
+  client: string;
 
   @Prop({ type: SchemaTypes.String, enum: StatusHabilitationEnum })
   @ApiProperty({ enum: StatusHabilitationEnum, required: false })
