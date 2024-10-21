@@ -3,6 +3,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { IdEntity } from '../../lib/class/id.entity';
 import { ParseError } from '@/lib/types/validator.types';
 import { Client } from '../client/client.entity';
+import { Habilitation } from '../habilitation/habilitation.entity';
 
 export enum StatusRevisionEnum {
   PENDING = 'pending',
@@ -67,6 +68,14 @@ export class Revision extends IdEntity {
   })
   status: StatusRevisionEnum;
 
+  @ApiProperty()
+  @Column('varchar', { length: 24, name: 'file_id', nullable: true })
+  fileId?: string;
+
+  @ApiProperty()
+  @Column('text', { nullable: true, name: 'file_hash' })
+  fileHash: string;
+
   @ApiProperty({ type: () => Context })
   @Column('jsonb', { nullable: true })
   context: Context;
@@ -75,9 +84,9 @@ export class Revision extends IdEntity {
   @Column('jsonb', { nullable: true })
   validation: Validation | null;
 
-  @ApiProperty({ type: () => Validation })
+  @ApiProperty({ type: () => Habilitation })
   @Column('jsonb', { nullable: true })
-  habilitation: Validation | null;
+  habilitation: Habilitation | null;
 
   @ApiProperty()
   @Column('timestamp', { name: 'published_at', nullable: true })
