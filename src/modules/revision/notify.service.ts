@@ -104,7 +104,7 @@ export class NotifyService {
         currentClient.id === MANAGED_CLIENTS.FORMULAIRE_PUBLICATION
       ) {
         const chefDeFile = await this.chefDeFileService.findOneOrFail(
-          prevClient.chefDeFile,
+          prevClient.chefDeFile.toHexString(),
         );
         const mandataire = await this.mandataireService.findOneOrFail(
           prevClient.mandataire,

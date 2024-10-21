@@ -12,6 +12,8 @@ import { RevisionModule } from '@/modules/revision/revision.module';
 import { StatModule } from '@/modules/stats/stats.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChefDeFile } from './modules/chef_de_file/chef_de_file.entity';
 
 @Module({
   imports: [
@@ -19,6 +21,17 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../'),
       renderPath: 'public/',
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => ({
+        type: 'postgres',
+        url: config.get('POSTGRES_URL'),
+        keepConnectionAlive: true,
+        schema: 'public',
+        entities: [ChefDeFile],
+      }),
+      inject: [ConfigService],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
