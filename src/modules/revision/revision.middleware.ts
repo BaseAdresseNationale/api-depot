@@ -8,7 +8,7 @@ import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { RevisionService } from './revision.service';
-import { Revision } from './revision.schema';
+import { Revision } from './revision.entity';
 import { isObjectIdOrHexString } from 'mongoose';
 
 @Injectable()

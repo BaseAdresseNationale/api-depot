@@ -59,6 +59,10 @@ export class Revision extends IdEntity {
   @Column('boolean', { nullable: false, default: false })
   ready: boolean;
 
+  @ApiProperty()
+  @Column('boolean', { nullable: false, default: false })
+  current: boolean;
+
   @ApiProperty({ enum: StatusRevisionEnum })
   @Column('enum', {
     enum: StatusRevisionEnum,

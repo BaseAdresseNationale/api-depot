@@ -14,10 +14,7 @@ export class FileService {
     private s3Service: S3Service,
   ) {}
 
-  public async createOne(
-    revisionId: Types.ObjectId,
-    fileData: Buffer,
-  ): Promise<File> {
+  public async createOne(revisionId: string, fileData: Buffer): Promise<File> {
     const now = Date.now();
     console.log(
       `START UPLOAD FILE S3 for ${revisionId}, size ${Buffer.byteLength(fileData)} at ${new Date(now).toDateString()}`,
@@ -26,7 +23,7 @@ export class FileService {
     console.log(`END UPLOAD FILE S3 for ${revisionId} in ${Date.now() - now}`);
     const newfile: Partial<File> = {
       _id,
-      revisionId,
+      revisionId: new Types.ObjectId(revisionId),
       type: TypeFileEnum.BAL,
       size: fileData.length,
       hash: hasha(fileData, { algorithm: 'sha256' }),
@@ -44,9 +41,7 @@ export class FileService {
       .exec();
   }
 
-  public async findDataByRevision(
-    revisionId: Types.ObjectId | string,
-  ): Promise<Buffer> {
+  public async findDataByRevision(revisionId: string): Promise<Buffer> {
     const file: File = await this.findOneByRevision(revisionId);
 
     if (!file) {

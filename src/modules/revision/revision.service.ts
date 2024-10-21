@@ -1,12 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  FilterQuery,
-  Model,
-  PipelineStage,
-  QueryWithHelpers,
-  Types,
-} from 'mongoose';
 import { pick } from 'lodash';
 
 import { isCommune } from '@/lib/utils/cog';
@@ -25,14 +17,23 @@ import {
   Revision,
   StatusRevisionEnum,
   Validation,
-} from './revision.schema';
+} from './revision.entity';
 import { AuthorizationStrategyEnum, Client } from '../client/client.entity';
+import {
+  FindOptionsSelect,
+  FindOptionsWhere,
+  MoreThan,
+  Not,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RevisionService {
   constructor(
-    @InjectModel(Revision.name)
-    private revisionModel: Model<Revision>,
+    @InjectRepository(Revision)
+    private revisionRepository: Repository<Revision>,
     private clientService: ClientService,
     private habilitationService: HabilitationService,
     private fileService: FileService,
@@ -42,54 +43,27 @@ export class RevisionService {
   ) {}
 
   async findMany(
-    filter?: FilterQuery<Revision>,
-    selector: Record<string, number> = null,
-    limit: number = null,
-    offset: number = null,
+    where: FindOptionsWhere<Revision>,
+    select?: FindOptionsSelect<Revision>,
   ): Promise<Revision[]> {
-    const query: QueryWithHelpers<
-      Array<Revision>,
-      Revision
-    > = this.revisionModel.find(filter);
-
-    if (selector) {
-      query.select(selector);
-    }
-    if (limit) {
-      query.limit(limit);
-    }
-    if (offset) {
-      query.skip(offset);
-    }
-
-    return query.lean().exec();
+    return this.revisionRepository.find({
+      where,
+      ...(select && { select }),
+    });
   }
 
-  public async findCurrents(publishedSince: Date | null = null) {
-    const publishedSinceQuery = publishedSince
-      ? { publishedAt: { $gt: publishedSince } }
-      : {};
-
-    const revisions: Revision[] = await this.revisionModel
-      .find(
-        { current: true, ...publishedSinceQuery },
-        { _id: 1, codeCommune: 1, publishedAt: 1, client: 1 },
-      )
-      .lean()
-      .exec();
-
-    return revisions.filter((r) => isCommune(r.codeCommune));
-  }
-
-  public async findCurrent(codeCommune: string): Promise<Revision> {
-    const revision = await this.revisionModel
-      .findOne({ current: true, codeCommune })
-      .lean()
-      .exec();
+  public async findOneOrFail(revisionId: string): Promise<Revision> {
+    const where: FindOptionsWhere<Revision> = {
+      id: revisionId,
+    };
+    const revision = await this.revisionRepository.findOne({
+      where,
+      withDeleted: true,
+    });
 
     if (!revision) {
       throw new HttpException(
-        `Aucune revision trouvé pour la commune ${codeCommune}`,
+        `Revision ${revisionId} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
@@ -97,19 +71,32 @@ export class RevisionService {
     return revision;
   }
 
-  public async findOne(filter): Promise<Revision> {
-    return await this.revisionModel.findOne(filter).lean().exec();
+  public async findCurrents(publishedSince: Date | null = null) {
+    const publishedSinceQuery = publishedSince
+      ? { publishedAt: MoreThan(publishedSince) }
+      : {};
+
+    const revisions: Revision[] = await this.revisionRepository.find({
+      where: { current: true, ...publishedSinceQuery },
+      select: {
+        id: true,
+        codeCommune: true,
+        publishedAt: true,
+        clientId: true,
+      },
+    });
+
+    return revisions.filter((r) => isCommune(r.codeCommune));
   }
 
-  public async findOneOrFail(revisionId: string): Promise<Revision> {
-    const revision = await this.revisionModel
-      .findOne({ _id: revisionId })
-      .lean()
-      .exec();
+  public async findCurrent(codeCommune: string): Promise<Revision> {
+    const revision = await this.revisionRepository.findOne({
+      where: { current: true, codeCommune },
+    });
 
     if (!revision) {
       throw new HttpException(
-        `Revision ${revisionId} not found`,
+        `Aucune revision trouvé pour la commune ${codeCommune}`,
         HttpStatus.NOT_FOUND,
       );
     }
@@ -122,15 +109,28 @@ export class RevisionService {
     client: Client,
     context: Context,
   ): Promise<Revision> {
-    const revision = await this.revisionModel.create({
+    const entityToSave: Revision = this.revisionRepository.create({
       codeCommune,
       context,
-      client: client.id,
+      clientId: client.id,
       status: StatusRevisionEnum.PENDING,
       ready: false,
+      current: false,
       publishedAt: null,
     });
-    return revision.toObject();
+    return this.revisionRepository.save(entityToSave);
+  }
+
+  public async updateOne(
+    revisionId: string,
+    changes: Partial<Revision>,
+  ): Promise<Revision> {
+    const entityToSave: Revision = this.revisionRepository.create({
+      id: revisionId,
+      ...changes,
+    });
+
+    return this.revisionRepository.save(entityToSave);
   }
 
   public async expandWithClientAndFile(
@@ -138,10 +138,8 @@ export class RevisionService {
   ): Promise<RevisionWithClientDTO> {
     return {
       ...revision,
-      client: await this.clientService.findPublicClient(
-        revision.client.toHexString(),
-      ),
-      files: [await this.fileService.findOneByRevision(revision._id)],
+      client: await this.clientService.findPublicClient(revision.clientId),
+      files: [await this.fileService.findOneByRevision(revision.id)],
     };
   }
 
@@ -152,7 +150,7 @@ export class RevisionService {
       await this.clientService.findAllPublicClients();
     return revisions.map((r: Revision) => ({
       ...r,
-      client: clients.find(({ id }) => r.client.toHexString() === id),
+      client: clients.find(({ id }) => r.clientId === id),
     }));
   }
 
@@ -165,7 +163,7 @@ export class RevisionService {
     }
 
     const currentFile: File = await this.fileService.findOneByRevision(
-      revision._id,
+      revision.id,
     );
 
     if (currentFile) {
@@ -175,20 +173,9 @@ export class RevisionService {
       );
     }
 
-    const file: File = await this.fileService.createOne(revision._id, fileData);
-    this.touch(revision._id);
+    const file: File = await this.fileService.createOne(revision.id, fileData);
 
     return file;
-  }
-
-  public async touch(revisionId: string | Types.ObjectId): Promise<Revision> {
-    const revision: Revision = await this.revisionModel.findOneAndUpdate(
-      { _id: revisionId },
-      { $set: { updatedAt: new Date() } },
-      { returnDocument: 'after' },
-    );
-
-    return revision;
   }
 
   public async computeOne(
@@ -203,7 +190,7 @@ export class RevisionService {
     }
 
     const fileData: Buffer = await this.fileService.findDataByRevision(
-      revision._id,
+      revision.id,
     );
 
     const validation: Validation = await this.validationService.validate(
@@ -212,20 +199,10 @@ export class RevisionService {
       client,
     );
 
-    return this.revisionModel
-      .findOneAndUpdate(
-        { _id: revision._id },
-        {
-          $set: {
-            updatedAt: new Date(),
-            validation,
-            ready: Boolean(validation.valid),
-          },
-        },
-        { returnDocument: 'after' },
-      )
-      .lean()
-      .exec();
+    return this.updateOne(revision.id, {
+      validation,
+      ready: Boolean(validation.valid),
+    });
   }
 
   public async publishOne(
@@ -290,32 +267,25 @@ export class RevisionService {
     } catch {}
 
     // On supprime le flag current pour toutes les anciennes révisions publiées de cette commune
-    const removeCurrentRes = await this.revisionModel.updateMany(
+    const removeCurrentRes: UpdateResult = await this.revisionRepository.update(
       {
         codeCommune: revision.codeCommune,
         current: true,
       },
-      { $set: { current: false } },
+      { current: false },
     );
 
     // On publie la révision
-    const revisionPublished: Revision = await this.revisionModel
-      .findOneAndUpdate(
-        { _id: revision._id },
-        { $set: changes },
-        { returnDocument: 'after' },
-      )
-      .lean()
-      .exec();
+    const revisionPublished = await this.updateOne(revision.id, changes);
 
     // On invalide toutes les révisions en attente pour cette commune
-    await this.revisionModel.updateMany(
+    await this.revisionRepository.update(
       {
         codeCommune: revision.codeCommune,
         status: StatusRevisionEnum.PENDING,
-        _id: { $ne: revision._id },
+        id: Not(revision.id),
       },
-      { $set: { ready: false } },
+      { ready: false },
     );
 
     if (process.env.NOTIFY_BAN === '1') {
@@ -324,7 +294,7 @@ export class RevisionService {
 
     await this.notifyService.notifySlack(
       revision.codeCommune,
-      removeCurrentRes.matchedCount > 0,
+      removeCurrentRes.affected > 0,
       revisionPublished.habilitation?.strategy.type,
       client,
     );
@@ -334,9 +304,5 @@ export class RevisionService {
     await this.notifyService.onForcePublish(prevRevision, revisionPublished);
 
     return revisionPublished;
-  }
-
-  async aggregate(pipeline?: PipelineStage[]): Promise<any> {
-    return this.revisionModel.aggregate(pipeline);
   }
 }

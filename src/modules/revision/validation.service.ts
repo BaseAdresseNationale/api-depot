@@ -6,7 +6,7 @@ import { LevelEnum, Row, ValidationBal } from '@/lib/types/validator.types';
 import { communeIsInPerimeters } from '@/lib/utils/perimeters';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { RevisionService } from './revision.service';
-import { Validation } from './revision.schema';
+import { Validation } from './revision.entity';
 import { Client } from '../client/client.entity';
 
 @Injectable()
