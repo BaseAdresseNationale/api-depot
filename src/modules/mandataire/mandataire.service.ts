@@ -1,72 +1,58 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, QueryWithHelpers, Types } from 'mongoose';
-
-import { Mandataire } from './mandataire.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import { Mandataire } from './mandataire.entity';
 
 @Injectable()
 export class MandataireService {
   constructor(
-    @InjectModel(Mandataire.name)
-    private mandataireModel: Model<Mandataire>,
+    @InjectRepository(Mandataire)
+    private mandataireRepository: Repository<Mandataire>,
   ) {}
 
   async findMany(
-    filter?: FilterQuery<Mandataire>,
-    selector: Record<string, number> = null,
-    limit: number = null,
-    offset: number = null,
+    where: FindOptionsWhere<Mandataire>,
+    select?: FindOptionsSelect<Mandataire>,
   ): Promise<Mandataire[]> {
-    const query: QueryWithHelpers<
-      Array<Mandataire>,
-      Mandataire
-    > = this.mandataireModel.find(filter);
-
-    if (selector) {
-      query.select(selector);
-    }
-    if (limit) {
-      query.limit(limit);
-    }
-    if (offset) {
-      query.skip(offset);
-    }
-
-    return query.lean().exec();
+    return this.mandataireRepository.find({
+      where,
+      ...(select && { select }),
+    });
   }
 
-  public async findOneOrFail(
-    mandataireId: string | Types.ObjectId,
-  ): Promise<Mandataire> {
-    const mandataire = await this.mandataireModel
-      .findOne({ _id: mandataireId })
-      .lean()
-      .exec();
+  public async findOneOrFail(mandataireId: string): Promise<Mandataire> {
+    const where: FindOptionsWhere<Mandataire> = {
+      id: mandataireId,
+    };
+    const organization = await this.mandataireRepository.findOne({
+      where,
+      withDeleted: true,
+    });
 
-    if (!mandataire) {
+    if (!organization) {
       throw new HttpException(
         `Mandataire ${mandataireId} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
 
-    return mandataire;
+    return organization;
   }
 
-  public async createOne(body: Partial<Mandataire>): Promise<Mandataire> {
-    return this.mandataireModel.create(body);
+  public async createOne(payload: Partial<Mandataire>): Promise<Mandataire> {
+    const entityToSave: Mandataire = this.mandataireRepository.create(payload);
+    return this.mandataireRepository.save(entityToSave);
   }
 
   public async updateOne(
     mandataireId: string,
     changes: Partial<Mandataire>,
   ): Promise<Mandataire> {
-    const mandataire: Mandataire = await this.mandataireModel.findOneAndUpdate(
-      { _id: mandataireId },
-      { $set: changes },
-      { returnDocument: 'after' },
-    );
+    const numeroToSave: Mandataire = this.mandataireRepository.create({
+      id: mandataireId,
+      ...changes,
+    });
 
-    return mandataire;
+    return this.mandataireRepository.save(numeroToSave);
   }
 }

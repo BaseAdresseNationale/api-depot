@@ -8,12 +8,12 @@ import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { AuthorizationStrategyEnum, Client } from './client.schema';
 import { PublicClient } from './dto/public_client.dto';
-import { Mandataire } from '../mandataire/mandataire.schema';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CreateClientDTO } from './dto/create_client.dto';
 import { UpdateClientDTO } from './dto/update_client.dto';
 import { ConfigService } from '@nestjs/config';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.entity';
+import { Mandataire } from '../mandataire/mandataire.entity';
 
 @Injectable()
 export class ClientService {
@@ -144,9 +144,8 @@ export class ClientService {
         id: client.id,
         nom: client.nom,
         mandataire:
-          mandataires.find(
-            ({ _id }) => _id.toHexString() === client.mandataire.toHexString(),
-          )?.nom || null,
+          mandataires.find(({ id }) => id === client.mandataire.toHexString())
+            ?.nom || null,
       };
       if (client.chefDeFile) {
         const chefDeFile = chefDeFiles.find(
@@ -179,7 +178,7 @@ export class ClientService {
     }
 
     const mandataire = await this.mandataireService.findOneOrFail(
-      client.mandataire,
+      client.mandataire.toHexString(),
     );
     const publicClient: PublicClient = {
       _id: client._id,

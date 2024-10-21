@@ -107,7 +107,7 @@ export class NotifyService {
           prevClient.chefDeFile.toHexString(),
         );
         const mandataire = await this.mandataireService.findOneOrFail(
-          prevClient.mandataire,
+          prevClient.mandataire.toHexString(),
         );
         const contactEmail: string = chefDeFile?.email || mandataire?.email;
         if (contactEmail) {

@@ -7,9 +7,9 @@ import {
 import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
-import { Mandataire } from './mandataire.schema';
 import { MandataireService } from './mandataire.service';
 import { isObjectIdOrHexString } from 'mongoose';
+import { Mandataire } from './mandataire.entity';
 
 @Injectable()
 export class MandataireMiddleware implements NestMiddleware {
