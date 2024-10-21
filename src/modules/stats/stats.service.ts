@@ -4,12 +4,12 @@ import { keyBy, groupBy, mapValues } from 'lodash';
 
 import { DateFromToQueryTransformed } from '@/lib/class/pipes/date_from_to.pipe';
 import { RevisionService } from '@/modules/revision/revision.service';
-import { Revision } from '@/modules/revision/revision.schema';
+import { Revision } from '@/modules/revision/revision.entity';
 import { ClientService } from '@/modules/client/client.service';
 import { FirstPublicationDTO } from './dto/first_pulication.dto';
 import { PublicationDTO } from './dto/publication.dto';
 import { Client } from '../client/client.entity';
-import { In } from 'typeorm';
+import { Between, In } from 'typeorm';
 
 const CLIENTS_TO_MONITOR = {
   mesAdresses: 'mes-adresses',
@@ -43,22 +43,22 @@ export class StatService {
   public async findFirstPublications(
     dates: DateFromToQueryTransformed,
   ): Promise<FirstPublicationDTO[]> {
-    const revisionAgg: RevisionAgg[] = await this.revisionService.aggregate([
-      {
-        $match: {
-          publishedAt: {
-            $ne: null,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: { codeCommune: '$codeCommune' },
-          publishedAt: { $first: '$publishedAt' },
-          client: { $first: '$client' },
-        },
-      },
-    ]);
+    const revisionAgg: RevisionAgg[] = []; //await this.revisionService.aggregate([
+    //   {
+    //     $match: {
+    //       publishedAt: {
+    //         $ne: null,
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: { codeCommune: '$codeCommune' },
+    //       publishedAt: { $first: '$publishedAt' },
+    //       client: { $first: '$client' },
+    //     },
+    //   },
+    // ]);
     const cumulFirstRevisionsByDate: FirstPublicationDTO[] = [];
     for (
       let dateIterator = endOfDay(new Date(dates.from.getTime()));
@@ -91,10 +91,7 @@ export class StatService {
     dates: DateFromToQueryTransformed,
   ): Promise<PublicationDTO[]> {
     const revisions: Revision[] = await this.revisionService.findMany({
-      publishedAt: {
-        $gte: dates.from,
-        $lte: dates.to,
-      },
+      publishedAt: Between(dates.from, dates.to),
     });
 
     const revisionsGroupByDays = groupBy(revisions, (revision) =>

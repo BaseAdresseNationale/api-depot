@@ -24,7 +24,7 @@ import { CustomRequest } from '@/lib/types/request.type';
 import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { RevisionGuard } from '@/lib/class/guards/revision.guard';
 import { File } from '@/modules/file/file.schema';
-import { Revision } from './revision.schema';
+import { Revision } from './revision.entity';
 import { RevisionService } from './revision.service';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { CreateRevisionDTO } from './dto/create_revision.dto';
@@ -107,14 +107,14 @@ export class PublicationController {
   ) {
     const now = Date.now();
     console.log(
-      `START UPLOAD FILE ROUTE for ${req.revision._id}, size ${Buffer.byteLength(fileBuffer)} at ${new Date(now).toDateString()}`,
+      `START UPLOAD FILE ROUTE for ${req.revision.id}, size ${Buffer.byteLength(fileBuffer)} at ${new Date(now).toDateString()}`,
     );
     const file: File = await this.revisionService.setFile(
       req.revision,
       fileBuffer,
     );
     console.log(
-      `END UPLOAD FILE ROUTE for ${req.revision._id} in ${Date.now() - now}`,
+      `END UPLOAD FILE ROUTE for ${req.revision.id} in ${Date.now() - now}`,
     );
     res.status(HttpStatus.OK).json(file);
   }

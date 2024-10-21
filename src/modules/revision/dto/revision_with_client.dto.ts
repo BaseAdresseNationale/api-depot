@@ -1,4 +1,4 @@
-import { Revision } from '../revision.schema';
+import { Revision } from '../revision.entity';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 
 import { PublicClient } from '@/modules/client/dto/public_client.dto';

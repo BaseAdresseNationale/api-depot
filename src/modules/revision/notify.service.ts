@@ -5,7 +5,7 @@ import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { ClientService } from '@/modules/client/client.service';
 import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Revision } from './revision.schema';
+import { Revision } from './revision.entity';
 import { ConfigService } from '@nestjs/config';
 import { TypeStrategyEnum } from '../habilitation/habilitation.schema';
 import { CommuneCOG } from '@/lib/types/cog.type';
@@ -81,10 +81,10 @@ export class NotifyService {
     }
     try {
       const currentClient: Client = await this.clientService.findOneOrFail(
-        currentRevision.client.toHexString(),
+        currentRevision.clientId,
       );
       const prevClient: Client = await this.clientService.findOneOrFail(
-        prevRevision.client.toHexString(),
+        prevRevision.clientId,
       );
 
       // On n'envoie pas de mail si la révision antérieure avait été publiée
