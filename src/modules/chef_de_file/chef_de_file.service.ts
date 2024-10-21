@@ -1,72 +1,59 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, QueryWithHelpers, Types } from 'mongoose';
 
-import { ChefDeFile } from './chef_de_file.schema';
+import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ChefDeFile } from './chef_de_file.entity';
 
 @Injectable()
 export class ChefDeFileService {
   constructor(
-    @InjectModel(ChefDeFile.name)
-    private chefDeFileModel: Model<ChefDeFile>,
+    @InjectRepository(ChefDeFile)
+    private chefsDeFileRepository: Repository<ChefDeFile>,
   ) {}
 
   async findMany(
-    filter?: FilterQuery<ChefDeFile>,
-    selector: Record<string, number> = null,
-    limit: number = null,
-    offset: number = null,
+    where: FindOptionsWhere<ChefDeFile>,
+    select?: FindOptionsSelect<ChefDeFile>,
   ): Promise<ChefDeFile[]> {
-    const query: QueryWithHelpers<
-      Array<ChefDeFile>,
-      ChefDeFile
-    > = this.chefDeFileModel.find(filter);
-
-    if (selector) {
-      query.select(selector);
-    }
-    if (limit) {
-      query.limit(limit);
-    }
-    if (offset) {
-      query.skip(offset);
-    }
-
-    return query.lean().exec();
+    return this.chefsDeFileRepository.find({
+      where,
+      ...(select && { select }),
+    });
   }
 
-  public async findOneOrFail(
-    chefDeFileId: string | Types.ObjectId,
-  ): Promise<ChefDeFile> {
-    const chefDeFile = await this.chefDeFileModel
-      .findOne({ _id: chefDeFileId })
-      .lean()
-      .exec();
+  public async findOneOrFail(chefDeFileId: string): Promise<ChefDeFile> {
+    const where: FindOptionsWhere<ChefDeFile> = {
+      id: chefDeFileId,
+    };
+    const organization = await this.chefsDeFileRepository.findOne({
+      where,
+      withDeleted: true,
+    });
 
-    if (!chefDeFile) {
+    if (!organization) {
       throw new HttpException(
         `Chef de file ${chefDeFileId} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
 
-    return chefDeFile;
+    return organization;
   }
 
-  public async createOne(body: Partial<ChefDeFile>): Promise<ChefDeFile> {
-    return this.chefDeFileModel.create(body);
+  public async createOne(payload: Partial<ChefDeFile>): Promise<ChefDeFile> {
+    const entityToSave: ChefDeFile = this.chefsDeFileRepository.create(payload);
+    return this.chefsDeFileRepository.save(entityToSave);
   }
 
   public async updateOne(
     chefDeFileId: string,
     changes: Partial<ChefDeFile>,
   ): Promise<ChefDeFile> {
-    const chefDefile: ChefDeFile = await this.chefDeFileModel.findOneAndUpdate(
-      { _id: chefDeFileId },
-      { $set: changes },
-      { returnDocument: 'after' },
-    );
+    const numeroToSave: ChefDeFile = this.chefsDeFileRepository.create({
+      id: chefDeFileId,
+      ...changes,
+    });
 
-    return chefDefile;
+    return this.chefsDeFileRepository.save(numeroToSave);
   }
 }

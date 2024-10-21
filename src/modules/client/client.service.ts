@@ -8,12 +8,12 @@ import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { AuthorizationStrategyEnum, Client } from './client.schema';
 import { PublicClient } from './dto/public_client.dto';
-import { ChefDeFile } from '../chef_de_file/chef_de_file.schema';
 import { Mandataire } from '../mandataire/mandataire.schema';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CreateClientDTO } from './dto/create_client.dto';
 import { UpdateClientDTO } from './dto/update_client.dto';
 import { ConfigService } from '@nestjs/config';
+import { ChefDeFile } from '../chef_de_file/chef_de_file.entity';
 
 @Injectable()
 export class ClientService {
@@ -150,7 +150,7 @@ export class ClientService {
       };
       if (client.chefDeFile) {
         const chefDeFile = chefDeFiles.find(
-          ({ _id }) => client.chefDeFile.toHexString() === _id.toHexString(),
+          ({ id }) => client.chefDeFile.toHexString() === id,
         );
         publicClient.chefDeFile = chefDeFile.nom;
         if (chefDeFile.isEmailPublic) {
@@ -190,7 +190,7 @@ export class ClientService {
 
     if (client.chefDeFile) {
       const chefDeFile = await this.chefDeFileService.findOneOrFail(
-        client.chefDeFile,
+        client.chefDeFile.toHexString(),
       );
       publicClient.chefDeFile = chefDeFile.nom;
       if (chefDeFile.isEmailPublic) {

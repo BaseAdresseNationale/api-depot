@@ -8,8 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
-import { Perimeter } from '../chef_de_file.schema';
+import { Perimeter } from '../perimeters.entity';
 
 export class CreateChefDeFileDTO {
   @IsString()
@@ -35,5 +34,5 @@ export class CreateChefDeFileDTO {
     required: true,
     nullable: false,
   })
-  perimetre?: Perimeter[];
+  perimeters?: Perimeter[];
 }

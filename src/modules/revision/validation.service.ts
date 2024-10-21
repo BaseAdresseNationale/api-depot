@@ -34,11 +34,11 @@ export class ValidationService {
   private async checkIsInPerimetre(codeCommune: string, client: Client) {
     if (client?.chefDeFile) {
       const chefDeFile = await this.chefDeFileService.findOneOrFail(
-        client.chefDeFile,
+        client.chefDeFile.toHexString(),
       );
       return (
-        chefDeFile.perimetre &&
-        communeIsInPerimeters(codeCommune, chefDeFile.perimetre)
+        chefDeFile.perimeters &&
+        communeIsInPerimeters(codeCommune, chefDeFile.perimeters)
       );
     }
 

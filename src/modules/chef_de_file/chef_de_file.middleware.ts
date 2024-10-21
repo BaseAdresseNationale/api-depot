@@ -7,9 +7,9 @@ import {
 import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
-import { ChefDeFile } from './chef_de_file.schema';
 import { ChefDeFileService } from './chef_de_file.service';
 import { isObjectIdOrHexString } from 'mongoose';
+import { ChefDeFile } from './chef_de_file.entity';
 
 @Injectable()
 export class ChefDeFileMiddleware implements NestMiddleware {
