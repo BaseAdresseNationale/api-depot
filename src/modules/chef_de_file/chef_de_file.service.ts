@@ -25,19 +25,19 @@ export class ChefDeFileService {
     const where: FindOptionsWhere<ChefDeFile> = {
       id: chefDeFileId,
     };
-    const organization = await this.chefsDeFileRepository.findOne({
+    const chefDeFile = await this.chefsDeFileRepository.findOne({
       where,
       withDeleted: true,
     });
 
-    if (!organization) {
+    if (!chefDeFile) {
       throw new HttpException(
         `Chef de file ${chefDeFileId} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
 
-    return organization;
+    return chefDeFile;
   }
 
   public async createOne(payload: Partial<ChefDeFile>): Promise<ChefDeFile> {

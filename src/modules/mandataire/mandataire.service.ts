@@ -24,19 +24,19 @@ export class MandataireService {
     const where: FindOptionsWhere<Mandataire> = {
       id: mandataireId,
     };
-    const organization = await this.mandataireRepository.findOne({
+    const mandataire = await this.mandataireRepository.findOne({
       where,
       withDeleted: true,
     });
 
-    if (!organization) {
+    if (!mandataire) {
       throw new HttpException(
         `Mandataire ${mandataireId} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
 
-    return organization;
+    return mandataire;
   }
 
   public async createOne(payload: Partial<Mandataire>): Promise<Mandataire> {

@@ -15,10 +15,6 @@ import { ClientService } from '@/modules/client/client.service';
 import { FileService } from '@/modules/file/file.service';
 import { File } from '@/modules/file/file.schema';
 import { BanService } from '@/modules/ban/ban.service';
-import {
-  AuthorizationStrategyEnum,
-  Client,
-} from '@/modules/client/client.schema';
 import { HabilitationService } from '@/modules/habilitation/habilitation.service';
 import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.schema';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
@@ -30,6 +26,7 @@ import {
   StatusRevisionEnum,
   Validation,
 } from './revision.schema';
+import { AuthorizationStrategyEnum, Client } from '../client/client.entity';
 
 @Injectable()
 export class RevisionService {
@@ -128,7 +125,7 @@ export class RevisionService {
     const revision = await this.revisionModel.create({
       codeCommune,
       context,
-      client: client._id,
+      client: client.id,
       status: StatusRevisionEnum.PENDING,
       ready: false,
       publishedAt: null,
@@ -141,7 +138,9 @@ export class RevisionService {
   ): Promise<RevisionWithClientDTO> {
     return {
       ...revision,
-      client: await this.clientService.findPublicClient(revision.client),
+      client: await this.clientService.findPublicClient(
+        revision.client.toHexString(),
+      ),
       files: [await this.fileService.findOneByRevision(revision._id)],
     };
   }
@@ -153,9 +152,7 @@ export class RevisionService {
       await this.clientService.findAllPublicClients();
     return revisions.map((r: Revision) => ({
       ...r,
-      client: clients.find(
-        ({ _id }) => r.client.toHexString() === _id.toHexString(),
-      ),
+      client: clients.find(({ id }) => r.client.toHexString() === id),
     }));
   }
 
@@ -259,7 +256,7 @@ export class RevisionService {
         const habilitation = await this.habilitationService.findOne({
           _id: habilitationId,
           codeCommune: revision.codeCommune,
-          client: client._id,
+          client: client.id,
           status: StatusHabilitationEnum.ACCEPTED,
         });
 
