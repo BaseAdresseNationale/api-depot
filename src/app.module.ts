@@ -14,6 +14,7 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChefDeFile } from './modules/chef_de_file/chef_de_file.entity';
+import { Mandataire } from './modules/mandataire/mandataire.entity';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { ChefDeFile } from './modules/chef_de_file/chef_de_file.entity';
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
-        entities: [ChefDeFile],
+        entities: [ChefDeFile, Mandataire],
       }),
       inject: [ConfigService],
     }),
