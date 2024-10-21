@@ -28,7 +28,7 @@ export class Client extends IdEntity {
 
   @Index('IDX_client_chef_de_file_id')
   @ApiProperty()
-  @Column('varchar', { length: 24, name: 'chef_de_file_id', nullable: false })
+  @Column('varchar', { length: 24, name: 'chef_de_file_id', nullable: true })
   chefDeFileId?: string;
 
   @ApiProperty()

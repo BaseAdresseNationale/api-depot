@@ -60,11 +60,14 @@ export class Habilitation extends IdEntity {
   codeCommune: string;
 
   @ApiProperty()
-  @Column('text', { nullable: false })
+  @Column('text', { nullable: true, name: 'email_commune' })
   emailCommune: string;
 
   @ApiProperty()
-  @Column('text', { nullable: true })
+  @Column('text', {
+    nullable: true,
+    name: 'franceconnect_authentication_url',
+  })
   franceconnectAuthenticationUrl: string;
 
   @ApiProperty({ enum: StatusHabilitationEnum })
