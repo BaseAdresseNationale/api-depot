@@ -1,3 +1,8 @@
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
+import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   Global,
@@ -5,33 +10,36 @@ import {
   Module,
   ValidationPipe,
 } from '@nestjs/common';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Connection, connect, Model } from 'mongoose';
-import { ObjectId } from 'mongodb';
 import * as request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
 import { add } from 'date-fns';
 import * as fs from 'fs';
 import axios from 'axios';
 
-import { AuthorizationStrategyEnum, Client } from '../client/client.schema';
 import {
-  ChefDeFile,
-  TypePerimeterEnum,
-} from '../chef_de_file/chef_de_file.schema';
-import { Mandataire } from '../mandataire/mandataire.schema';
+  AuthorizationStrategyEnum,
+  Client as Client2,
+} from '../client/client.entity';
+import { ChefDeFile } from '../chef_de_file/chef_de_file.entity';
+import { Mandataire } from '../mandataire/mandataire.entity';
 import { RevisionModule } from './revision.module';
 import {
   Habilitation,
   StatusHabilitationEnum,
   TypeStrategyEnum,
-} from '../habilitation/habilitation.schema';
-import { Context, Revision, StatusRevisionEnum } from './revision.schema';
+} from '../habilitation/habilitation.entity';
+import { Context, Revision, StatusRevisionEnum } from './revision.entity';
 import { S3Service } from '../file/s3.service';
-import { File } from '../file/file.schema';
+import { File } from '../file/file.entity';
 import { join } from 'path';
 import { MailerService } from '@nestjs-modules/mailer';
+import { Repository } from 'typeorm';
+import {
+  Perimeter,
+  TypePerimeterEnum,
+} from '../chef_de_file/perimeters.entity';
+import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
+import { ObjectId } from 'bson';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
@@ -52,25 +60,53 @@ class MailerModule {}
 
 describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
-  let mongod: MongoMemoryServer;
-  let mongoConnection: Connection;
+  let postgresContainer: StartedPostgreSqlContainer;
+  let postgresClient: Client;
+  let mandataireRepository: Repository<Mandataire>;
+  let clientRepository: Repository<Client2>;
+  let chefDeFileRepository: Repository<ChefDeFile>;
+  let habilitationRepository: Repository<Habilitation>;
+  let revisionRepository: Repository<Revision>;
+  let fileRepository: Repository<File>;
+
   const axiosMock = new MockAdapter(axios);
-  let clientModel: Model<Client>;
-  let mandataireModel: Model<Mandataire>;
-  let chefDefileModel: Model<ChefDeFile>;
-  let habilitationModel: Model<Habilitation>;
-  let revisionModel: Model<Revision>;
-  let fileModel: Model<File>;
   let s3Service: S3Service;
 
   beforeAll(async () => {
     // INIT DB
-    mongod = await MongoMemoryServer.create();
-    const uri = mongod.getUri();
-    mongoConnection = (await connect(uri)).connection;
+    postgresContainer = await new PostgreSqlContainer().start();
+    postgresClient = new Client({
+      host: postgresContainer.getHost(),
+      port: postgresContainer.getPort(),
+      database: postgresContainer.getDatabase(),
+      user: postgresContainer.getUsername(),
+      password: postgresContainer.getPassword(),
+    });
+    await postgresClient.connect();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [MongooseModule.forRoot(uri), RevisionModule, MailerModule],
+      imports: [
+        TypeOrmModule.forRoot({
+          type: 'postgres',
+          host: postgresContainer.getHost(),
+          port: postgresContainer.getPort(),
+          username: postgresContainer.getUsername(),
+          password: postgresContainer.getPassword(),
+          database: postgresContainer.getDatabase(),
+          synchronize: true,
+          entities: [
+            Client2,
+            ChefDeFile,
+            Perimeter,
+            Habilitation,
+            Revision,
+            File,
+            Mandataire,
+          ],
+        }),
+        RevisionModule,
+        MailerModule,
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -78,36 +114,29 @@ describe('PUBLICATION MODULE', () => {
     await app.init();
 
     // INIT MODEL
-    clientModel = app.get<Model<Client>>(getModelToken(Client.name));
-    mandataireModel = app.get<Model<Mandataire>>(
-      getModelToken(Mandataire.name),
-    );
-    chefDefileModel = app.get<Model<ChefDeFile>>(
-      getModelToken(ChefDeFile.name),
-    );
-    habilitationModel = app.get<Model<Habilitation>>(
-      getModelToken(Habilitation.name),
-    );
-    revisionModel = app.get<Model<Revision>>(getModelToken(Revision.name));
-    fileModel = app.get<Model<File>>(getModelToken(File.name));
+    mandataireRepository = app.get(getRepositoryToken(Mandataire));
+    clientRepository = app.get(getRepositoryToken(Client2));
+    chefDeFileRepository = app.get(getRepositoryToken(ChefDeFile));
+    habilitationRepository = app.get(getRepositoryToken(Habilitation));
+    revisionRepository = app.get(getRepositoryToken(Revision));
+    fileRepository = app.get(getRepositoryToken(File));
     s3Service = app.get<S3Service>(S3Service);
   });
 
   afterAll(async () => {
-    await mongoConnection.dropDatabase();
-    await mongoConnection.close();
-    await mongod.stop();
-    axiosMock.reset();
+    await postgresClient.end();
+    await postgresContainer.stop();
     await app.close();
+    axiosMock.reset();
   });
 
   afterEach(async () => {
-    await clientModel.deleteMany({});
-    await mandataireModel.deleteMany({});
-    await chefDefileModel.deleteMany({});
-    await habilitationModel.deleteMany({});
-    await revisionModel.deleteMany({});
-    await fileModel.deleteMany({});
+    await mandataireRepository.delete({});
+    await clientRepository.delete({});
+    await chefDeFileRepository.delete({});
+    await habilitationRepository.delete({});
+    await revisionRepository.delete({});
+    await fileRepository.delete({});
   });
 
   function readFile(relativePath: string) {
@@ -115,28 +144,57 @@ describe('PUBLICATION MODULE', () => {
     return fs.readFileSync(absolutePath);
   }
 
-  async function createClient(
-    props: Partial<Client> = {},
+  async function createClient2(
+    props: Partial<Client2> = {},
     propsChefDeFile: Partial<ChefDeFile> = {},
-  ): Promise<Client> {
-    const mandataire = await mandataireModel.create({
+  ): Promise<Client2> {
+    const mandataireToSave = await mandataireRepository.create({
       nom: 'mandataire',
-      email: 'mandataire@test.fr',
+      email: 'mandataire@test.com',
     });
-    const chefDeFile = await chefDefileModel.create({
-      ...propsChefDeFile,
+    const mandataire = await mandataireRepository.save(mandataireToSave);
+    const chefDeFileToSave = await chefDeFileRepository.create({
       nom: 'chefDeFile',
       email: 'chefDeFile@test.fr',
       isEmailPublic: true,
+      ...propsChefDeFile,
     });
-    return clientModel.create({
+    const chefDeFile = await chefDeFileRepository.save(chefDeFileToSave);
+    const clientToSave: Client2 = await clientRepository.create({
       ...props,
       nom: 'test',
-      email: 'test@test.fr',
       token: 'xxxx',
-      mandataire: mandataire._id,
-      chefDeFile: chefDeFile._id,
+      authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
+      mandataireId: mandataire.id,
+      chefDeFileId: chefDeFile.id,
     });
+    return clientRepository.save(clientToSave);
+  }
+
+  async function createRevision(
+    props: Partial<Revision> = {},
+  ): Promise<Revision> {
+    const revisionToSave: Revision = await revisionRepository.create({
+      ...props,
+    });
+    return revisionRepository.save(revisionToSave);
+  }
+
+  async function createFile(props: Partial<File> = {}): Promise<File> {
+    const fileToSave: File = await fileRepository.create({
+      ...props,
+    });
+    return fileRepository.save(fileToSave);
+  }
+
+  async function createHabilitation(
+    props: Partial<Habilitation> = {},
+  ): Promise<Habilitation> {
+    const habilitationToSave: Habilitation =
+      await habilitationRepository.create({
+        ...props,
+      });
+    return habilitationRepository.save(habilitationToSave);
   }
 
   describe('POST communes/:codeCommune/revisions', () => {
@@ -154,7 +212,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('GUARD CLIENT INACTIF', async () => {
-      const client: Client = await createClient({ active: false });
+      const client: Client2 = await createClient2({ active: false });
 
       await request(app.getHttpServer())
         .post(`/communes/91534/revisions`)
@@ -163,7 +221,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMMUNE MIDDLEWARE', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await request(app.getHttpServer())
         .post(`/communes/coucou/revisions`)
@@ -172,7 +230,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('POST communes/:codeCommune/revisions without context', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       const { body } = await request(app.getHttpServer())
         .post(`/communes/91534/revisions`)
@@ -183,7 +241,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('POST communes/:codeCommune/revisions with context', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       const context: Context = {
         organisation: 'organization',
@@ -201,7 +259,7 @@ describe('PUBLICATION MODULE', () => {
 
       expect(body.codeCommune).toBe('91534');
       expect(body.client).toMatchObject({
-        _id: client._id.toHexString(),
+        id: client.id,
         nom: 'test',
         mandataire: 'mandataire',
         chefDeFile: 'chefDeFile',
@@ -219,7 +277,7 @@ describe('PUBLICATION MODULE', () => {
 
   describe('POST revisions/:revisionId/files/bal', () => {
     it('REVISION MIDDLEWARE BAD OBJECT ID', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await request(app.getHttpServer())
         .put(`/revisions/coucou/files/bal`)
@@ -231,7 +289,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION MIDDLEWARE BAD', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const id = new ObjectId().toHexString();
       await request(app.getHttpServer())
         .put(`/revisions/${id}/files/bal`)
@@ -243,13 +301,13 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION GUARD', async () => {
-      const client: Client = await createClient();
-      const revision = await revisionModel.create({
+      const client: Client2 = await createClient2();
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: new ObjectId().toHexString(),
+        clientId: new ObjectId().toHexString(),
       });
       await request(app.getHttpServer())
-        .put(`/revisions/${revision._id.toHexString()}/files/bal`)
+        .put(`/revisions/${revision.id}/files/bal`)
         .set('authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 403,
@@ -258,13 +316,13 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('FILE GUARD NO FILE', async () => {
-      const client: Client = await createClient();
-      const revision = await revisionModel.create({
+      const client: Client2 = await createClient2();
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
       });
       await request(app.getHttpServer())
-        .put(`/revisions/${revision._id.toHexString()}/files/bal`)
+        .put(`/revisions/${revision.id}/files/bal`)
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 404,
@@ -273,14 +331,14 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('FILE GUARD Content-Encoding', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const file = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
       });
       await request(app.getHttpServer())
-        .put(`/revisions/${revision._id.toHexString()}/files/bal`)
+        .put(`/revisions/${revision.id}/files/bal`)
         .set('Authorization', `Bearer ${client.token}`)
         .set('Content-Encoding', `gzip`)
         .send(file)
@@ -291,14 +349,14 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('FILE GUARD Content-MD5', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const file = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
       });
       await request(app.getHttpServer())
-        .put(`/revisions/${revision._id.toHexString()}/files/bal`)
+        .put(`/revisions/${revision.id}/files/bal`)
         .set('Authorization', `Bearer ${client.token}`)
         .set('Content-MD5', `coucou`)
         .send(file)
@@ -310,15 +368,15 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION ALREADY PUBLISHED', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const file = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
       });
       await request(app.getHttpServer())
-        .put(`/revisions/${revision._id.toHexString()}/files/bal`)
+        .put(`/revisions/${revision.id}/files/bal`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file)
         .expect({
@@ -328,16 +386,16 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION ALREADY FILE', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const file = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      fileModel.create({ revisionId: revision._id });
+      await createFile({ revisionId: revision.id });
       await request(app.getHttpServer())
-        .put(`/revisions/${revision._id.toHexString()}/files/bal`)
+        .put(`/revisions/${revision.id}/files/bal`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file)
         .expect({
@@ -347,14 +405,14 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('ATTACH FILE', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const file = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const fileId = new ObjectId();
+      const fileId = new ObjectId().toHexString();
       jest
         .spyOn(s3Service, 'writeFile')
         .mockImplementation(async (buffer: Buffer) => {
@@ -363,13 +421,13 @@ describe('PUBLICATION MODULE', () => {
         });
 
       const { body } = await request(app.getHttpServer())
-        .put(`/revisions/${revision._id.toHexString()}/files/bal`)
+        .put(`/revisions/${revision.id}/files/bal`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file);
 
       const expected = {
-        _id: fileId.toHexString(),
-        revisionId: revision._id.toHexString(),
+        id: fileId,
+        revisionId: revision.id,
         name: null,
         type: 'bal',
       };
@@ -379,14 +437,14 @@ describe('PUBLICATION MODULE', () => {
 
   describe('POST revisions/:revisionId/compute', () => {
     it('COMPUTE REVISION ALREADY PUBLISHED', async () => {
-      const client: Client = await createClient();
-      const revision = await revisionModel.create({
+      const client: Client2 = await createClient2();
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
       });
       await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .post(`/revisions/${revision.id}/compute`)
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 412,
@@ -395,14 +453,14 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION NO FILE', async () => {
-      const client: Client = await createClient();
-      const revision = await revisionModel.create({
+      const client: Client2 = await createClient2();
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
       await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .post(`/revisions/${revision.id}/compute`)
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 404,
@@ -411,25 +469,25 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION BAD CODE INSEE', async () => {
-      const client: Client = await createClient({
-        options: { relaxMode: true },
+      const client: Client2 = await createClient2({
+        modeRelax: true,
       });
       const fileData = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '91534',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await fileModel.create({ revisionId: revision._id });
+      const file = await createFile({ revisionId: revision.id });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
-          expect(fileId).toEqual(file._id.toHexString());
+          expect(fileId).toEqual(file.id);
           return fileData;
         });
 
       const { body } = await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .post(`/revisions/${revision.id}/compute`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file);
 
@@ -444,25 +502,25 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
-      const client: Client = await createClient({
-        options: { relaxMode: true },
+      const client: Client2 = await createClient2({
+        modeRelax: true,
       });
       const fileData = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await fileModel.create({ revisionId: revision._id });
+      const file = await createFile({ revisionId: revision.id });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
-          expect(fileId).toEqual(file._id.toHexString());
+          expect(fileId).toEqual(file.id);
           return fileData;
         });
 
       const { body } = await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .post(`/revisions/${revision.id}/compute`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file);
       expect(body.status).toBe(StatusRevisionEnum.PENDING);
@@ -476,25 +534,25 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
-      const client: Client = await createClient({
-        options: { relaxMode: true },
+      const client: Client2 = await createClient2({
+        modeRelax: true,
       });
       const fileData = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await fileModel.create({ revisionId: revision._id });
+      const file = await createFile({ revisionId: revision.id });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
-          expect(fileId).toEqual(file._id.toHexString());
+          expect(fileId).toEqual(file.id);
           return fileData;
         });
 
       const { body } = await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .post(`/revisions/${revision.id}/compute`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file);
       expect(body.status).toBe(StatusRevisionEnum.PENDING);
@@ -508,12 +566,12 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION', async () => {
-      const client: Client = await createClient(
+      const client: Client2 = await createClient2(
         {
-          options: { relaxMode: true },
+          modeRelax: true,
         },
         {
-          perimetre: [
+          perimeters: [
             {
               type: TypePerimeterEnum.COMMUNE,
               code: '31591',
@@ -522,21 +580,21 @@ describe('PUBLICATION MODULE', () => {
         },
       );
       const fileData = readFile('1.3-valid.csv');
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await fileModel.create({ revisionId: revision._id });
+      const file = await createFile({ revisionId: revision.id });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
-          expect(fileId).toEqual(file._id.toHexString());
+          expect(fileId).toEqual(file.id);
           return fileData;
         });
 
       const { body } = await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/compute`)
+        .post(`/revisions/${revision.id}/compute`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file);
       expect(body.status).toBe(StatusRevisionEnum.PENDING);
@@ -550,18 +608,18 @@ describe('PUBLICATION MODULE', () => {
 
   describe('POST revisions/:revisionId/publish', () => {
     it('PUBLISH REVISION HABILITATION REQUIRED', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         nom: 'test',
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         ready: true,
       });
       await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .post(`/revisions/${revision.id}/publish`)
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 400,
@@ -570,18 +628,18 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION BAD HABILITATION', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         ready: true,
       });
       const habilitationId = new ObjectId().toHexString();
       await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .post(`/revisions/${revision.id}/publish`)
         .send({ habilitationId })
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
@@ -591,48 +649,48 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION HABILITATION NOT VALID', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         ready: true,
       });
-      const habilitation = await habilitationModel.create({
+      const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.PENDING,
       });
       await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/publish`)
-        .send({ habilitationId: habilitation._id.toHexString() })
+        .post(`/revisions/${revision.id}/publish`)
+        .send({ habilitationId: habilitation.id })
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 404,
-          message: `L’habilitation ${habilitation._id.toHexString()} n’est pas valide`,
+          message: `L’habilitation ${habilitation.id} n’est pas valide`,
         });
     });
 
     it('PUBLISH REVISION NOT READY', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         ready: false,
       });
       const expiresAt = add(new Date(), { years: 1 });
-      const habilitation = await habilitationModel.create({
+      const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.ACCEPTED,
         expiresAt,
         codeCommune: '31591',
-        client: client._id,
+        clientId: client.id,
       });
       await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/publish`)
-        .send({ habilitationId: habilitation._id.toHexString() })
+        .post(`/revisions/${revision.id}/publish`)
+        .send({ habilitationId: habilitation.id })
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 412,
@@ -641,25 +699,25 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION ALREADY PUBLISHED', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         ready: false,
       });
       const expiresAt = add(new Date(), { years: 1 });
-      const habilitation = await habilitationModel.create({
+      const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.ACCEPTED,
         expiresAt,
         codeCommune: '31591',
-        client: client._id,
+        clientId: client.id,
       });
       await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/publish`)
-        .send({ habilitationId: habilitation._id.toHexString() })
+        .post(`/revisions/${revision.id}/publish`)
+        .send({ habilitationId: habilitation.id })
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 412,
@@ -668,28 +726,28 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION FIRST PUBLISH', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         ready: true,
       });
       const expiresAt = add(new Date(), { years: 1 });
-      const habilitation = await habilitationModel.create({
+      const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.ACCEPTED,
         expiresAt,
         codeCommune: '31591',
-        client: client._id,
+        clientId: client.id,
         strategy: {
           type: TypeStrategyEnum.EMAIL,
         },
       });
       const { body } = await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/publish`)
-        .send({ habilitationId: habilitation._id.toHexString() })
+        .post(`/revisions/${revision.id}/publish`)
+        .send({ habilitationId: habilitation.id })
         .set('Authorization', `Bearer ${client.token}`)
         .expect(200);
 
@@ -698,24 +756,24 @@ describe('PUBLICATION MODULE', () => {
       expect(body.current).toBeTruthy();
       expect(body.ready).toBeNull();
       expect(body.habilitation).toMatchObject({
-        _id: habilitation._id.toHexString(),
+        id: habilitation.id,
         codeCommune: '31591',
         expiresAt: expiresAt.toISOString(),
       });
     });
 
     it('PUBLISH REVISION WITHOUT HABILITATION', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
       });
-      const revision = await revisionModel.create({
+      const revision = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         ready: true,
       });
       const { body } = await request(app.getHttpServer())
-        .post(`/revisions/${revision._id.toHexString()}/publish`)
+        .post(`/revisions/${revision.id}/publish`)
         .set('Authorization', `Bearer ${client.token}`)
         .expect(200);
       expect(body.publishedAt).toBeDefined();
@@ -725,31 +783,30 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION MULTI REVISION', async () => {
-      const client: Client = await createClient({
+      const client: Client2 = await createClient2({
         authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
       });
-      const revision1 = await revisionModel.create({
+      const revision1 = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         ready: true,
       });
-      const { _id: readyId } = await revisionModel.create({
+      const { id: readyId } = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         current: false,
         ready: false,
       });
-
-      const { _id: currentId } = await revisionModel.create({
+      const { id: currentId } = await createRevision({
         codeCommune: '31591',
-        client: client._id.toHexString(),
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
       const { body } = await request(app.getHttpServer())
-        .post(`/revisions/${revision1._id.toHexString()}/publish`)
+        .post(`/revisions/${revision1.id}/publish`)
         .set('Authorization', `Bearer ${client.token}`)
         .expect(200);
       expect(body.publishedAt).toBeDefined();
@@ -757,10 +814,10 @@ describe('PUBLICATION MODULE', () => {
       expect(body.current).toBeTruthy();
       expect(body.ready).toBeNull();
 
-      const oldRevision = await revisionModel.findById(currentId);
+      const oldRevision = await revisionRepository.findOneBy({ id: currentId });
       expect(oldRevision.current).toBeFalsy();
 
-      const readyRevision = await revisionModel.findById(readyId);
+      const readyRevision = await revisionRepository.findOneBy({ id: readyId });
       expect(readyRevision.ready).toBeFalsy();
     });
   });
