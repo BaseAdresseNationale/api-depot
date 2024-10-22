@@ -16,7 +16,10 @@ import { sub } from 'date-fns';
 import axios from 'axios';
 import { MailerService } from '@nestjs-modules/mailer';
 
-import { Client as Client2 } from '../client/client.entity';
+import {
+  AuthorizationStrategyEnum,
+  Client as Client2,
+} from '../client/client.entity';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.entity';
 import { Mandataire } from '../mandataire/mandataire.entity';
 import { RevisionModule } from './revision.module';
@@ -92,7 +95,6 @@ describe('REVISION MODULE', () => {
             Mandataire,
           ],
         }),
-        ,
         RevisionModule,
         MailerModule,
       ],
@@ -128,7 +130,7 @@ describe('REVISION MODULE', () => {
     await fileRepository.delete({});
   });
 
-  async function createClient(props: Partial<Client2> = {}): Promise<Client2> {
+  async function createClient2(props: Partial<Client2> = {}): Promise<Client2> {
     const mandataireToSave = await mandataireRepository.create({
       nom: 'mandataire',
       email: 'mandataire@test.com',
@@ -136,13 +138,15 @@ describe('REVISION MODULE', () => {
     const mandataire = await mandataireRepository.save(mandataireToSave);
     const chefDeFileToSave = await chefDeFileRepository.create({
       nom: 'chefDeFile',
-      email: 'chefDeFile@test.com',
+      email: 'chefDeFile@test.fr',
+      isEmailPublic: true,
     });
     const chefDeFile = await chefDeFileRepository.save(chefDeFileToSave);
     const clientToSave: Client2 = await clientRepository.create({
       ...props,
       nom: 'test',
       token: 'xxxx',
+      authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
       mandataireId: mandataire.id,
       chefDeFileId: chefDeFile.id,
     });
@@ -152,7 +156,7 @@ describe('REVISION MODULE', () => {
   async function createRevision(
     props: Partial<Revision> = {},
   ): Promise<Revision> {
-    const revisionToSave: Revision = await createRevision({
+    const revisionToSave: Revision = await revisionRepository.create({
       ...props,
     });
     return revisionRepository.save(revisionToSave);
@@ -160,18 +164,18 @@ describe('REVISION MODULE', () => {
 
   describe('GET /current-revisions', () => {
     it('GET /current-revisions MULTI COMMUNE', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91477',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
@@ -183,11 +187,11 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /current-revisions DETAIL ONE', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
         publishedAt: new Date(),
@@ -195,14 +199,14 @@ describe('REVISION MODULE', () => {
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: false,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         current: false,
       });
@@ -225,11 +229,11 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /current-revisions publishedSince 1 revisions', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
         publishedAt: sub(new Date(), { years: 1 }),
@@ -237,7 +241,7 @@ describe('REVISION MODULE', () => {
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
         publishedAt: sub(new Date(), { weeks: 1 }),
@@ -261,11 +265,11 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
         publishedAt: sub(new Date(), { years: 1 }),
@@ -296,25 +300,25 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: false,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         current: false,
       });
@@ -337,25 +341,25 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions?status=published', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: false,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         current: false,
       });
@@ -378,25 +382,25 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions?status=pending', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: false,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         current: false,
       });
@@ -419,25 +423,25 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions?status=all', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: false,
       });
 
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PENDING,
         current: false,
       });
@@ -468,10 +472,10 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision/files/bal/download NOT CURRENT', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: false,
       });
@@ -482,10 +486,10 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision/files/bal/download NO FILE', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
@@ -496,30 +500,32 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision/files/bal/download', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const { id: revisionId } = await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
 
-      const { id } = await fileRepository.create({ revisionId });
-
+      const fileToSave: File = await fileRepository.create({
+        id: new ObjectId().toHexString(),
+        revisionId,
+      });
+      const file = await fileRepository.save(fileToSave);
       const fileData = Buffer.from('file data');
 
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
-          expect(fileId).toBe(id);
+          expect(fileId).toBe(file.id);
           return fileData;
         });
 
-      const { text } = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/communes/91534/current-revision/files/bal/download`)
         .expect(200);
-
-      expect(text).toEqual(fileData.toString());
+      expect(response.text).toEqual(fileData.toString());
     });
   });
 
@@ -535,11 +541,11 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /revisions/:revisionId', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
 
       const { id } = await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
@@ -575,10 +581,10 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /revisions/:revisionId/files/bal/download NO FILE', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const { id } = await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
@@ -589,22 +595,26 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /revisions/:revisionId/files/bal/download', async () => {
-      const client: Client = await createClient();
+      const client: Client2 = await createClient2();
       const { id: revisionId } = await createRevision({
         codeCommune: '91534',
-        client: client.id,
+        clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         current: true,
       });
 
-      const { id } = await fileRepository.create({ revisionId });
+      const fileToSave: File = await fileRepository.create({
+        id: new ObjectId().toHexString(),
+        revisionId,
+      });
+      const file = await fileRepository.save(fileToSave);
 
       const fileData = Buffer.from('file data');
 
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
-          expect(fileId).toBe(id);
+          expect(fileId).toBe(file.id);
           return fileData;
         });
 

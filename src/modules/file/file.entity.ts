@@ -36,7 +36,7 @@ export class File {
   @ApiProperty({ enum: TypeFileEnum })
   @Column('enum', {
     enum: TypeFileEnum,
-    nullable: false,
+    default: TypeFileEnum.BAL,
     name: 'type',
     enumName: 'type_file_enum',
   })
