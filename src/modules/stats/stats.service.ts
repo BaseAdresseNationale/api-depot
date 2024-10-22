@@ -16,10 +16,10 @@ const CLIENTS_TO_MONITOR = {
   moissonneur: 'moissonneur-bal',
 };
 
-interface RevisionAgg {
-  _id: string;
+export interface RevisionAgg {
+  codeCommune: string;
   publishedAt: Date;
-  client: string;
+  clientId: string;
 }
 
 @Injectable()
@@ -37,28 +37,13 @@ export class StatService {
       specId: In(Object.values(CLIENTS_TO_MONITOR)),
     });
 
-    this.clientsToMonitorIndex = keyBy(clientsToMonitor, '_id');
+    this.clientsToMonitorIndex = keyBy(clientsToMonitor, 'id');
   }
 
   public async findFirstPublications(
     dates: DateFromToQueryTransformed,
   ): Promise<FirstPublicationDTO[]> {
-    const revisionAgg: RevisionAgg[] = []; //await this.revisionService.aggregate([
-    //   {
-    //     $match: {
-    //       publishedAt: {
-    //         $ne: null,
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: { codeCommune: '$codeCommune' },
-    //       publishedAt: { $first: '$publishedAt' },
-    //       client: { $first: '$client' },
-    //     },
-    //   },
-    // ]);
+    const revisionAgg: RevisionAgg[] = await this.revisionService.findFirsts();
     const cumulFirstRevisionsByDate: FirstPublicationDTO[] = [];
     for (
       let dateIterator = endOfDay(new Date(dates.from.getTime()));
@@ -72,13 +57,13 @@ export class StatService {
         date: format(dateIterator, 'yyyy-MM-dd'),
         totalCreations: dailyCreations.length,
         viaMesAdresses: dailyCreations.filter(
-          ({ client }) =>
-            this.clientsToMonitorIndex[client]?.id ===
+          ({ clientId }) =>
+            this.clientsToMonitorIndex[clientId]?.specId ===
             CLIENTS_TO_MONITOR.mesAdresses,
         ).length,
         viaMoissonneur: dailyCreations.filter(
-          ({ client }) =>
-            this.clientsToMonitorIndex[client]?.id ===
+          ({ clientId }) =>
+            this.clientsToMonitorIndex[clientId]?.specId ===
             CLIENTS_TO_MONITOR.moissonneur,
         ).length,
       });

@@ -28,6 +28,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { RevisionAgg } from '../stats/stats.service';
 
 @Injectable()
 export class RevisionService {
@@ -69,6 +70,17 @@ export class RevisionService {
     }
 
     return revision;
+  }
+
+  async findFirsts(): Promise<RevisionAgg[]> {
+    const query = this.revisionRepository
+      .createQueryBuilder('revisions')
+      .select('DISTINCT ON (code_commune) code_commune', 'codeCommune')
+      .addSelect('revisions.published_at', 'publishedAt')
+      .addSelect('revisions.client_id', 'clientId')
+      .orderBy('code_commune, published_at');
+
+    return query.getRawMany();
   }
 
   public async findCurrents(publishedSince: Date | null = null) {
