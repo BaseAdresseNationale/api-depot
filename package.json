@@ -90,7 +90,7 @@
       "ts"
     ],
     "rootDir": ".",
-    "testRegex": "chef_de_file.spec.ts",
+    "testRegex": "client.spec.ts",
     "testTimeout": 6000000,
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
