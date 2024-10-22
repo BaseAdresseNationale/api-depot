@@ -9,7 +9,7 @@ import { Response, NextFunction } from 'express';
 import { CustomRequest } from '@/lib/types/request.type';
 import { HabilitationService } from './habilitation.service';
 import { Habilitation } from './habilitation.entity';
-import { isObjectIdOrHexString } from 'mongoose';
+import { ObjectId } from 'bson';
 
 @Injectable()
 export class HabilitationMiddleware implements NestMiddleware {
@@ -18,7 +18,7 @@ export class HabilitationMiddleware implements NestMiddleware {
   async use(req: CustomRequest, res: Response, next: NextFunction) {
     const { habilitationId } = req.params;
     if (habilitationId) {
-      if (!isObjectIdOrHexString(habilitationId)) {
+      if (!ObjectId.isValid(habilitationId)) {
         throw new HttpException(
           `Habilitation Id ${habilitationId} is not ObjectId`,
           HttpStatus.BAD_REQUEST,

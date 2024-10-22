@@ -8,7 +8,7 @@ import {
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Readable } from 'stream';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 
 @Injectable()
 export class S3Service {

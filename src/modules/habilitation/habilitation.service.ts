@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import * as randomNumber from 'random-number-csprng';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';

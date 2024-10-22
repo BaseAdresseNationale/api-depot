@@ -8,7 +8,7 @@ import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { ClientService } from './client.service';
-import { isObjectIdOrHexString } from 'mongoose';
+import { ObjectId } from 'bson';
 import { Client } from './client.entity';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class ClientMiddleware implements NestMiddleware {
   async use(req: CustomRequest, res: Response, next: NextFunction) {
     const { clientId } = req.params;
     if (clientId) {
-      if (!isObjectIdOrHexString(clientId)) {
+      if (!ObjectId.isValid(clientId)) {
         throw new HttpException(
           `Client Id ${clientId} is not ObjectId`,
           HttpStatus.BAD_REQUEST,
