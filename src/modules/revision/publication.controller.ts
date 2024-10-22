@@ -23,7 +23,7 @@ import { Response } from 'express';
 import { CustomRequest } from '@/lib/types/request.type';
 import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { RevisionGuard } from '@/lib/class/guards/revision.guard';
-import { File } from '@/modules/file/file.schema';
+import { File } from '@/modules/file/file.entity';
 import { Revision } from './revision.entity';
 import { RevisionService } from './revision.service';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
