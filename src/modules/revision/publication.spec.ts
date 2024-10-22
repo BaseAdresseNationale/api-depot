@@ -40,6 +40,7 @@ import {
 } from '../chef_de_file/perimeters.entity';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { ObjectId } from 'bson';
+import { generateToken } from '@/lib/utils/token.utils';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
@@ -144,7 +145,7 @@ describe('PUBLICATION MODULE', () => {
     return fs.readFileSync(absolutePath);
   }
 
-  async function createClient2(
+  async function createClient(
     props: Partial<Client2> = {},
     propsChefDeFile: Partial<ChefDeFile> = {},
   ): Promise<Client2> {
@@ -161,12 +162,12 @@ describe('PUBLICATION MODULE', () => {
     });
     const chefDeFile = await chefDeFileRepository.save(chefDeFileToSave);
     const clientToSave: Client2 = await clientRepository.create({
-      ...props,
       nom: 'test',
       token: 'xxxx',
       authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
       mandataireId: mandataire.id,
       chefDeFileId: chefDeFile.id,
+      ...props,
     });
     return clientRepository.save(clientToSave);
   }
@@ -212,7 +213,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('GUARD CLIENT INACTIF', async () => {
-      const client: Client2 = await createClient2({ active: false });
+      const client: Client2 = await createClient({ active: false });
 
       await request(app.getHttpServer())
         .post(`/communes/91534/revisions`)
@@ -221,7 +222,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMMUNE MIDDLEWARE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await request(app.getHttpServer())
         .post(`/communes/coucou/revisions`)
@@ -230,7 +231,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('POST communes/:codeCommune/revisions without context', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       const { body } = await request(app.getHttpServer())
         .post(`/communes/91534/revisions`)
@@ -241,7 +242,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('POST communes/:codeCommune/revisions with context', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       const context: Context = {
         organisation: 'organization',
@@ -267,7 +268,7 @@ describe('PUBLICATION MODULE', () => {
       });
       expect(body.status).toBe(StatusRevisionEnum.PENDING);
       expect(body.ready).toBeFalsy();
-      expect(body.validation).toEqual({});
+      expect(body.validation).toEqual(null);
       expect(body.publishedAt).toBeNull();
       expect(body.createdAt).toBeDefined();
       expect(body.updatedAt).toBeDefined();
@@ -277,7 +278,7 @@ describe('PUBLICATION MODULE', () => {
 
   describe('POST revisions/:revisionId/files/bal', () => {
     it('REVISION MIDDLEWARE BAD OBJECT ID', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await request(app.getHttpServer())
         .put(`/revisions/coucou/files/bal`)
@@ -289,7 +290,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION MIDDLEWARE BAD', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const id = new ObjectId().toHexString();
       await request(app.getHttpServer())
         .put(`/revisions/${id}/files/bal`)
@@ -301,14 +302,18 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION GUARD', async () => {
-      const client: Client2 = await createClient2();
+      const token1: string = generateToken();
+      const token2: string = generateToken();
+      const client: Client2 = await createClient({ token: token1 });
+      const client2: Client2 = await createClient({ token: token2 });
+
       const revision = await createRevision({
         codeCommune: '91534',
-        clientId: new ObjectId().toHexString(),
+        clientId: client.id,
       });
       await request(app.getHttpServer())
         .put(`/revisions/${revision.id}/files/bal`)
-        .set('authorization', `Bearer ${client.token}`)
+        .set('authorization', `Bearer ${client2.token}`)
         .expect({
           statusCode: 403,
           message: 'Vous n’êtes pas autorisé à accéder à cette révision',
@@ -316,7 +321,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('FILE GUARD NO FILE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const revision = await createRevision({
         codeCommune: '91534',
         clientId: client.id,
@@ -331,7 +336,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('FILE GUARD Content-Encoding', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const file = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '91534',
@@ -349,7 +354,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('FILE GUARD Content-MD5', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const file = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '91534',
@@ -368,7 +373,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION ALREADY PUBLISHED', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const file = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '91534',
@@ -386,14 +391,17 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('REVISION ALREADY FILE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const file = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      await createFile({ revisionId: revision.id });
+      await createFile({
+        id: new ObjectId().toHexString(),
+        revisionId: revision.id,
+      });
       await request(app.getHttpServer())
         .put(`/revisions/${revision.id}/files/bal`)
         .set('Authorization', `Bearer ${client.token}`)
@@ -405,7 +413,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('ATTACH FILE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const file = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '91534',
@@ -428,7 +436,6 @@ describe('PUBLICATION MODULE', () => {
       const expected = {
         id: fileId,
         revisionId: revision.id,
-        name: null,
         type: 'bal',
       };
       expect(body).toMatchObject(expected);
@@ -437,7 +444,7 @@ describe('PUBLICATION MODULE', () => {
 
   describe('POST revisions/:revisionId/compute', () => {
     it('COMPUTE REVISION ALREADY PUBLISHED', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const revision = await createRevision({
         codeCommune: '91534',
         clientId: client.id,
@@ -453,7 +460,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION NO FILE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const revision = await createRevision({
         codeCommune: '91534',
         clientId: client.id,
@@ -464,12 +471,12 @@ describe('PUBLICATION MODULE', () => {
         .set('Authorization', `Bearer ${client.token}`)
         .expect({
           statusCode: 404,
-          message: 'Aucun fichier de type `bal` associé à cette révision',
+          message: `Aucun fichier de type 'bal' associé à la révision ${revision.id}`,
         });
     });
 
     it('COMPUTE REVISION BAD CODE INSEE', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         modeRelax: true,
       });
       const fileData = readFile('1.3-valid.csv');
@@ -478,19 +485,23 @@ describe('PUBLICATION MODULE', () => {
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await createFile({ revisionId: revision.id });
+      const file = await createFile({
+        id: new ObjectId().toHexString(),
+        revisionId: revision.id,
+      });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
           expect(fileId).toEqual(file.id);
           return fileData;
         });
-
+      console.log('------------------------>');
+      console.log(revision);
       const { body } = await request(app.getHttpServer())
         .post(`/revisions/${revision.id}/compute`)
         .set('Authorization', `Bearer ${client.token}`)
         .send(file);
-
+      console.log(body);
       expect(body.status).toBe(StatusRevisionEnum.PENDING);
       expect(body.validation.valid).toBeFalsy();
       expect(body.validation.errors).toEqual(
@@ -502,7 +513,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         modeRelax: true,
       });
       const fileData = readFile('1.3-valid.csv');
@@ -511,7 +522,10 @@ describe('PUBLICATION MODULE', () => {
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await createFile({ revisionId: revision.id });
+      const file = await createFile({
+        id: new ObjectId().toHexString(),
+        revisionId: revision.id,
+      });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
@@ -534,7 +548,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         modeRelax: true,
       });
       const fileData = readFile('1.3-valid.csv');
@@ -543,7 +557,10 @@ describe('PUBLICATION MODULE', () => {
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await createFile({ revisionId: revision.id });
+      const file = await createFile({
+        id: new ObjectId().toHexString(),
+        revisionId: revision.id,
+      });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
@@ -566,7 +583,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION', async () => {
-      const client: Client2 = await createClient2(
+      const client: Client2 = await createClient(
         {
           modeRelax: true,
         },
@@ -585,7 +602,10 @@ describe('PUBLICATION MODULE', () => {
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
       });
-      const file = await createFile({ revisionId: revision.id });
+      const file = await createFile({
+        id: new ObjectId().toHexString(),
+        revisionId: revision.id,
+      });
       jest
         .spyOn(s3Service, 'getFile')
         .mockImplementation(async (fileId: string) => {
@@ -608,7 +628,7 @@ describe('PUBLICATION MODULE', () => {
 
   describe('POST revisions/:revisionId/publish', () => {
     it('PUBLISH REVISION HABILITATION REQUIRED', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         nom: 'test',
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
@@ -628,7 +648,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION BAD HABILITATION', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
       const revision = await createRevision({
@@ -649,7 +669,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION HABILITATION NOT VALID', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
       const revision = await createRevision({
@@ -672,7 +692,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION NOT READY', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
       const revision = await createRevision({
@@ -699,7 +719,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION ALREADY PUBLISHED', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
       const revision = await createRevision({
@@ -726,7 +746,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION FIRST PUBLISH', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         authorizationStrategy: AuthorizationStrategyEnum.HABILITATION,
       });
       const revision = await createRevision({
@@ -763,7 +783,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION WITHOUT HABILITATION', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
       });
       const revision = await createRevision({
@@ -783,7 +803,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('PUBLISH REVISION MULTI REVISION', async () => {
-      const client: Client2 = await createClient2({
+      const client: Client2 = await createClient({
         authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
       });
       const revision1 = await createRevision({

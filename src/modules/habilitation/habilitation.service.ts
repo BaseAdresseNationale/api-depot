@@ -91,6 +91,14 @@ export class HabilitationService {
     return this.habilitationRepository.save(entityToSave);
   }
 
+  public async updateOne(
+    habilitationId: string,
+    changes: Partial<Habilitation>,
+  ): Promise<Habilitation> {
+    await this.habilitationRepository.update({ id: habilitationId }, changes);
+    return this.habilitationRepository.findOneBy({ id: habilitationId });
+  }
+
   public async acceptHabilitation(
     habilitationId: string,
     changes: Partial<Habilitation> = {},
@@ -99,14 +107,12 @@ export class HabilitationService {
     const habilitationEnd = new Date();
     habilitationEnd.setMonth(habilitationEnd.getMonth() + 12);
 
-    const entityToSave: Habilitation = this.habilitationRepository.create({
-      id: habilitationId,
+    return this.updateOne(habilitationId, {
       ...changes,
       status: StatusHabilitationEnum.ACCEPTED,
       acceptedAt: now,
       expiresAt: habilitationEnd,
     });
-    return this.habilitationRepository.save(entityToSave);
   }
 
   public async rejectHabilitation(
@@ -117,13 +123,11 @@ export class HabilitationService {
     const habilitationEnd = new Date();
     habilitationEnd.setMonth(habilitationEnd.getMonth() + 12);
 
-    const entityToSave: Habilitation = this.habilitationRepository.create({
-      id: habilitationId,
+    return this.updateOne(habilitationId, {
       ...changes,
       status: StatusHabilitationEnum.REJECTED,
       rejectedAt: now,
     });
-    return this.habilitationRepository.save(entityToSave);
   }
 
   private hasBeenSentRecently(sentAt: Date) {
@@ -176,7 +180,7 @@ export class HabilitationService {
     const now = new Date();
     const pinCode = await this.generatePinCode();
 
-    const entityToSave: Habilitation = this.habilitationRepository.create({
+    const habilitation: Habilitation = await this.updateOne(body.id, {
       strategy: {
         type: TypeStrategyEnum.EMAIL,
         pinCode,
@@ -185,9 +189,6 @@ export class HabilitationService {
         createdAt: now,
       },
     });
-
-    const habilitation: Habilitation =
-      await this.habilitationRepository.save(entityToSave);
 
     const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
 

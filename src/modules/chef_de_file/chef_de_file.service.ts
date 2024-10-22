@@ -52,11 +52,7 @@ export class ChefDeFileService {
     chefDeFileId: string,
     changes: Partial<ChefDeFile>,
   ): Promise<ChefDeFile> {
-    const numeroToSave: ChefDeFile = this.chefsDeFileRepository.create({
-      id: chefDeFileId,
-      ...changes,
-    });
-
-    return this.chefsDeFileRepository.save(numeroToSave);
+    await this.chefsDeFileRepository.update({ id: chefDeFileId }, changes);
+    return this.chefsDeFileRepository.findOneBy({ id: chefDeFileId });
   }
 }

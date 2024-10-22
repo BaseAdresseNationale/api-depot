@@ -48,11 +48,7 @@ export class MandataireService {
     mandataireId: string,
     changes: Partial<Mandataire>,
   ): Promise<Mandataire> {
-    const numeroToSave: Mandataire = this.mandataireRepository.create({
-      id: mandataireId,
-      ...changes,
-    });
-
-    return this.mandataireRepository.save(numeroToSave);
+    await this.mandataireRepository.update({ id: mandataireId }, changes);
+    return this.mandataireRepository.findOneBy({ id: mandataireId });
   }
 }

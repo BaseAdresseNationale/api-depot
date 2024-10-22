@@ -109,12 +109,8 @@ export class ClientService {
       await this.mandataireService.findOneOrFail(changes.mandataireId);
     }
 
-    const entityToSave: Client = this.clientRepository.create({
-      id: clientId,
-      ...changes,
-    });
-
-    return this.clientRepository.save(entityToSave);
+    await this.clientRepository.update({ id: clientId }, changes);
+    return this.clientRepository.findOneBy({ id: clientId });
   }
 
   public filterSensitiveFields(client: Client): Omit<Client, 'token'> {
