@@ -130,9 +130,12 @@ export class HabilitationController {
   }
 
   // https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service
-  // @Get('/callback')
+  @Get(
+    process.env.NODE_ENV === 'production'
+      ? '/habilitations/franceconnect/callback'
+      : '/callback',
+  )
   @ApiExcludeEndpoint()
-  @Get('/habilitations/franceconnect/callback')
   @UseGuards(FranceConnectCallBackGuard)
   franceConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
     this.habilitationService.franceConnectCallback(
