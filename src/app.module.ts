@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
@@ -15,6 +14,10 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChefDeFile } from './modules/chef_de_file/chef_de_file.entity';
 import { Mandataire } from './modules/mandataire/mandataire.entity';
+import { Client } from './modules/client/client.entity';
+import { Revision } from './modules/revision/revision.entity';
+import { File } from './modules/file/file.entity';
+import { Habilitation } from './modules/habilitation/habilitation.entity';
 
 @Module({
   imports: [
@@ -30,15 +33,14 @@ import { Mandataire } from './modules/mandataire/mandataire.entity';
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
-        entities: [ChefDeFile, Mandataire],
-      }),
-      inject: [ConfigService],
-    }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
-        uri: config.get('MONGODB_URL'),
-        dbName: config.get('MONGODB_DBNAME'),
+        entities: [
+          ChefDeFile,
+          Mandataire,
+          Client,
+          Revision,
+          File,
+          Habilitation,
+        ],
       }),
       inject: [ConfigService],
     }),
