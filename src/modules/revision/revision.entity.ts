@@ -74,7 +74,7 @@ export class Revision extends IdEntity {
   @ApiProperty({ enum: StatusRevisionEnum })
   @Column('enum', {
     enum: StatusRevisionEnum,
-    nullable: false,
+    default: StatusRevisionEnum.PENDING,
     name: 'status',
     enumName: 'status_revision_enum',
   })

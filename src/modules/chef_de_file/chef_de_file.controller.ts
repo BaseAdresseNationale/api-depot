@@ -83,7 +83,7 @@ export class ChefDeFileController {
     @Res() res: Response,
   ) {
     const chefDeFile: ChefDeFile = await this.chefDeFileService.updateOne(
-      req.chefDeFile.id.toString(),
+      req.chefDeFile.id,
       body,
     );
     res.status(HttpStatus.OK).json(chefDeFile);

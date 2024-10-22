@@ -137,12 +137,8 @@ export class RevisionService {
     revisionId: string,
     changes: Partial<Revision>,
   ): Promise<Revision> {
-    const entityToSave: Revision = this.revisionRepository.create({
-      id: revisionId,
-      ...changes,
-    });
-
-    return this.revisionRepository.save(entityToSave);
+    await this.revisionRepository.update({ id: revisionId }, changes);
+    return this.revisionRepository.findOneBy({ id: revisionId });
   }
 
   public async expandWithClientAndFile(
