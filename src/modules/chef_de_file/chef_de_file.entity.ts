@@ -15,7 +15,11 @@ export class ChefDeFile extends IdEntity {
   email?: string;
 
   @ApiProperty()
-  @Column('boolean', { nullable: true, default: true, name: 'is_email_public' })
+  @Column('boolean', {
+    nullable: true,
+    default: false,
+    name: 'is_email_public',
+  })
   isEmailPublic: boolean;
 
   @ApiProperty({ type: () => Client, isArray: true })
@@ -27,5 +31,5 @@ export class ChefDeFile extends IdEntity {
     eager: true,
     cascade: true,
   })
-  perimeters?: Perimeter[];
+  perimeters?: Perimeter[] | [];
 }

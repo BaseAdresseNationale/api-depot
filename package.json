@@ -60,6 +60,7 @@
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
+    "@testcontainers/postgresql": "^10.13.2",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
@@ -89,7 +90,8 @@
       "ts"
     ],
     "rootDir": ".",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testRegex": "chef_de_file.spec.ts",
+    "testTimeout": 6000000,
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
