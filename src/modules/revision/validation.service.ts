@@ -32,7 +32,7 @@ export class ValidationService {
   }
 
   private async checkIsInPerimetre(codeCommune: string, client: Client) {
-    if (client?.chefDeFile) {
+    if (client?.chefDeFileId) {
       const chefDeFile = await this.chefDeFileService.findOneOrFail(
         client.chefDeFileId,
       );
@@ -93,7 +93,6 @@ export class ValidationService {
     if (!this.checkIsSameCommune(rows, codeCommune)) {
       errors.push('commune_insee.valeur_inattendue');
     }
-
     if (!(await this.checkIsInPerimetre(codeCommune, client))) {
       errors.push('commune_insee.out_of_perimeter');
     }

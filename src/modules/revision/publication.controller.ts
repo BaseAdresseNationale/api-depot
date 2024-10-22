@@ -139,12 +139,11 @@ export class PublicationController {
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard, RevisionGuard)
   async computeOne(@Req() req: CustomRequest, @Res() res: Response) {
-    console.log('=====>', req.revision);
     const revision: Revision = await this.revisionService.computeOne(
       req.revision,
       req.client,
     );
-    console.log('=>', revision);
+
     const revisionWithClient: RevisionWithClientDTO =
       await this.revisionService.expandWithClientAndFile(revision);
     res.status(HttpStatus.OK).json(revisionWithClient);

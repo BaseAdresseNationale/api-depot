@@ -64,7 +64,7 @@ export class Revision extends IdEntity {
   codeCommune: string;
 
   @ApiProperty()
-  @Column('boolean', { nullable: false, default: false })
+  @Column('boolean', { nullable: true, default: false })
   ready: boolean;
 
   @ApiProperty()
