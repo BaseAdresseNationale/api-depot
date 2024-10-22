@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 
 import { getCommune } from '@/lib/utils/cog';
-import { Client } from '@/modules/client/client.schema';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { ClientService } from '@/modules/client/client.service';
 import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Revision } from './revision.schema';
+import { Revision } from './revision.entity';
 import { ConfigService } from '@nestjs/config';
-import { TypeStrategyEnum } from '../habilitation/habilitation.schema';
+import { TypeStrategyEnum } from '../habilitation/habilitation.entity';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { SlackService } from 'nestjs-slack';
+import { Client } from '../client/client.entity';
 
 const MANAGED_CLIENTS = {
   MES_ADRESSES: 'mes-adresses',
@@ -81,10 +81,10 @@ export class NotifyService {
     }
     try {
       const currentClient: Client = await this.clientService.findOneOrFail(
-        currentRevision.client,
+        currentRevision.clientId,
       );
       const prevClient: Client = await this.clientService.findOneOrFail(
-        prevRevision.client,
+        prevRevision.clientId,
       );
 
       // On n'envoie pas de mail si la révision antérieure avait été publiée
@@ -104,10 +104,10 @@ export class NotifyService {
         currentClient.id === MANAGED_CLIENTS.FORMULAIRE_PUBLICATION
       ) {
         const chefDeFile = await this.chefDeFileService.findOneOrFail(
-          prevClient.chefDeFile,
+          prevClient.chefDeFileId,
         );
         const mandataire = await this.mandataireService.findOneOrFail(
-          prevClient.mandataire,
+          prevClient.mandataireId,
         );
         const contactEmail: string = chefDeFile?.email || mandataire?.email;
         if (contactEmail) {
