@@ -81,10 +81,6 @@ export class RevisionModule {
         path: 'communes/:codeCommune/current-revision/files/bal/download',
         method: RequestMethod.ALL,
       },
-      {
-        path: 'communes/:codeCommune/revisions',
-        method: RequestMethod.ALL,
-      },
     );
   }
 }
