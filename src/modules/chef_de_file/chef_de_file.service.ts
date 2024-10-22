@@ -41,7 +41,10 @@ export class ChefDeFileService {
   }
 
   public async createOne(payload: Partial<ChefDeFile>): Promise<ChefDeFile> {
-    const entityToSave: ChefDeFile = this.chefsDeFileRepository.create(payload);
+    const entityToSave: ChefDeFile = this.chefsDeFileRepository.create({
+      perimeters: [],
+      ...payload,
+    });
     return this.chefsDeFileRepository.save(entityToSave);
   }
 
