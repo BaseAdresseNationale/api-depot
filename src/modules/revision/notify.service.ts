@@ -7,7 +7,7 @@ import { MandataireService } from '@/modules/mandataire/mandataire.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Revision } from './revision.entity';
 import { ConfigService } from '@nestjs/config';
-import { TypeStrategyEnum } from '../habilitation/habilitation.schema';
+import { TypeStrategyEnum } from '../habilitation/habilitation.entity';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { SlackService } from 'nestjs-slack';
 import { Client } from '../client/client.entity';

@@ -8,7 +8,7 @@ import { FileService } from '@/modules/file/file.service';
 import { File } from '@/modules/file/file.entity';
 import { BanService } from '@/modules/ban/ban.service';
 import { HabilitationService } from '@/modules/habilitation/habilitation.service';
-import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.schema';
+import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.entity';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { ValidationService } from './validation.service';
 import { NotifyService } from './notify.service';
@@ -231,9 +231,9 @@ export class RevisionService {
     ) {
       if (habilitationId) {
         const habilitation = await this.habilitationService.findOne({
-          _id: habilitationId,
+          id: habilitationId,
           codeCommune: revision.codeCommune,
-          client: client.id,
+          clientId: client.id,
           status: StatusHabilitationEnum.ACCEPTED,
         });
 

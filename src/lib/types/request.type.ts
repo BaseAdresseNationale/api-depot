@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-import { Habilitation } from '@/modules/habilitation/habilitation.schema';
+import { Habilitation } from '@/modules/habilitation/habilitation.entity';
 import { Revision } from '@/modules/revision/revision.entity';
 import { UserFranceConnect } from './user_france_connect.type';
 import { ChefDeFile } from '@/modules/chef_de_file/chef_de_file.entity';

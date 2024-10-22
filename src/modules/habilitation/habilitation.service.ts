@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import * as randomNumber from 'random-number-csprng';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
 import { getElu } from '@/lib/utils/elus';
@@ -15,7 +15,7 @@ import {
   Habilitation,
   StatusHabilitationEnum,
   TypeStrategyEnum,
-} from './habilitation.schema';
+} from './habilitation.entity';
 import { ClientService } from '../client/client.service';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -25,23 +25,22 @@ import { Client } from '../client/client.entity';
 @Injectable()
 export class HabilitationService {
   constructor(
-    @InjectModel(Habilitation.name)
-    private habilitationModel: Model<Habilitation>,
+    @InjectRepository(Habilitation)
+    private habilitationRepository: Repository<Habilitation>,
     private apiAnnuaireService: ApiAnnuaireService,
     private clientService: ClientService,
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
   ) {}
 
-  public async findOne(filter): Promise<Habilitation> {
-    return await this.habilitationModel.findOne(filter).lean().exec();
-  }
-
   public async findOneOrFail(habilitationId: string): Promise<Habilitation> {
-    const habilitation = await this.habilitationModel
-      .findOne({ _id: habilitationId })
-      .lean()
-      .exec();
+    const where: FindOptionsWhere<Habilitation> = {
+      id: habilitationId,
+    };
+    const habilitation = await this.habilitationRepository.findOne({
+      where,
+      withDeleted: true,
+    });
 
     if (!habilitation) {
       throw new HttpException(
@@ -53,12 +52,20 @@ export class HabilitationService {
     return habilitation;
   }
 
+  public async findOne(
+    where: FindOptionsWhere<Habilitation>,
+  ): Promise<Habilitation> {
+    return this.habilitationRepository.findOne({
+      where,
+    });
+  }
+
   public async expandWithClient(
     habilitation: Habilitation,
   ): Promise<HabilitationWithClientDTO> {
     return {
       ...habilitation,
-      client: await this.clientService.findPublicClient(habilitation.client),
+      client: await this.clientService.findPublicClient(habilitation.clientId),
     };
   }
 
@@ -66,74 +73,57 @@ export class HabilitationService {
     codeCommune: string,
     client: Client,
   ): Promise<Habilitation> {
-    const _id = new ObjectId();
+    const habilitationId = new ObjectId().toHexString();
 
     const emailCommune =
       await this.apiAnnuaireService.getEmailCommune(codeCommune);
 
-    const habilitation: Partial<Habilitation> = {
-      _id,
+    const entityToSave: Habilitation = this.habilitationRepository.create({
+      id: habilitationId,
       codeCommune,
       emailCommune,
-      franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${_id}/authentication/franceconnect`,
+      franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${habilitationId}/authentication/franceconnect`,
       strategy: null,
-      client: client.id,
+      clientId: client.id,
       status: StatusHabilitationEnum.PENDING,
       expiresAt: null,
-    };
-
-    const res: Habilitation = await this.habilitationModel.create(habilitation);
-
-    return res;
+    });
+    return this.habilitationRepository.save(entityToSave);
   }
 
   public async acceptHabilitation(
-    habilitationId: ObjectId,
+    habilitationId: string,
     changes: Partial<Habilitation> = {},
   ): Promise<Habilitation> {
     const now = new Date();
     const habilitationEnd = new Date();
     habilitationEnd.setMonth(habilitationEnd.getMonth() + 12);
 
-    const habilitation: Habilitation =
-      await this.habilitationModel.findOneAndUpdate(
-        { _id: habilitationId },
-        {
-          $set: {
-            ...changes,
-            status: StatusHabilitationEnum.ACCEPTED,
-            updatedAt: now,
-            acceptedAt: now,
-            expiresAt: habilitationEnd,
-          },
-        },
-        { returnDocument: 'after' },
-      );
-    return habilitation;
+    const entityToSave: Habilitation = this.habilitationRepository.create({
+      id: habilitationId,
+      ...changes,
+      status: StatusHabilitationEnum.ACCEPTED,
+      acceptedAt: now,
+      expiresAt: habilitationEnd,
+    });
+    return this.habilitationRepository.save(entityToSave);
   }
 
   public async rejectHabilitation(
-    habilitationId: ObjectId,
+    habilitationId: string,
     changes: Partial<Habilitation>,
   ): Promise<Habilitation> {
     const now = new Date();
     const habilitationEnd = new Date();
     habilitationEnd.setMonth(habilitationEnd.getMonth() + 12);
 
-    const habilitation: Habilitation =
-      await this.habilitationModel.findOneAndUpdate(
-        { _id: habilitationId },
-        {
-          $set: {
-            ...changes,
-            status: StatusHabilitationEnum.REJECTED,
-            updatedAt: now,
-            rejectedAt: now,
-          },
-        },
-        { returnDocument: 'after' },
-      );
-    return habilitation;
+    const entityToSave: Habilitation = this.habilitationRepository.create({
+      id: habilitationId,
+      ...changes,
+      status: StatusHabilitationEnum.REJECTED,
+      rejectedAt: now,
+    });
+    return this.habilitationRepository.save(entityToSave);
   }
 
   private hasBeenSentRecently(sentAt: Date) {
@@ -186,23 +176,19 @@ export class HabilitationService {
     const now = new Date();
     const pinCode = await this.generatePinCode();
 
-    const habilitation: Habilitation = await this.habilitationModel
-      .findOneAndUpdate(
-        { _id: body._id },
-        {
-          $set: {
-            strategy: {
-              type: TypeStrategyEnum.EMAIL,
-              pinCode,
-              pinCodeExpiration: this.getExpirationDate(now),
-              remainingAttempts: 10,
-              createdAt: now,
-            },
-          },
-        },
-        { returnDocument: 'after' },
-      )
-      .lean();
+    const entityToSave: Habilitation = this.habilitationRepository.create({
+      strategy: {
+        type: TypeStrategyEnum.EMAIL,
+        pinCode,
+        pinCodeExpiration: this.getExpirationDate(now),
+        remainingAttempts: 10,
+        createdAt: now,
+      },
+    });
+
+    const habilitation: Habilitation =
+      await this.habilitationRepository.save(entityToSave);
+
     const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
 
     if (habilitation.emailCommune) {
@@ -241,28 +227,20 @@ export class HabilitationService {
     }
 
     if (this.configService.get<string>('DEMO_MODE') && code === '000000') {
-      await this.acceptHabilitation(habilitation._id);
+      await this.acceptHabilitation(habilitation.id);
       return;
     }
 
     if (code !== habilitation.strategy.pinCode) {
-      const {
-        strategy: { remainingAttempts },
-      } = await this.habilitationModel.findOneAndUpdate(
-        { _id: habilitation._id },
-        {
-          $inc: { 'strategy.remainingAttempts': -1 },
-        },
-        { returnDocument: 'after' },
-      );
+      const strategy = habilitation.strategy;
+      strategy.remainingAttempts -= 1;
 
-      if (remainingAttempts <= 0) {
-        await this.habilitationModel.updateOne(
-          { _id: habilitation._id },
-          {
-            status: StatusHabilitationEnum.REJECTED,
-            rejectedAt: new Date(),
-          },
+      this.habilitationRepository.update({ id: habilitation.id }, { strategy });
+
+      if (strategy.remainingAttempts <= 0) {
+        this.habilitationRepository.update(
+          { id: habilitation.id },
+          { status: StatusHabilitationEnum.REJECTED, rejectedAt: new Date() },
         );
 
         throw new HttpException(
@@ -271,10 +249,10 @@ export class HabilitationService {
         );
       }
 
-      const plural = remainingAttempts > 1 ? 's' : '';
+      const plural = strategy.remainingAttempts > 1 ? 's' : '';
 
       throw new HttpException(
-        `Code non valide, ${remainingAttempts} tentative${plural} restante${plural}`,
+        `Code non valide, ${strategy.remainingAttempts} tentative${plural} restante${plural}`,
         HttpStatus.PRECONDITION_FAILED,
       );
     }
@@ -284,7 +262,7 @@ export class HabilitationService {
       throw new HttpException('Code expiré', HttpStatus.PRECONDITION_FAILED);
     }
 
-    await this.acceptHabilitation(habilitation._id);
+    await this.acceptHabilitation(habilitation.id);
   }
 
   public async franceConnectCallback(
@@ -301,7 +279,7 @@ export class HabilitationService {
       );
 
       if (haveMandat) {
-        await this.acceptHabilitation(habilitation._id, {
+        await this.acceptHabilitation(habilitation.id, {
           strategy: {
             type: TypeStrategyEnum.FRANCECONNECT,
             mandat: {
@@ -312,7 +290,7 @@ export class HabilitationService {
           },
         });
       } else {
-        await this.rejectHabilitation(habilitation._id, {
+        await this.rejectHabilitation(habilitation.id, {
           strategy: {
             type: TypeStrategyEnum.FRANCECONNECT,
             authenticationError:

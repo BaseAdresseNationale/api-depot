@@ -8,7 +8,7 @@ import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { HabilitationService } from './habilitation.service';
-import { Habilitation } from './habilitation.schema';
+import { Habilitation } from './habilitation.entity';
 import { isObjectIdOrHexString } from 'mongoose';
 
 @Injectable()
