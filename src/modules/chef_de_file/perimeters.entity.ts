@@ -8,7 +8,7 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { ChefDeFile } from './chef_de_file.entity';
 
 export enum TypePerimeterEnum {

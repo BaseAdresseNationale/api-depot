@@ -8,7 +8,7 @@ import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
 import { ChefDeFileService } from './chef_de_file.service';
-import { isObjectIdOrHexString } from 'mongoose';
+import { ObjectId } from 'bson';
 import { ChefDeFile } from './chef_de_file.entity';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class ChefDeFileMiddleware implements NestMiddleware {
     const { chefDeFileId } = req.params;
 
     if (chefDeFileId) {
-      if (!isObjectIdOrHexString(chefDeFileId)) {
+      if (!ObjectId.isValid(chefDeFileId)) {
         throw new HttpException(
           `Chef de file Id ${chefDeFileId} is not ObjectId`,
           HttpStatus.BAD_REQUEST,

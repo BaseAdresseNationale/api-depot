@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import {
   BeforeInsert,
   CreateDateColumn,

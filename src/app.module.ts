@@ -18,6 +18,7 @@ import { Client } from './modules/client/client.entity';
 import { Revision } from './modules/revision/revision.entity';
 import { File } from './modules/file/file.entity';
 import { Habilitation } from './modules/habilitation/habilitation.entity';
+import { Perimeter } from './modules/chef_de_file/perimeters.entity';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { Habilitation } from './modules/habilitation/habilitation.entity';
         schema: 'public',
         entities: [
           ChefDeFile,
+          Perimeter,
           Mandataire,
           Client,
           Revision,
