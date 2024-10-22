@@ -1,9 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { IdEntity } from '../../lib/class/id.entity';
 import { ParseError } from '@/lib/types/validator.types';
 import { Client } from '../client/client.entity';
 import { Habilitation } from '../habilitation/habilitation.entity';
+import { File } from '../file/file.entity';
 
 export enum StatusRevisionEnum {
   PENDING = 'pending',
@@ -102,4 +110,8 @@ export class Revision extends IdEntity {
   })
   @JoinColumn({ name: 'client_id' })
   client?: Client;
+
+  @ApiProperty({ type: () => File, isArray: true })
+  @OneToMany(() => File, (f) => f.revision)
+  files?: File[];
 }

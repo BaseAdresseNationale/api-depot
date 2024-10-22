@@ -5,7 +5,7 @@ import { isCommune } from '@/lib/utils/cog';
 import { PublicClient } from '@/modules/client/dto/public_client.dto';
 import { ClientService } from '@/modules/client/client.service';
 import { FileService } from '@/modules/file/file.service';
-import { File } from '@/modules/file/file.schema';
+import { File } from '@/modules/file/file.entity';
 import { BanService } from '@/modules/ban/ban.service';
 import { HabilitationService } from '@/modules/habilitation/habilitation.service';
 import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.schema';
