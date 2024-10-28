@@ -130,7 +130,7 @@ describe('REVISION MODULE', () => {
     await fileRepository.delete({});
   });
 
-  async function createClient2(props: Partial<Client2> = {}): Promise<Client2> {
+  async function createClient(props: Partial<Client2> = {}): Promise<Client2> {
     const mandataireToSave = await mandataireRepository.create({
       nom: 'mandataire',
       email: 'mandataire@test.com',
@@ -164,7 +164,7 @@ describe('REVISION MODULE', () => {
 
   describe('GET /current-revisions', () => {
     it('GET /current-revisions MULTI COMMUNE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91477',
@@ -187,7 +187,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /current-revisions DETAIL ONE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91534',
@@ -229,7 +229,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /current-revisions publishedSince 1 revisions', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91534',
@@ -265,7 +265,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91534',
@@ -300,7 +300,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91534',
@@ -341,7 +341,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions?status=published', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91534',
@@ -382,7 +382,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions?status=pending', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91534',
@@ -423,7 +423,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/revisions?status=all', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       await createRevision({
         codeCommune: '91534',
@@ -472,7 +472,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision/files/bal/download NOT CURRENT', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
@@ -486,7 +486,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision/files/bal/download NO FILE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
@@ -500,7 +500,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /communes/:codeCommune/current-revision/files/bal/download', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const { id: revisionId } = await createRevision({
         codeCommune: '91534',
         clientId: client.id,
@@ -541,7 +541,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /revisions/:revisionId', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
 
       const { id } = await createRevision({
         codeCommune: '91534',
@@ -581,7 +581,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /revisions/:revisionId/files/bal/download NO FILE', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const { id } = await createRevision({
         codeCommune: '91534',
         clientId: client.id,
@@ -595,7 +595,7 @@ describe('REVISION MODULE', () => {
     });
 
     it('GET /revisions/:revisionId/files/bal/download', async () => {
-      const client: Client2 = await createClient2();
+      const client: Client2 = await createClient();
       const { id: revisionId } = await createRevision({
         codeCommune: '91534',
         clientId: client.id,
