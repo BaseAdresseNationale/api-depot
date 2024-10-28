@@ -7,7 +7,7 @@ import {
   getCommune,
   getEPCI,
   isArrondissement,
-} from './cog';
+} from './cog.utils';
 import { CommuneCOG, EpciCOG } from '@/lib/types/cog.type';
 
 function isInDepartement(departement: string, codeCommune: string): boolean {

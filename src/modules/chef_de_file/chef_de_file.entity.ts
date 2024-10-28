@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany } from 'typeorm';
-import { IdEntity } from '../../lib/class/id.entity';
+import { IdEntity } from '../../lib/class/entity/id.entity';
 import { Client } from '../client/client.entity';
 import { Perimeter } from './perimeters.entity';
 

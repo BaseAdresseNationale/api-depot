@@ -3,7 +3,7 @@ import { validate } from '@ban-team/validateur-bal';
 import { version as validatorVersion } from '@ban-team/validateur-bal/package.json';
 
 import { LevelEnum, Row, ValidationBal } from '@/lib/types/validator.types';
-import { communeIsInPerimeters } from '@/lib/utils/perimeters';
+import { communeIsInPerimeters } from '@/lib/utils/perimeters.utils';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { RevisionService } from './revision.service';
 import { Validation } from './revision.entity';
