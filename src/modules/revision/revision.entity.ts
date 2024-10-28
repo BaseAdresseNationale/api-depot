@@ -80,14 +80,6 @@ export class Revision extends IdEntity {
   })
   status: StatusRevisionEnum;
 
-  @ApiProperty()
-  @Column('varchar', { length: 24, name: 'file_id', nullable: true })
-  fileId?: string;
-
-  @ApiProperty()
-  @Column('text', { nullable: true, name: 'file_hash' })
-  fileHash: string;
-
   @ApiProperty({ type: () => Context })
   @Column('jsonb', { nullable: true })
   context: Context;
