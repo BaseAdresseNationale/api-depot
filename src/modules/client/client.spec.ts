@@ -112,12 +112,12 @@ describe('CLIENT MODULE', () => {
   });
 
   async function getClient(props: UpdateClientDTO): Promise<UpdateClientDTO> {
-    const mandataireToSave = await mandataireRepository.create({
+    const mandataireToSave = mandataireRepository.create({
       nom: 'mandataire',
       email: 'mandataire@test.com',
     });
     const mandataire = await mandataireRepository.save(mandataireToSave);
-    const chefDeFileToSave = await chefDeFileRepository.create({
+    const chefDeFileToSave = chefDeFileRepository.create({
       nom: 'chefDeFile',
       email: 'chefDeFile@test.com',
     });
