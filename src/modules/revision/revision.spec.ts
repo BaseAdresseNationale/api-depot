@@ -131,18 +131,18 @@ describe('REVISION MODULE', () => {
   });
 
   async function createClient(props: Partial<Client2> = {}): Promise<Client2> {
-    const mandataireToSave = await mandataireRepository.create({
+    const mandataireToSave = mandataireRepository.create({
       nom: 'mandataire',
       email: 'mandataire@test.com',
     });
     const mandataire = await mandataireRepository.save(mandataireToSave);
-    const chefDeFileToSave = await chefDeFileRepository.create({
+    const chefDeFileToSave = chefDeFileRepository.create({
       nom: 'chefDeFile',
       email: 'chefDeFile@test.fr',
       isEmailPublic: true,
     });
     const chefDeFile = await chefDeFileRepository.save(chefDeFileToSave);
-    const clientToSave: Client2 = await clientRepository.create({
+    const clientToSave: Client2 = clientRepository.create({
       ...props,
       nom: 'test',
       token: 'xxxx',
@@ -156,7 +156,7 @@ describe('REVISION MODULE', () => {
   async function createRevision(
     props: Partial<Revision> = {},
   ): Promise<Revision> {
-    const revisionToSave: Revision = await revisionRepository.create({
+    const revisionToSave: Revision = revisionRepository.create({
       ...props,
     });
     return revisionRepository.save(revisionToSave);

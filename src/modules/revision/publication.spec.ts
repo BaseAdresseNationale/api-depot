@@ -149,19 +149,19 @@ describe('PUBLICATION MODULE', () => {
     props: Partial<Client2> = {},
     propsChefDeFile: Partial<ChefDeFile> = {},
   ): Promise<Client2> {
-    const mandataireToSave = await mandataireRepository.create({
+    const mandataireToSave = mandataireRepository.create({
       nom: 'mandataire',
       email: 'mandataire@test.com',
     });
     const mandataire = await mandataireRepository.save(mandataireToSave);
-    const chefDeFileToSave = await chefDeFileRepository.create({
+    const chefDeFileToSave = chefDeFileRepository.create({
       nom: 'chefDeFile',
       email: 'chefDeFile@test.fr',
       isEmailPublic: true,
       ...propsChefDeFile,
     });
     const chefDeFile = await chefDeFileRepository.save(chefDeFileToSave);
-    const clientToSave: Client2 = await clientRepository.create({
+    const clientToSave: Client2 = clientRepository.create({
       nom: 'test',
       token: 'xxxx',
       authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
@@ -175,7 +175,7 @@ describe('PUBLICATION MODULE', () => {
   async function createRevision(
     props: Partial<Revision> = {},
   ): Promise<Revision> {
-    const revisionToSave: Revision = await revisionRepository.create({
+    const revisionToSave: Revision = revisionRepository.create({
       ...props,
     });
     return revisionRepository.save(revisionToSave);
