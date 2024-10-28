@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import * as hasha from 'hasha';
 
 import { S3Service } from './s3.service';
@@ -12,15 +12,18 @@ export class FileService {
     @InjectRepository(File)
     private fileRepository: Repository<File>,
     private s3Service: S3Service,
+    private readonly logger: Logger,
   ) {}
 
   public async createOne(revisionId: string, fileData: Buffer): Promise<File> {
     const now = Date.now();
-    console.log(
+    this.logger.debug(
       `START UPLOAD FILE S3 for ${revisionId}, size ${Buffer.byteLength(fileData)} at ${new Date(now).toDateString()}`,
     );
     const id = await this.s3Service.writeFile(fileData);
-    console.log(`END UPLOAD FILE S3 for ${revisionId} in ${Date.now() - now}`);
+    this.logger.debug(
+      `END UPLOAD FILE S3 for ${revisionId} in ${Date.now() - now}`,
+    );
     const entityToSave: File = this.fileRepository.create({
       id,
       revisionId,
