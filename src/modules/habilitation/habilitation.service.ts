@@ -6,8 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
-import { getElu } from '@/lib/utils/elus';
-import { getCommune } from '@/lib/utils/cog';
+import { getElu } from '@/lib/utils/elus.utils';
+import { getCommune } from '@/lib/utils/cog.utils';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { ApiAnnuaireService } from '@/modules/api_annuaire/api_annuaire.service';
 import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';

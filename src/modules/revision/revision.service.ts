@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { pick } from 'lodash';
 
-import { isCommune } from '@/lib/utils/cog';
+import { isCommune } from '@/lib/utils/cog.utils';
 import { PublicClient } from '@/modules/client/dto/public_client.dto';
 import { ClientService } from '@/modules/client/client.service';
 import { FileService } from '@/modules/file/file.service';

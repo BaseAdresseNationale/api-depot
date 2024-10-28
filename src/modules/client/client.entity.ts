@@ -7,7 +7,7 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { IdEntity } from '../../lib/class/id.entity';
+import { IdEntity } from '../../lib/class/entity/id.entity';
 import { Mandataire } from '../mandataire/mandataire.entity';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.entity';
 import { Revision } from '../revision/revision.entity';

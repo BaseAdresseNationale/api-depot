@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { getCommune } from '@/lib/utils/cog';
+import { getCommune } from '@/lib/utils/cog.utils';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { ClientService } from '@/modules/client/client.service';
 import { MandataireService } from '@/modules/mandataire/mandataire.service';

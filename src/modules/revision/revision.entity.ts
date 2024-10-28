@@ -7,7 +7,7 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-import { IdEntity } from '../../lib/class/id.entity';
+import { IdEntity } from '../../lib/class/entity/id.entity';
 import { ParseError } from '@/lib/types/validator.types';
 import { Client } from '../client/client.entity';
 import { Habilitation } from '../habilitation/habilitation.entity';
