@@ -117,7 +117,7 @@ export class HabilitationService {
 
   public async rejectHabilitation(
     habilitationId: string,
-    changes: Partial<Habilitation>,
+    changes: Partial<Habilitation> = {},
   ): Promise<Habilitation> {
     const now = new Date();
     const habilitationEnd = new Date();
@@ -239,6 +239,12 @@ export class HabilitationService {
       this.habilitationRepository.update({ id: habilitation.id }, { strategy });
 
       if (strategy.remainingAttempts <= 0) {
+        await this.rejectHabilitation(habilitation.id, {
+          strategy: {
+            type: TypeStrategyEnum.EMAIL,
+            authenticationError: 'Trop de tentative de code raté',
+          },
+        });
         this.habilitationRepository.update(
           { id: habilitation.id },
           { status: StatusHabilitationEnum.REJECTED, rejectedAt: new Date() },
@@ -259,7 +265,7 @@ export class HabilitationService {
     }
 
     const now = new Date();
-    if (now > habilitation.strategy.pinCodeExpiration) {
+    if (now > new Date(habilitation.strategy.pinCodeExpiration)) {
       throw new HttpException('Code expiré', HttpStatus.PRECONDITION_FAILED);
     }
 
