@@ -10,7 +10,6 @@ import {
   Module,
   ValidationPipe,
 } from '@nestjs/common';
-import { ObjectId } from 'bson';
 import * as request from 'supertest';
 import { parse } from 'date-fns';
 
