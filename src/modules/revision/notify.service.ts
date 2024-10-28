@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { getCommune } from '@/lib/utils/cog.utils';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
@@ -28,6 +28,7 @@ export class NotifyService {
     private configService: ConfigService,
     private mailerService: MailerService,
     private slackService: SlackService,
+    private readonly logger: Logger,
   ) {}
 
   private wasPublishedByManagedClient(client: Client) {
@@ -67,7 +68,11 @@ export class NotifyService {
         channel: this.configService.get('SLACK_CHANNEL'),
       });
     } catch (error) {
-      console.error('ERROR notifySlack :', error);
+      this.logger.error(
+        "Une erreur est survenue lors de l'envoie de la notification slack",
+        NotifyService.name,
+        error,
+      );
     }
   }
 
@@ -128,7 +133,11 @@ export class NotifyService {
         }
       }
     } catch (error) {
-      console.error('ERROR onForcePublish :', error);
+      this.logger.error(
+        'Une erreur est survenue lors du forcage de publication',
+        NotifyService.name,
+        error,
+      );
     }
   }
 }

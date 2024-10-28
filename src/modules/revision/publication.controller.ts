@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   HttpStatus,
+  Logger,
   Post,
   Put,
   Req,
@@ -36,7 +37,10 @@ import { PublishDTO } from './dto/publish.dto';
 @ApiTags('publications')
 @Controller('')
 export class PublicationController {
-  constructor(private revisionService: RevisionService) {}
+  constructor(
+    private revisionService: RevisionService,
+    private readonly logger: Logger,
+  ) {}
 
   @Post('communes/:codeCommune/revisions')
   @ApiOperation({
@@ -106,14 +110,14 @@ export class PublicationController {
     @Res() res: Response,
   ) {
     const now = Date.now();
-    console.log(
+    this.logger.debug(
       `START UPLOAD FILE ROUTE for ${req.revision.id}, size ${Buffer.byteLength(fileBuffer)} at ${new Date(now).toDateString()}`,
     );
     const file: File = await this.revisionService.setFile(
       req.revision,
       fileBuffer,
     );
-    console.log(
+    this.logger.debug(
       `END UPLOAD FILE ROUTE for ${req.revision.id} in ${Date.now() - now}`,
     );
     res.status(HttpStatus.OK).json(file);

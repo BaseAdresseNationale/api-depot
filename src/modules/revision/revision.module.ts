@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import {
+  Logger,
+  MiddlewareConsumer,
+  Module,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { CommuneMiddleware } from '@/lib/class/middlewares/commune.middleware';
@@ -37,7 +42,7 @@ import { Revision } from './revision.entity';
       }),
     }),
   ],
-  providers: [RevisionService, ValidationService, NotifyService],
+  providers: [RevisionService, ValidationService, NotifyService, Logger],
   controllers: [RevisionController, PublicationController],
   exports: [RevisionService],
 })
