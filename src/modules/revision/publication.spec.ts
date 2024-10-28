@@ -765,18 +765,18 @@ describe('PUBLICATION MODULE', () => {
       const { body } = await request(app.getHttpServer())
         .post(`/revisions/${revision.id}/publish`)
         .send({ habilitationId: habilitation.id })
-        .set('Authorization', `Bearer ${client.token}`);
-      // .expect(200);
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect(200);
 
-      // expect(body.publishedAt).toBeDefined();
-      // expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      // expect(body.current).toBeTruthy();
-      // expect(body.ready).toBeNull();
-      // expect(body.habilitation).toMatchObject({
-      //   id: habilitation.id,
-      //   codeCommune: '31591',
-      //   expiresAt: expiresAt.toISOString(),
-      // });
+      expect(body.publishedAt).toBeDefined();
+      expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
+      expect(body.current).toBeTruthy();
+      expect(body.ready).toBeNull();
+      expect(body.habilitation).toMatchObject({
+        id: habilitation.id,
+        codeCommune: '31591',
+        expiresAt: expiresAt.toISOString(),
+      });
     });
 
     it('PUBLISH REVISION WITHOUT HABILITATION', async () => {
