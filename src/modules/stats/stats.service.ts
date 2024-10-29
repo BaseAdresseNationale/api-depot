@@ -34,7 +34,7 @@ export class StatService {
 
   private async initClients() {
     const clientsToMonitor: Client[] = await this.clientService.findMany({
-      specId: In(Object.values(CLIENTS_TO_MONITOR)),
+      legacyId: In(Object.values(CLIENTS_TO_MONITOR)),
     });
 
     this.clientsToMonitorIndex = keyBy(clientsToMonitor, 'id');
@@ -58,12 +58,12 @@ export class StatService {
         totalCreations: dailyCreations.length,
         viaMesAdresses: dailyCreations.filter(
           ({ clientId }) =>
-            this.clientsToMonitorIndex[clientId]?.specId ===
+            this.clientsToMonitorIndex[clientId]?.legacyId ===
             CLIENTS_TO_MONITOR.mesAdresses,
         ).length,
         viaMoissonneur: dailyCreations.filter(
           ({ clientId }) =>
-            this.clientsToMonitorIndex[clientId]?.specId ===
+            this.clientsToMonitorIndex[clientId]?.legacyId ===
             CLIENTS_TO_MONITOR.moissonneur,
         ).length,
       });

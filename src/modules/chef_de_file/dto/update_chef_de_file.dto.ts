@@ -28,6 +28,11 @@ export class UpdateChefDeFileDTO {
   isEmailPublic?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  @ApiProperty({ type: Boolean, required: false })
+  isSignataireCharte?: boolean;
+
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => Perimeter)
   @ApiProperty({

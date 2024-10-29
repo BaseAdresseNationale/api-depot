@@ -162,8 +162,8 @@ describe('CLIENT MODULE', () => {
   it('POST /clients', async () => {
     const client = await getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
     const response = await request(app.getHttpServer())
       .post(`/clients`)
@@ -178,7 +178,7 @@ describe('CLIENT MODULE', () => {
   it('POST /clients', async () => {
     const client = await getClient({
       nom: 'client_test',
-      active: false,
+      isActive: false,
     });
     const response = await request(app.getHttpServer())
       .post(`/clients`)
@@ -189,16 +189,16 @@ describe('CLIENT MODULE', () => {
     expect(response.body.token).toHaveLength(TOKEN_LENGTH);
     expect(response.body).toMatchObject({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
   });
 
   it('GET /clients/:id', async () => {
     const client = await getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
     const { body }: { body: Client } = await request(app.getHttpServer())
       .post(`/clients`)
@@ -228,8 +228,8 @@ describe('CLIENT MODULE', () => {
   it('GET /clients', async () => {
     const client = await getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
     await request(app.getHttpServer())
       .post(`/clients`)
@@ -249,8 +249,8 @@ describe('CLIENT MODULE', () => {
   it('GET /clients', async () => {
     const client = await getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
     await request(app.getHttpServer())
       .post(`/clients`)
@@ -280,8 +280,8 @@ describe('CLIENT MODULE', () => {
   it('PUT /clients', async () => {
     const client = await getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
     const response = await request(app.getHttpServer())
       .post(`/clients`)
@@ -291,8 +291,8 @@ describe('CLIENT MODULE', () => {
 
     const change: UpdateClientDTO = {
       nom: 'put_test',
-      active: true,
-      modeRelax: true,
+      isActive: true,
+      isRelaxMode: true,
     };
 
     const response3 = await request(app.getHttpServer())
@@ -313,8 +313,8 @@ describe('CLIENT MODULE', () => {
   it('PUT 403 /clients', async () => {
     const client = await getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
     const response = await request(app.getHttpServer())
       .post(`/clients`)
@@ -324,8 +324,8 @@ describe('CLIENT MODULE', () => {
 
     const change: UpdateClientDTO = {
       nom: 'put_test',
-      active: true,
-      modeRelax: true,
+      isActive: true,
+      isRelaxMode: true,
     };
 
     await request(app.getHttpServer())
@@ -343,8 +343,8 @@ describe('CLIENT MODULE', () => {
   it('PUT /clients/:id 400', async () => {
     const change = getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
 
     await request(app.getHttpServer())
@@ -357,8 +357,8 @@ describe('CLIENT MODULE', () => {
   it('PUT /clients/:id 404', async () => {
     const change = getClient({
       nom: 'client_test',
-      active: false,
-      modeRelax: true,
+      isActive: false,
+      isRelaxMode: true,
     });
 
     await request(app.getHttpServer())

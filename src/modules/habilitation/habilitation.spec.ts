@@ -185,7 +185,7 @@ describe('HABILITATION MODULE', () => {
     });
 
     it('CLIENT GUARD INACTIVE', async () => {
-      const client: Client2 = await createClient({ active: false });
+      const client: Client2 = await createClient({ isActive: false });
       await request(app.getHttpServer())
         .post(`/communes/91534/habilitations`)
         .set('authorization', `Bearer ${client.token}`)

@@ -22,6 +22,14 @@ export class ChefDeFile extends IdEntity {
   })
   isEmailPublic: boolean;
 
+  @ApiProperty()
+  @Column('boolean', {
+    nullable: true,
+    default: false,
+    name: 'is_signataire_charte',
+  })
+  isSignataireCharte: boolean;
+
   @ApiProperty({ type: () => Client, isArray: true })
   @OneToMany(() => Client, (c) => c.chefDeFile)
   clients?: Client[];

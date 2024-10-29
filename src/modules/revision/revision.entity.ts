@@ -64,12 +64,12 @@ export class Revision extends IdEntity {
   codeCommune: string;
 
   @ApiProperty()
-  @Column('boolean', { nullable: true, default: false })
-  ready: boolean;
+  @Column('boolean', { nullable: true, default: false, name: 'is_ready' })
+  isReady: boolean;
 
   @ApiProperty()
-  @Column('boolean', { nullable: false, default: false })
-  current: boolean;
+  @Column('boolean', { nullable: false, default: false, name: 'is_current' })
+  isCurrent: boolean;
 
   @ApiProperty({ enum: StatusRevisionEnum })
   @Column('enum', {

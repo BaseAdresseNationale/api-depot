@@ -5,7 +5,7 @@ export class PublicClient {
   id: string;
 
   @ApiProperty({ type: String, required: false })
-  specId?: string;
+  legacyId?: string;
 
   @ApiProperty({ type: String, required: false })
   nom: string;

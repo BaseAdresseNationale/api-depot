@@ -89,7 +89,7 @@ export class RevisionService {
       : {};
 
     const revisions: Revision[] = await this.revisionRepository.find({
-      where: { current: true, ...publishedSinceQuery },
+      where: { isCurrent: true, ...publishedSinceQuery },
       select: {
         id: true,
         codeCommune: true,
@@ -103,7 +103,7 @@ export class RevisionService {
 
   public async findCurrent(codeCommune: string): Promise<Revision> {
     const revision = await this.revisionRepository.findOne({
-      where: { current: true, codeCommune },
+      where: { isCurrent: true, codeCommune },
     });
 
     if (!revision) {
@@ -126,8 +126,8 @@ export class RevisionService {
       context,
       clientId: client.id,
       status: StatusRevisionEnum.PENDING,
-      ready: false,
-      current: false,
+      isReady: false,
+      isCurrent: false,
       publishedAt: null,
     });
     return this.revisionRepository.save(entityToSave);
@@ -209,7 +209,7 @@ export class RevisionService {
 
     return this.updateOne(revision.id, {
       validation,
-      ready: Boolean(validation.valid),
+      isReady: Boolean(validation.valid),
     });
   }
 
@@ -218,7 +218,7 @@ export class RevisionService {
     client: Client,
     habilitationId: string | null = null,
   ): Promise<Revision> {
-    if (revision.status !== StatusRevisionEnum.PENDING || !revision.ready) {
+    if (revision.status !== StatusRevisionEnum.PENDING || !revision.isReady) {
       throw new HttpException(
         'La publication n’est pas possible',
         HttpStatus.PRECONDITION_FAILED,
@@ -229,9 +229,9 @@ export class RevisionService {
     const changes: Partial<Revision> = {
       publishedAt: now,
       updatedAt: now,
-      ready: null,
+      isReady: null,
       status: StatusRevisionEnum.PUBLISHED,
-      current: true,
+      isCurrent: true,
     };
 
     if (
@@ -278,9 +278,9 @@ export class RevisionService {
     const removeCurrentRes: UpdateResult = await this.revisionRepository.update(
       {
         codeCommune: revision.codeCommune,
-        current: true,
+        isCurrent: true,
       },
-      { current: false },
+      { isCurrent: false },
     );
 
     // On publie la révision
@@ -293,7 +293,7 @@ export class RevisionService {
         status: StatusRevisionEnum.PENDING,
         id: Not(revision.id),
       },
-      { ready: false },
+      { isReady: false },
     );
 
     if (process.env.NOTIFY_BAN === '1') {
