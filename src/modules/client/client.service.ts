@@ -124,7 +124,7 @@ export class ClientService {
 
     return clients.map((client: Client) => ({
       id: client.id,
-      specId: client.specId,
+      legacyId: client.legacyId,
       nom: client.nom,
       mandataire: client.mandataire.nom,
       chefDeFile: client.chefDeFile?.nom,
@@ -148,7 +148,7 @@ export class ClientService {
     }
     return {
       id: client.id,
-      specId: client.specId,
+      legacyId: client.legacyId,
       nom: client.nom,
       mandataire: client.mandataire.nom,
       chefDeFile: client.chefDeFile?.nom,

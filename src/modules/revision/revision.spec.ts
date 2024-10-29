@@ -170,14 +170,14 @@ describe('REVISION MODULE', () => {
         codeCommune: '91477',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       const { body } = await request(app.getHttpServer())
@@ -193,7 +193,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
         publishedAt: new Date(),
       });
 
@@ -201,14 +201,14 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: false,
+        isCurrent: false,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        current: false,
+        isCurrent: false,
       });
 
       const { body } = await request(app.getHttpServer())
@@ -235,7 +235,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
         publishedAt: sub(new Date(), { years: 1 }),
       });
 
@@ -243,7 +243,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
         publishedAt: sub(new Date(), { weeks: 1 }),
       });
 
@@ -271,7 +271,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
         publishedAt: sub(new Date(), { years: 1 }),
       });
 
@@ -281,7 +281,7 @@ describe('REVISION MODULE', () => {
 
       expect(body.codeCommune).toBe('91534');
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.current).toBe(true);
+      expect(body.isCurrent).toBe(true);
       expect(body.client).toMatchObject({
         id: client.id,
         nom: 'test',
@@ -306,21 +306,21 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: false,
+        isCurrent: false,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        current: false,
+        isCurrent: false,
       });
 
       const { body } = await request(app.getHttpServer())
@@ -330,7 +330,7 @@ describe('REVISION MODULE', () => {
       expect(body.length).toBe(2);
       expect(body[0].codeCommune).toBe('91534');
       expect(body[0].status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body[0].current).toBe(true);
+      expect(body[0].isCurrent).toBe(true);
       expect(body[0].client).toMatchObject({
         id: client.id,
         nom: 'test',
@@ -347,21 +347,21 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: false,
+        isCurrent: false,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        current: false,
+        isCurrent: false,
       });
 
       const { body } = await request(app.getHttpServer())
@@ -371,7 +371,7 @@ describe('REVISION MODULE', () => {
       expect(body.length).toBe(2);
       expect(body[0].codeCommune).toBe('91534');
       expect(body[0].status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body[0].current).toBe(true);
+      expect(body[0].isCurrent).toBe(true);
       expect(body[0].client).toMatchObject({
         id: client.id,
         nom: 'test',
@@ -388,21 +388,21 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: false,
+        isCurrent: false,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        current: false,
+        isCurrent: false,
       });
 
       const { body } = await request(app.getHttpServer())
@@ -412,7 +412,7 @@ describe('REVISION MODULE', () => {
       expect(body.length).toBe(1);
       expect(body[0].codeCommune).toBe('91534');
       expect(body[0].status).toBe(StatusRevisionEnum.PENDING);
-      expect(body[0].current).toBe(false);
+      expect(body[0].isCurrent).toBe(false);
       expect(body[0].client).toMatchObject({
         id: client.id,
         nom: 'test',
@@ -429,21 +429,21 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: false,
+        isCurrent: false,
       });
 
       await createRevision({
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        current: false,
+        isCurrent: false,
       });
 
       const { body } = await request(app.getHttpServer())
@@ -453,7 +453,7 @@ describe('REVISION MODULE', () => {
       expect(body.length).toBe(3);
       expect(body[0].codeCommune).toBe('91534');
       expect(body[0].status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body[0].current).toBe(true);
+      expect(body[0].isCurrent).toBe(true);
       expect(body[0].client).toMatchObject({
         id: client.id,
         nom: 'test',
@@ -477,7 +477,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: false,
+        isCurrent: false,
       });
 
       await request(app.getHttpServer())
@@ -491,7 +491,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       await request(app.getHttpServer())
@@ -505,7 +505,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       const fileToSave: File = await fileRepository.create({
@@ -547,7 +547,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       const { body } = await request(app.getHttpServer())
@@ -556,7 +556,7 @@ describe('REVISION MODULE', () => {
 
       expect(body.codeCommune).toBe('91534');
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.current).toBe(true);
+      expect(body.isCurrent).toBe(true);
       expect(body.client).toMatchObject({
         id: client.id,
         nom: 'test',
@@ -586,7 +586,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       await request(app.getHttpServer())
@@ -600,7 +600,7 @@ describe('REVISION MODULE', () => {
         codeCommune: '91534',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
 
       const fileToSave: File = await fileRepository.create({

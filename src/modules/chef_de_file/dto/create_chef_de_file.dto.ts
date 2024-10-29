@@ -26,6 +26,11 @@ export class CreateChefDeFileDTO {
   isEmailPublic?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  @ApiProperty({ type: Boolean, required: false, default: true })
+  isSignataireCharte?: boolean;
+
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => Perimeter)
   @ApiProperty({

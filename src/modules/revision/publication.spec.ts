@@ -213,7 +213,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('GUARD CLIENT INACTIF', async () => {
-      const client: Client2 = await createClient({ active: false });
+      const client: Client2 = await createClient({ isActive: false });
 
       await request(app.getHttpServer())
         .post(`/communes/91534/revisions`)
@@ -267,7 +267,7 @@ describe('PUBLICATION MODULE', () => {
         chefDeFileEmail: 'chefDeFile@test.fr',
       });
       expect(body.status).toBe(StatusRevisionEnum.PENDING);
-      expect(body.ready).toBeFalsy();
+      expect(body.isReady).toBeFalsy();
       expect(body.validation).toEqual(null);
       expect(body.publishedAt).toBeNull();
       expect(body.createdAt).toBeDefined();
@@ -477,7 +477,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('COMPUTE REVISION BAD CODE INSEE', async () => {
       const client: Client2 = await createClient({
-        modeRelax: true,
+        isRelaxMode: true,
       });
       const fileData = readFile('1.3-valid.csv');
       const revision = await createRevision({
@@ -511,7 +511,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
       const client: Client2 = await createClient({
-        modeRelax: true,
+        isRelaxMode: true,
       });
       const fileData = readFile('1.3-valid.csv');
       const revision = await createRevision({
@@ -545,7 +545,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
       const client: Client2 = await createClient({
-        modeRelax: true,
+        isRelaxMode: true,
       });
       const fileData = readFile('1.3-valid.csv');
       const revision = await createRevision({
@@ -581,7 +581,7 @@ describe('PUBLICATION MODULE', () => {
     it('COMPUTE REVISION', async () => {
       const client: Client2 = await createClient(
         {
-          modeRelax: true,
+          isRelaxMode: true,
         },
         {
           perimeters: [
@@ -632,7 +632,7 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        ready: true,
+        isReady: true,
       });
       await request(app.getHttpServer())
         .post(`/revisions/${revision.id}/publish`)
@@ -651,7 +651,7 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        ready: true,
+        isReady: true,
       });
       const habilitationId = new ObjectId().toHexString();
       await request(app.getHttpServer())
@@ -672,7 +672,7 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        ready: true,
+        isReady: true,
       });
       const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.PENDING,
@@ -696,7 +696,7 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        ready: false,
+        isReady: false,
       });
       const expiresAt = add(new Date(), { years: 1 });
       const habilitation = await createHabilitation({
@@ -723,7 +723,7 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        ready: false,
+        isReady: false,
       });
       const expiresAt = add(new Date(), { years: 1 });
       const habilitation = await createHabilitation({
@@ -750,7 +750,7 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        ready: true,
+        isReady: true,
       });
       const expiresAt = add(new Date(), { years: 1 });
       const habilitation = await createHabilitation({
@@ -770,8 +770,8 @@ describe('PUBLICATION MODULE', () => {
 
       expect(body.publishedAt).toBeDefined();
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.current).toBeTruthy();
-      expect(body.ready).toBeNull();
+      expect(body.isCurrent).toBeTruthy();
+      expect(body.isReady).toBeNull();
       expect(body.habilitation).toMatchObject({
         id: habilitation.id,
         codeCommune: '31591',
@@ -787,7 +787,7 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        ready: true,
+        isReady: true,
       });
       const { body } = await request(app.getHttpServer())
         .post(`/revisions/${revision.id}/publish`)
@@ -795,8 +795,8 @@ describe('PUBLICATION MODULE', () => {
         .expect(200);
       expect(body.publishedAt).toBeDefined();
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.current).toBeTruthy();
-      expect(body.ready).toBeNull();
+      expect(body.isCurrent).toBeTruthy();
+      expect(body.isReady).toBeNull();
     });
 
     it('PUBLISH REVISION MULTI REVISION', async () => {
@@ -807,20 +807,20 @@ describe('PUBLICATION MODULE', () => {
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        ready: true,
+        isReady: true,
       });
       const { id: readyId } = await createRevision({
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PENDING,
-        current: false,
-        ready: false,
+        isCurrent: false,
+        isReady: false,
       });
       const { id: currentId } = await createRevision({
         codeCommune: '31591',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
-        current: true,
+        isCurrent: true,
       });
       const { body } = await request(app.getHttpServer())
         .post(`/revisions/${revision1.id}/publish`)
@@ -828,14 +828,14 @@ describe('PUBLICATION MODULE', () => {
         .expect(200);
       expect(body.publishedAt).toBeDefined();
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.current).toBeTruthy();
-      expect(body.ready).toBeNull();
+      expect(body.isCurrent).toBeTruthy();
+      expect(body.isReady).toBeNull();
 
       const oldRevision = await revisionRepository.findOneBy({ id: currentId });
-      expect(oldRevision.current).toBeFalsy();
+      expect(oldRevision.isCurrent).toBeFalsy();
 
       const readyRevision = await revisionRepository.findOneBy({ id: readyId });
-      expect(readyRevision.ready).toBeFalsy();
+      expect(readyRevision.isReady).toBeFalsy();
     });
   });
 });

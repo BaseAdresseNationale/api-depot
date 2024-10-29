@@ -30,11 +30,11 @@ export class UpdateClientDTO {
   @IsNotEmpty()
   @IsBoolean()
   @ApiProperty({ required: false })
-  active?: boolean;
+  isActive?: boolean;
 
   @IsOptional()
   @IsNotEmpty()
   @IsBoolean()
   @ApiProperty({ required: false })
-  modeRelax?: boolean;
+  isRelaxMode?: boolean;
 }

@@ -32,20 +32,20 @@ export class Client extends IdEntity {
   chefDeFileId?: string;
 
   @ApiProperty()
-  @Column('text', { nullable: true, name: 'spec_id' })
-  specId: string;
+  @Column('text', { nullable: true, name: 'legacy_id' })
+  legacyId: string;
 
   @ApiProperty()
   @Column('text', { nullable: false })
   nom: string;
 
   @ApiProperty()
-  @Column('boolean', { nullable: true, default: true })
-  active: boolean;
+  @Column('boolean', { nullable: true, default: true, name: 'is_active' })
+  isActive: boolean;
 
   @ApiProperty()
-  @Column('boolean', { nullable: true, default: true, name: 'mode_relax' })
-  modeRelax: boolean;
+  @Column('boolean', { nullable: true, default: true, name: 'is_relax_mode' })
+  isRelaxMode: boolean;
 
   @ApiProperty()
   @Column('varchar', { length: 32, nullable: false })
