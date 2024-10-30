@@ -52,11 +52,11 @@ export class ChefDeFileService {
     chefDeFileId: string,
     changes: Partial<ChefDeFile>,
   ): Promise<ChefDeFile> {
-    const numeroToSave: ChefDeFile = this.chefsDeFileRepository.create({
+    const entityToSave: ChefDeFile = this.chefsDeFileRepository.create({
       id: chefDeFileId,
       ...changes,
     });
-    await this.chefsDeFileRepository.save(numeroToSave);
+    await this.chefsDeFileRepository.save(entityToSave);
     return this.chefsDeFileRepository.findOneBy({ id: chefDeFileId });
   }
 }
