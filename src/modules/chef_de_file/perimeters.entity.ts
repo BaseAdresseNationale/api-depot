@@ -47,6 +47,7 @@ export class Perimeter {
   @ApiProperty({ type: () => ChefDeFile })
   @ManyToOne(() => ChefDeFile, (cdf) => cdf.perimeters, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   @JoinColumn({ name: 'chef_de_file_id' })
   chefDeFile?: ChefDeFile;
