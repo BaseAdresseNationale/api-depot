@@ -151,7 +151,7 @@ export class ClientService {
       legacyId: client.legacyId,
       nom: client.nom,
       mandataire: client.mandataire.nom,
-      chefDeFile: client.chefDeFile?.nom,
+      chefDeFile: client.chefDeFile?.nom || null,
       chefDeFileEmail: client.chefDeFile?.isEmailPublic
         ? client.chefDeFile?.email
         : null,
