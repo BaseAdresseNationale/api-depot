@@ -67,6 +67,7 @@ export class Revision extends IdEntity {
   @Column('boolean', { nullable: true, default: false, name: 'is_ready' })
   isReady: boolean;
 
+  @Index('IDX_revision_is_current', { where: 'is_current IS TRUE' })
   @ApiProperty()
   @Column('boolean', { nullable: false, default: false, name: 'is_current' })
   isCurrent: boolean;
