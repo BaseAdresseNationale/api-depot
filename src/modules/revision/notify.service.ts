@@ -63,7 +63,9 @@ export class NotifyService {
       const text = `${operationFr} d’une Base Adresse Locale - *${commune.nom}* (${commune.code})
       _${meta.join(' - ')}_`;
 
-      await this.slackService.sendText(text);
+      this.slackService.sendText(text, {
+        channel: this.configService.get('SLACK_CHANNEL'),
+      });
     } catch (error) {
       this.logger.error(
         "Une erreur est survenue lors de l'envoie de la notification slack",
