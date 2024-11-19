@@ -105,9 +105,16 @@ export class PublicationController {
     @Req() req: CustomRequest,
     @Res() res: Response,
   ) {
+    const now = Date.now();
+    console.log(
+      `START UPLOAD FILE ROUTE for ${req.revision._id}, size ${Buffer.byteLength(fileBuffer)} at ${new Date(now).toDateString()}`,
+    );
     const file: File = await this.revisionService.setFile(
       req.revision,
       fileBuffer,
+    );
+    console.log(
+      `END UPLOAD FILE ROUTE for ${req.revision._id} in ${Date.now() - now}`,
     );
     res.status(HttpStatus.OK).json(file);
   }
