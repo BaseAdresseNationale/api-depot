@@ -34,7 +34,7 @@
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/swagger": "^7.3.1",
     "@nestjs/typeorm": "^10.0.2",
-    "axios": "^1.6.8",
+    "axios": "^1.7.0",
     "bson": "^6.9.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
