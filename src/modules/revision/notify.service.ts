@@ -41,10 +41,11 @@ export class NotifyService {
     habilitationStrategy: TypeStrategyEnum | null,
     client: Client,
   ) {
+    console.log('notifySlack');
     if (!process.env.SLACK_TOKEN || !process.env.SLACK_CHANNEL) {
       return;
     }
-
+    console.log('next');
     try {
       const commune: CommuneCOG = getCommune(codeCommune);
       const operationFr = isUpdate ? 'Mise à jour' : 'Initialisation';
@@ -63,10 +64,6 @@ export class NotifyService {
 
       const text = `${operationFr} d’une Base Adresse Locale - *${commune.nom}* (${commune.code})
       _${meta.join(' - ')}_`;
-
-      this.slackService.sendText(text, {
-        channel: this.configService.get('SLACK_CHANNEL'),
-      });
     } catch (error) {
       this.logger.error(
         "Une erreur est survenue lors de l'envoie de la notification slack",

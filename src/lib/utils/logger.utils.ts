@@ -22,6 +22,8 @@ if (process.env.NODE_ENV === 'production') {
   format = winston.format.simple();
 }
 
+console.log('NODE ENV', process.env.NODE_ENV === 'production');
+
 export const Logger = winston.createLogger({
   format,
   transports: [new winston.transports.Console()],
