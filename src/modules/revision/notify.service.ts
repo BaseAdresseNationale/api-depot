@@ -45,12 +45,13 @@ export class NotifyService {
     if (!process.env.SLACK_TOKEN || !process.env.SLACK_CHANNEL) {
       return;
     }
-    console.log('next');
+    console.log('a');
     try {
       const commune: CommuneCOG = getCommune(codeCommune);
       const operationFr = isUpdate ? 'Mise à jour' : 'Initialisation';
 
       let habilitationText = '';
+      console.log('b');
 
       if (habilitationStrategy === TypeStrategyEnum.FRANCECONNECT) {
         habilitationText = 'Habilitation via FranceConnect :fr:';
@@ -58,12 +59,16 @@ export class NotifyService {
         habilitationText = 'Habilitation par email :email:';
       }
 
+      console.log('c');
       const meta = [`Application : ${client.nom}`, habilitationText].filter(
         Boolean,
       );
 
       const text = `${operationFr} d’une Base Adresse Locale - *${commune.nom}* (${commune.code})
       _${meta.join(' - ')}_`;
+      console.log('d');
+
+      await this.slackService.sendText(text);
     } catch (error) {
       this.logger.error(
         "Une erreur est survenue lors de l'envoie de la notification slack",
@@ -71,6 +76,7 @@ export class NotifyService {
         error,
       );
     }
+    console.log('e');
   }
 
   public async onForcePublish(
