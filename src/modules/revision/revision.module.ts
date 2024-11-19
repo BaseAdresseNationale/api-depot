@@ -38,6 +38,7 @@ import { Revision } from './revision.entity';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'api',
+        defaultChannel: config.get('SLACK_CHANNEL'),
         token: config.get('SLACK_TOKEN'),
       }),
     }),
