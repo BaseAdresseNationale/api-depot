@@ -48,42 +48,38 @@ export class RevisionModule {
     consumer.apply(RevisionMiddleware).forRoutes(
       {
         path: 'revisions/:revisionId',
-        method: RequestMethod.GET,
+        method: RequestMethod.ALL,
       },
       {
         path: 'revisions/:revisionId/files/bal/download',
-        method: RequestMethod.GET,
+        method: RequestMethod.ALL,
       },
       {
         path: 'revisions/:revisionId/files/bal',
-        method: RequestMethod.PUT,
+        method: RequestMethod.ALL,
       },
       {
         path: 'revisions/:revisionId/compute',
-        method: RequestMethod.POST,
+        method: RequestMethod.ALL,
       },
       {
         path: 'revisions/:revisionId/publish',
-        method: RequestMethod.POST,
+        method: RequestMethod.ALL,
       },
     );
 
     consumer.apply(CommuneMiddleware).forRoutes(
       {
         path: 'communes/:codeCommune/current-revision',
-        method: RequestMethod.GET,
+        method: RequestMethod.ALL,
       },
       {
         path: 'communes/:codeCommune/revisions',
-        method: RequestMethod.GET,
+        method: RequestMethod.ALL,
       },
       {
         path: 'communes/:codeCommune/current-revision/files/bal/download',
-        method: RequestMethod.GET,
-      },
-      {
-        path: 'communes/:codeCommune/revisions',
-        method: RequestMethod.POST,
+        method: RequestMethod.ALL,
       },
     );
   }
