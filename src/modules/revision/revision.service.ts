@@ -254,7 +254,7 @@ export class RevisionService {
 
         changes.habilitation = pick(habilitation, [
           'id',
-          'emailCommune',
+          'emailsCommune',
           'codeCommune',
           'createdAt',
           'updatedAt',

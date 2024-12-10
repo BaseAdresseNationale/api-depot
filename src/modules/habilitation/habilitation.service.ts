@@ -75,13 +75,13 @@ export class HabilitationService {
   ): Promise<Habilitation> {
     const habilitationId = new ObjectId().toHexString();
 
-    const emailCommune =
-      await this.apiAnnuaireService.getEmailCommune(codeCommune);
+    const emailsCommune: string[] =
+      await this.apiAnnuaireService.getEmailsCommune(codeCommune);
 
     const entityToSave: Habilitation = this.habilitationRepository.create({
       id: habilitationId,
       codeCommune,
-      emailCommune,
+      emailsCommune,
       franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${habilitationId}/authentication/franceconnect`,
       strategy: null,
       clientId: client.id,
@@ -163,7 +163,7 @@ export class HabilitationService {
       );
     }
 
-    if (!body.emailCommune) {
+    if (body.emailsCommune.length <= 0) {
       throw new HttpException(
         'Impossible d’envoyer le code, aucun courriel n’est connu pour cette commune',
         HttpStatus.PRECONDITION_FAILED,
@@ -192,9 +192,9 @@ export class HabilitationService {
 
     const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
 
-    if (habilitation.emailCommune) {
+    if (habilitation.emailsCommune.length > 0) {
       await this.mailerService.sendMail({
-        to: habilitation.emailCommune,
+        to: habilitation.emailsCommune,
         subject: 'Demande de code d’identification',
         template: 'code-pin',
         bcc: this.configService.get('SMTP_BCC'),
