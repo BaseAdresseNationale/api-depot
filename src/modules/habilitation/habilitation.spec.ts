@@ -442,7 +442,7 @@ describe('HABILITATION MODULE', () => {
     it('SEND CODE PIN ALREADY SEND', async () => {
       const client: Client2 = await createClient();
       const habilitation: Partial<Habilitation> = {
-        codeCommune: '94000',
+        codeCommune: '91534',
         emailsCommune: ['test@test.fr'],
         status: StatusHabilitationEnum.PENDING,
       };
