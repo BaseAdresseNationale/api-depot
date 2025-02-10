@@ -52,7 +52,12 @@ export class Context {
   extras?: Record<string, any> | null;
 }
 
-@Entity({ name: 'revisions' })
+@Entity({
+  name: 'revisions',
+  orderBy: {
+    createdAt: 'ASC',
+  },
+})
 export class Revision extends IdEntity {
   @Index('IDX_revision_client_id')
   @ApiProperty()
