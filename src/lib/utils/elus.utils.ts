@@ -9,7 +9,7 @@ let elusJson: Elu[] = [];
 
 try {
   elusJson = JSON.parse(
-    readFileSync(join(__dirname, '../../../', 'elus.json'), 'utf-8'),
+    readFileSync(join(__dirname, '../../../../', 'elus.json'), 'utf-8'),
   );
 } catch {
   if (process.env.NODE_ENV === 'production') {
