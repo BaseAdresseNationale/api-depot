@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "node dist/main",
+    "start": "node dist/src/main.js",
     "dev": "nest start --watch",
     "build:elus": "npx ts-node ./scripts/build-elus/index.ts",
     "scalingo-postbuild": "yarn build:elus && yarn build",
