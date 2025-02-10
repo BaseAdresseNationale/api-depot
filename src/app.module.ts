@@ -19,8 +19,6 @@ import { Revision } from './modules/revision/revision.entity';
 import { File } from './modules/file/file.entity';
 import { Habilitation } from './modules/habilitation/habilitation.entity';
 import { Perimeter } from './modules/chef_de_file/perimeters.entity';
-import { Initialization1730197455647 } from '../migrations/1730197455647-initialization';
-import { IndexIsCurrent1730368239908 } from '../migrations/1730368239908-index_is_current';
 
 @Module({
   imports: [
@@ -36,7 +34,6 @@ import { IndexIsCurrent1730368239908 } from '../migrations/1730368239908-index_i
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
-        migrationsRun: true,
         entities: [
           ChefDeFile,
           Perimeter,
@@ -46,7 +43,6 @@ import { IndexIsCurrent1730368239908 } from '../migrations/1730368239908-index_i
           File,
           Habilitation,
         ],
-        migrations: [Initialization1730197455647, IndexIsCurrent1730368239908],
       }),
       inject: [ConfigService],
     }),
