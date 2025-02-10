@@ -34,6 +34,7 @@ import { Perimeter } from './modules/chef_de_file/perimeters.entity';
         url: config.get('POSTGRES_URL'),
         keepConnectionAlive: true,
         schema: 'public',
+        migrationsRun: true,
         entities: [
           ChefDeFile,
           Perimeter,
