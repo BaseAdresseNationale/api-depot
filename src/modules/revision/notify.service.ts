@@ -11,6 +11,8 @@ import { TypeStrategyEnum } from '../habilitation/habilitation.entity';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { SlackService } from 'nestjs-slack';
 import { Client } from '../client/client.entity';
+import { InjectSlack } from 'nestjs-slack-webhook';
+import { IncomingWebhook } from '@slack/webhook';
 
 const MANAGED_CLIENTS = {
   MES_ADRESSES: 'mes-adresses',
@@ -28,6 +30,7 @@ export class NotifyService {
     private configService: ConfigService,
     private mailerService: MailerService,
     private slackService: SlackService,
+    @InjectSlack() private readonly mattermostWebhookService: IncomingWebhook,
     private readonly logger: Logger,
   ) {}
 
@@ -35,7 +38,7 @@ export class NotifyService {
     return Object.values(MANAGED_CLIENTS).includes(client.id);
   }
 
-  public async notifySlack(
+  public async notify(
     codeCommune: string,
     isUpdate: boolean,
     habilitationStrategy: TypeStrategyEnum | null,
@@ -66,6 +69,7 @@ export class NotifyService {
       this.slackService.sendText(text, {
         channel: this.configService.get('SLACK_CHANNEL'),
       });
+      this.mattermostWebhookService.send(text);
     } catch (error) {
       this.logger.error(
         "Une erreur est survenue lors de l'envoie de la notification slack",
