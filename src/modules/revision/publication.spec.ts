@@ -6,6 +6,8 @@ import { Client } from 'pg';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   Global,
+  HttpException,
+  HttpStatus,
   INestApplication,
   Module,
   ValidationPipe,
@@ -41,6 +43,7 @@ import {
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { ObjectId } from 'bson';
 import { generateToken } from '@/lib/utils/token.utils';
+import { RevisionService } from './revision.service';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
@@ -63,6 +66,7 @@ describe('PUBLICATION MODULE', () => {
   let app: INestApplication;
   let postgresContainer: StartedPostgreSqlContainer;
   let postgresClient: Client;
+  let revisionService: RevisionService;
   let mandataireRepository: Repository<Mandataire>;
   let clientRepository: Repository<Client2>;
   let chefDeFileRepository: Repository<ChefDeFile>;
@@ -122,6 +126,7 @@ describe('PUBLICATION MODULE', () => {
     revisionRepository = app.get(getRepositoryToken(Revision));
     fileRepository = app.get(getRepositoryToken(File));
     s3Service = app.get<S3Service>(S3Service);
+    revisionService = app.get<RevisionService>(RevisionService);
   });
 
   afterAll(async () => {
@@ -836,6 +841,35 @@ describe('PUBLICATION MODULE', () => {
 
       const readyRevision = await revisionRepository.findOneBy({ id: readyId });
       expect(readyRevision.isReady).toBeFalsy();
+    });
+
+    it('PUBLISH REVISION MULTI REVISION', async () => {
+      const client: Client2 = await createClient({
+        authorizationStrategy: AuthorizationStrategyEnum.CHEF_DE_FILE,
+      });
+      const revision1 = await createRevision({
+        codeCommune: '31591',
+        clientId: client.id,
+        status: StatusRevisionEnum.PENDING,
+        isReady: true,
+      });
+      const revision2 = await createRevision({
+        codeCommune: '31591',
+        clientId: client.id,
+        status: StatusRevisionEnum.PENDING,
+        isReady: true,
+      });
+
+      revisionService.publishOneWithLock(revision1, client);
+
+      await expect(
+        revisionService.publishOneWithLock(revision2, client),
+      ).rejects.toThrow(
+        new HttpException(
+          'La publication n’est pas possible car une publication est deja en cours',
+          HttpStatus.PRECONDITION_FAILED,
+        ),
+      );
     });
   });
 });

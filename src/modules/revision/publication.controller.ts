@@ -181,7 +181,7 @@ export class PublicationController {
     @Body() body: PublishDTO,
     @Res() res: Response,
   ) {
-    const revision: Revision = await this.revisionService.publishOne(
+    const revision: Revision = await this.revisionService.publishOneWithLock(
       req.revision,
       req.client,
       body.habilitationId,

@@ -32,6 +32,8 @@ import { RevisionAgg } from '../stats/stats.service';
 
 @Injectable()
 export class RevisionService {
+  lockCommune: Record<string, boolean> = {};
+
   constructor(
     @InjectRepository(Revision)
     private revisionRepository: Repository<Revision>,
@@ -211,6 +213,29 @@ export class RevisionService {
       validation,
       isReady: Boolean(validation.valid),
     });
+  }
+
+  public async publishOneWithLock(
+    revision: Revision,
+    client: Client,
+    habilitationId: string | null = null,
+  ): Promise<Revision> {
+    const isLock = this.lockCommune[revision.codeCommune];
+    if (isLock) {
+      throw new HttpException(
+        'La publication n’est pas possible car une publication est deja en cours',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+    this.lockCommune[revision.codeCommune] = true;
+    try {
+      const res = await this.publishOne(revision, client, habilitationId);
+      delete this.lockCommune[revision.codeCommune];
+      return res;
+    } catch (e) {
+      delete this.lockCommune[revision.codeCommune];
+      throw e;
+    }
   }
 
   public async publishOne(
