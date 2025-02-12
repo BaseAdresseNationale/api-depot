@@ -325,7 +325,7 @@ export class RevisionService {
       this.banService.composeCommune(revision.codeCommune);
     }
 
-    await this.notifyService.notify(
+    await this.notifyService.notifyMattermost(
       revision.codeCommune,
       removeCurrentRes.affected > 0,
       revisionPublished.habilitation?.strategy.type,
