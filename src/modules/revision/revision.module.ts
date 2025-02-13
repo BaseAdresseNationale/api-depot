@@ -19,7 +19,7 @@ import { RevisionService } from './revision.service';
 import { RevisionController } from './revision.controller';
 import { NotifyService } from './notify.service';
 import { PublicationController } from './publication.controller';
-import { SlackModule } from 'nestjs-slack';
+import { SlackModule as MattermostWebhookModule } from 'nestjs-slack-webhook';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Revision } from './revision.entity';
 
@@ -33,15 +33,11 @@ import { Revision } from './revision.entity';
     BanModule,
     HabilitationModule,
     MandataireModule,
-    SlackModule.forRootAsync({
+    MattermostWebhookModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: 'api',
-        token: config.get('SLACK_TOKEN'),
-        clientOptions: {
-          retryConfig: { retries: 0 },
-        },
+        url: config.get('MATTERMOST_WEBHOOK_URL') || '',
       }),
     }),
   ],
