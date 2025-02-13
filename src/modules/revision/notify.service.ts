@@ -30,9 +30,7 @@ export class NotifyService {
     private mailerService: MailerService,
     @InjectSlack() private readonly mattermostWebhookService: IncomingWebhook,
     private readonly logger: Logger,
-  ) {
-    this.mattermostWebhookService.send('TEST LOCAL');
-  }
+  ) {}
 
   private wasPublishedByManagedClient(client: Client) {
     return Object.values(MANAGED_CLIENTS).includes(client.id);
