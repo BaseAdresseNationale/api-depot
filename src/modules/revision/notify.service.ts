@@ -30,7 +30,9 @@ export class NotifyService {
     private mailerService: MailerService,
     @InjectSlack() private readonly mattermostWebhookService: IncomingWebhook,
     private readonly logger: Logger,
-  ) {}
+  ) {
+    this.mattermostWebhookService.send('TEST LOCAL');
+  }
 
   private wasPublishedByManagedClient(client: Client) {
     return Object.values(MANAGED_CLIENTS).includes(client.id);
@@ -42,7 +44,7 @@ export class NotifyService {
     habilitationStrategy: TypeStrategyEnum | null,
     client: Client,
   ) {
-    if (!process.env.SLACK_TOKEN || !process.env.SLACK_CHANNEL) {
+    if (!process.env.MATTERMOST_WEBHOOK_URL) {
       return;
     }
     try {
