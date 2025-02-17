@@ -52,8 +52,8 @@ describe('API ANNUAIRE MODULE', () => {
         )
         .reply(200, data);
 
-      const email = await apiAnnuaireService.getEmailCommune(codeCommune);
-      expect(email).toBe('ok@test.fr');
+      const email = await apiAnnuaireService.getEmailsCommune(codeCommune);
+      expect(email).toEqual(['ok@test.fr', 'no@test.fr']);
     });
 
     it('getEmailCommune multi email', async () => {
@@ -74,9 +74,9 @@ describe('API ANNUAIRE MODULE', () => {
         )
         .reply(200, data);
 
-      const email = await apiAnnuaireService.getEmailCommune(codeCommune);
+      const email = await apiAnnuaireService.getEmailsCommune(codeCommune);
 
-      expect(email).toBe('ok@test.fr');
+      expect(email).toEqual(['ok@test.fr', 'wrong@test.fr']);
     });
 
     it('getEmailCommune only mairie deleguee', async () => {
@@ -97,12 +97,12 @@ describe('API ANNUAIRE MODULE', () => {
         )
         .reply(200, data);
 
-      const email = await apiAnnuaireService.getEmailCommune(codeCommune);
+      const email = await apiAnnuaireService.getEmailsCommune(codeCommune);
 
-      expect(email).toBe('ok@ok.fr');
+      expect(email).toEqual(['ok@ok.fr']);
     });
 
-    it('getEmailCommune multi email', async () => {
+    it('getEmailCommune invalid email', async () => {
       const codeCommune = '91400';
 
       // MOCK AXIOS
@@ -120,13 +120,13 @@ describe('API ANNUAIRE MODULE', () => {
         )
         .reply(200, data);
 
-      const email = await apiAnnuaireService.getEmailCommune(codeCommune);
+      const email = await apiAnnuaireService.getEmailsCommune(codeCommune);
       expect(email).toBeUndefined();
     });
 
-    it('getEmailCommune multi email', async () => {
+    it('getEmailCommune no emails', async () => {
       const codeCommune = '91400';
-      const email = await apiAnnuaireService.getEmailCommune(codeCommune);
+      const email = await apiAnnuaireService.getEmailsCommune(codeCommune);
       expect(email).toBeUndefined();
     });
   });
