@@ -163,13 +163,6 @@ export class HabilitationService {
       );
     }
 
-    if (!email) {
-      throw new HttpException(
-        'Impossible d’envoyer le code, aucun courriel n’est connu pour cette commune',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
     const emailsCommune = await this.apiAnnuaireService.getEmailsCommune(
       habilitation.codeCommune,
     );
@@ -207,9 +200,9 @@ export class HabilitationService {
       },
     );
 
-    const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
-
     if (habilitation.emailCommune) {
+      const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
+
       await this.mailerService.sendMail({
         to: email,
         subject: 'Demande de code d’identification',
