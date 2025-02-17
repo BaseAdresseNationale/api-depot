@@ -163,7 +163,7 @@ export class HabilitationService {
       );
     }
 
-    if (!habilitation.emailCommune) {
+    if (!email) {
       throw new HttpException(
         'Impossible d’envoyer le code, aucun courriel n’est connu pour cette commune',
         HttpStatus.PRECONDITION_FAILED,
