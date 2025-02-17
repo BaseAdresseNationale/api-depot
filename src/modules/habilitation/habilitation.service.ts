@@ -75,13 +75,10 @@ export class HabilitationService {
   ): Promise<Habilitation> {
     const habilitationId = new ObjectId().toHexString();
 
-    const emailCommune =
-      await this.apiAnnuaireService.getEmailCommune(codeCommune);
-
     const entityToSave: Habilitation = this.habilitationRepository.create({
       id: habilitationId,
       codeCommune,
-      emailCommune,
+      emailCommune: null,
       franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${habilitationId}/authentication/franceconnect`,
       strategy: null,
       clientId: client.id,
