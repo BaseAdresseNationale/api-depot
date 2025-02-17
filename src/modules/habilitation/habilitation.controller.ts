@@ -32,6 +32,7 @@ import {
   FranceConnectCallBackGuard,
 } from './france_connect/france_connect.guard';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
+import { SendCodePinRequestDTO } from './dto/send_code_pin.dto';
 
 @ApiTags('habilitations')
 @Controller('')
@@ -95,11 +96,16 @@ export class HabilitationController {
     operationId: 'sendCodePin',
   })
   @ApiParam({ name: 'habilitationId', required: true, type: String })
+  @ApiBody({ type: SendCodePinRequestDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
-  async sendCodePin(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.habilitationService.sendCodePin(req.habilitation);
+  async sendCodePin(
+    @Req() req: CustomRequest,
+    @Body() { email }: SendCodePinRequestDTO,
+    @Res() res: Response,
+  ) {
+    await this.habilitationService.sendCodePin(req.habilitation, email);
     res.sendStatus(HttpStatus.OK);
   }
 
