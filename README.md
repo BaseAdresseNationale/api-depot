@@ -81,6 +81,8 @@ Elles peuvent être définies classiquement ou en créant un fichier `.env` sur 
 | `ADMIN_TOKEN`      | Token pour accéder au route protégé par Admin()                                                    |
 | `DEMO_MODE`        | Si il est a 1 aucun mail n'est envoyé et le code de validation de habilitation par mail est 000000 |
 | ---                | ---                                                                                                |
+| `MATTERMOST_WEBHOOK_URL`| Url du webhook Slack ou mattermost utilisé pour notifier les publication                      |
+| ---                | ---                                                                                                |
 | `API_DEPOT_URL`    | URL de l'api-depot                                                                                 |
 | `API_ANNURAIRE`    | URL de base de l’API des batiments publique                                                        |
 | ---                | ---                                                                                                |
