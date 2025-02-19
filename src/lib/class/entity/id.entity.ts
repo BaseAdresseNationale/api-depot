@@ -14,7 +14,9 @@ export class IdEntity {
 
   @BeforeInsert()
   generatedObjectId?() {
-    this.id = new ObjectId().toHexString();
+    if (!this.id || this.id == '') {
+      this.id = new ObjectId().toHexString();
+    }
   }
 
   @ApiProperty()
