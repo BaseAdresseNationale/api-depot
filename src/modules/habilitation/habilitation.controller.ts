@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
   Put,
   Req,
@@ -32,11 +33,16 @@ import {
   FranceConnectCallBackGuard,
 } from './france_connect/france_connect.guard';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
+import { SendCodePinRequestDTO } from './dto/send_code_pin.dto';
+import { ApiAnnuaireService } from '../api_annuaire/api_annuaire.service';
 
 @ApiTags('habilitations')
 @Controller('')
 export class HabilitationController {
-  constructor(private habilitationService: HabilitationService) {}
+  constructor(
+    private habilitationService: HabilitationService,
+    private apiAnnuaireService: ApiAnnuaireService,
+  ) {}
 
   @Post('communes/:codeCommune/habilitations')
   @ApiOperation({
@@ -53,6 +59,22 @@ export class HabilitationController {
       req.client,
     );
     res.status(HttpStatus.CREATED).json(habilitation);
+  }
+
+  @Get('communes/:codeCommune/emails')
+  @ApiOperation({
+    summary: 'Find many emails commune',
+    operationId: 'findEmailsCommune',
+  })
+  @ApiParam({ name: 'codeCommune', required: true, type: String })
+  @ApiResponse({ status: HttpStatus.OK, type: String, isArray: true })
+  async findEmailsCommune(
+    @Param('codeCommune') codeCommune: string,
+    @Res() res: Response,
+  ) {
+    const emailsCommune =
+      await this.apiAnnuaireService.getEmailsCommune(codeCommune);
+    res.status(HttpStatus.OK).json(emailsCommune);
   }
 
   @Get('habilitations/:habilitationId')
@@ -95,11 +117,16 @@ export class HabilitationController {
     operationId: 'sendCodePin',
   })
   @ApiParam({ name: 'habilitationId', required: true, type: String })
+  @ApiBody({ type: SendCodePinRequestDTO, required: true })
   @ApiResponse({ status: HttpStatus.OK })
   @ApiBearerAuth('client-token')
   @UseGuards(ClientGuard)
-  async sendCodePin(@Req() req: CustomRequest, @Res() res: Response) {
-    await this.habilitationService.sendCodePin(req.habilitation);
+  async sendCodePin(
+    @Req() req: CustomRequest,
+    @Body() { email }: SendCodePinRequestDTO,
+    @Res() res: Response,
+  ) {
+    await this.habilitationService.sendCodePin(req.habilitation, email);
     res.sendStatus(HttpStatus.OK);
   }
 

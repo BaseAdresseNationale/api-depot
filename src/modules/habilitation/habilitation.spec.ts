@@ -215,21 +215,6 @@ describe('HABILITATION MODULE', () => {
     it('CREATED WITH EMAIL', async () => {
       const client: Client2 = await createClient();
       const codeCommune: string = '91534';
-      const emailCommune: string = 'saclay@test.fr';
-      // MOCK AXIOS
-      const data: any = {
-        results: [
-          {
-            nom: 'mairie principal',
-            adresse_courriel: emailCommune,
-          },
-        ],
-      };
-      axiosMock
-        .onGet(
-          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
-        )
-        .reply(200, data);
 
       const { body } = await request(app.getHttpServer())
         .post(`/communes/${codeCommune}/habilitations`)
@@ -238,7 +223,7 @@ describe('HABILITATION MODULE', () => {
 
       const hab = {
         codeCommune,
-        emailCommune,
+        emailCommune: null,
         strategy: null,
         expiresAt: null,
         clientId: client.id,
@@ -373,7 +358,7 @@ describe('HABILITATION MODULE', () => {
       const client: Client2 = await createClient();
       const habilitation = {
         codeCommune: '94000',
-        emailCommune: 'test@test.fr',
+        emailCommune: null,
         status: StatusHabilitationEnum.ACCEPTED,
       };
 
@@ -382,6 +367,7 @@ describe('HABILITATION MODULE', () => {
       await request(app.getHttpServer())
         .post(`/habilitations/${id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
+        .send({ email: 'commune@test.fr' })
         .expect(412);
     });
 
@@ -389,7 +375,7 @@ describe('HABILITATION MODULE', () => {
       const client: Client2 = await createClient();
       const habilitation = {
         codeCommune: '94000',
-        emailCommune: 'test@test.fr',
+        emailCommune: null,
         status: StatusHabilitationEnum.REJECTED,
       };
 
@@ -398,6 +384,7 @@ describe('HABILITATION MODULE', () => {
       await request(app.getHttpServer())
         .post(`/habilitations/${id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
+        .send({ email: 'commune@test.fr' })
         .expect(412);
     });
 
@@ -413,14 +400,16 @@ describe('HABILITATION MODULE', () => {
       await request(app.getHttpServer())
         .post(`/habilitations/${id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
-        .expect(412);
+        .expect(400);
     });
 
     it('SEND CODE PIN ALREADY SEND', async () => {
       const client: Client2 = await createClient();
+      const codeCommune = '94000';
+      const emailCommune = 'commune@test.fr';
       const habilitation = {
-        codeCommune: '94000',
-        emailCommune: 'test@test.fr',
+        codeCommune,
+        emailCommune: null,
         status: StatusHabilitationEnum.PENDING,
         strategy: {
           type: TypeStrategyEnum.EMAIL,
@@ -430,25 +419,92 @@ describe('HABILITATION MODULE', () => {
 
       const { id } = await createHabilitation(habilitation);
 
+      // MOCK AXIOS
+      const data: any = {
+        results: [
+          {
+            nom: 'mairie principal',
+            adresse_courriel: emailCommune,
+          },
+        ],
+      };
+      axiosMock
+        .onGet(
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
+        )
+        .reply(200, data);
+
       await request(app.getHttpServer())
         .post(`/habilitations/${id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
+        .send({ email: emailCommune })
         .expect(409);
     });
 
-    it('SEND CODE PIN ALREADY SEND', async () => {
+    it('SEND CODE PIN NO VALID EMAIL', async () => {
       const client: Client2 = await createClient();
+      const codeCommune = '91534';
       const habilitation = {
-        codeCommune: '91534',
-        emailCommune: 'test@test.fr',
+        emailCommune: null,
+        codeCommune,
         status: StatusHabilitationEnum.PENDING,
       };
 
       const { id } = await createHabilitation(habilitation);
 
+      // MOCK AXIOS
+      const data: any = {
+        results: [
+          {
+            nom: 'mairie principal',
+            adresse_courriel: 'valid@email.fr',
+          },
+        ],
+      };
+      axiosMock
+        .onGet(
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
+        )
+        .reply(200, data);
+
       await request(app.getHttpServer())
         .post(`/habilitations/${id}/authentication/email/send-pin-code`)
         .set('authorization', `Bearer ${client.token}`)
+        .send({ email: 'commune@test.fr' })
+        .expect(412);
+    });
+
+    it('SEND CODE PIN OK', async () => {
+      const client: Client2 = await createClient();
+      const codeCommune = '91534';
+      const emailCommune = 'commune@test.fr';
+      const habilitation = {
+        emailCommune: null,
+        codeCommune,
+        status: StatusHabilitationEnum.PENDING,
+      };
+
+      const { id } = await createHabilitation(habilitation);
+
+      // MOCK AXIOS
+      const data: any = {
+        results: [
+          {
+            nom: 'mairie principal',
+            adresse_courriel: emailCommune,
+          },
+        ],
+      };
+      axiosMock
+        .onGet(
+          `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`,
+        )
+        .reply(200, data);
+
+      await request(app.getHttpServer())
+        .post(`/habilitations/${id}/authentication/email/send-pin-code`)
+        .set('authorization', `Bearer ${client.token}`)
+        .send({ email: emailCommune })
         .expect(200);
     });
   });
