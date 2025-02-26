@@ -75,13 +75,10 @@ export class HabilitationService {
   ): Promise<Habilitation> {
     const habilitationId = new ObjectId().toHexString();
 
-    const emailCommune =
-      await this.apiAnnuaireService.getEmailCommune(codeCommune);
-
     const entityToSave: Habilitation = this.habilitationRepository.create({
       id: habilitationId,
       codeCommune,
-      emailCommune,
+      emailCommune: null,
       franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${habilitationId}/authentication/franceconnect`,
       strategy: null,
       clientId: client.id,
@@ -148,29 +145,38 @@ export class HabilitationService {
     return expireAt;
   }
 
-  public async sendCodePin(body: Habilitation): Promise<Habilitation> {
-    if (body.status === StatusHabilitationEnum.ACCEPTED) {
+  public async sendCodePin(
+    habilitation: Habilitation,
+    email: string,
+  ): Promise<Habilitation> {
+    if (habilitation.status === StatusHabilitationEnum.ACCEPTED) {
       throw new HttpException(
         'Cette habilitation est déjà validée',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    if (body.status === StatusHabilitationEnum.REJECTED) {
+    if (habilitation.status === StatusHabilitationEnum.REJECTED) {
       throw new HttpException(
         'Cette habilitation est rejetée',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    if (!body.emailCommune) {
+    const emailsCommune = await this.apiAnnuaireService.getEmailsCommune(
+      habilitation.codeCommune,
+    );
+    if (!emailsCommune.includes(email)) {
       throw new HttpException(
-        'Impossible d’envoyer le code, aucun courriel n’est connu pour cette commune',
+        'Impossible d’envoyer le code, l’email préconisé n’appartient pas à la commune',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    if (body.strategy && this.hasBeenSentRecently(body.strategy.createdAt)) {
+    if (
+      habilitation.strategy &&
+      this.hasBeenSentRecently(habilitation.strategy.createdAt)
+    ) {
       throw new HttpException(
         'Un courriel a déjà été envoyé, merci de patienter',
         HttpStatus.CONFLICT,
@@ -180,21 +186,25 @@ export class HabilitationService {
     const now = new Date();
     const pinCode = await this.generatePinCode();
 
-    const habilitation: Habilitation = await this.updateOne(body.id, {
-      strategy: {
-        type: TypeStrategyEnum.EMAIL,
-        pinCode,
-        pinCodeExpiration: this.getExpirationDate(now),
-        remainingAttempts: 10,
-        createdAt: now,
+    const habilitationUpdated: Habilitation = await this.updateOne(
+      habilitation.id,
+      {
+        emailCommune: email,
+        strategy: {
+          type: TypeStrategyEnum.EMAIL,
+          pinCode,
+          pinCodeExpiration: this.getExpirationDate(now),
+          remainingAttempts: 10,
+          createdAt: now,
+        },
       },
-    });
+    );
 
-    const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
+    if (habilitationUpdated.emailCommune) {
+      const { nom }: CommuneCOG = getCommune(habilitationUpdated.codeCommune);
 
-    if (habilitation.emailCommune) {
       await this.mailerService.sendMail({
-        to: habilitation.emailCommune,
+        to: email,
         subject: 'Demande de code d’identification',
         template: 'code-pin',
         bcc: this.configService.get('SMTP_BCC'),
@@ -206,7 +216,7 @@ export class HabilitationService {
       });
     }
 
-    return habilitation;
+    return habilitationUpdated;
   }
 
   public async validateCodePin(
