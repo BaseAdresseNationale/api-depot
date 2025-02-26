@@ -200,8 +200,8 @@ export class HabilitationService {
       },
     );
 
-    if (habilitation.emailCommune) {
-      const { nom }: CommuneCOG = getCommune(habilitation.codeCommune);
+    if (habilitationUpdated.emailCommune) {
+      const { nom }: CommuneCOG = getCommune(habilitationUpdated.codeCommune);
 
       await this.mailerService.sendMail({
         to: email,
