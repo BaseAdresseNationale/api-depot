@@ -154,7 +154,7 @@ export class RevisionController {
   @Get('revisions/client/:clientId')
   @ApiOperation({
     summary: 'Find first revision bu commune by client',
-    operationId: 'findFirstsByClient',
+    operationId: 'findLastsByClient',
   })
   @ApiParam({ name: 'clientId', required: true, type: String })
   @ApiResponse({
@@ -169,8 +169,8 @@ export class RevisionController {
       'updatedAt',
     ]),
   })
-  async findFirstsByClient(@Req() req: CustomRequest, @Res() res: Response) {
-    const revisionsByClient = await this.revisionService.findFirstsByClient(
+  async findLastsByClient(@Req() req: CustomRequest, @Res() res: Response) {
+    const revisionsByClient = await this.revisionService.findLastsByClient(
       req.client,
     );
 

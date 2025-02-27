@@ -74,7 +74,7 @@ export class RevisionService {
     return revision;
   }
 
-  async findFirstsByClient(
+  async findLastsByClient(
     client: Client,
   ): Promise<
     Omit<
@@ -97,7 +97,7 @@ export class RevisionService {
       .addSelect('revisions.status', 'status')
       .addSelect('revisions.is_current', 'isCurrent')
       .distinctOn(['code_commune'])
-      .orderBy('code_commune, published_at')
+      .orderBy('code_commune, revisions.created_at', 'DESC')
       .where('revisions.client_id = :clientId', {
         clientId: client.id,
       });
