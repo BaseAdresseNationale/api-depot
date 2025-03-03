@@ -7,8 +7,8 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
+import { ParseError } from 'papaparse';
 import { IdEntity } from '../../lib/class/entity/id.entity';
-import { ParseError } from '@/lib/types/validator.types';
 import { Client } from '../client/client.entity';
 import { Habilitation } from '../habilitation/habilitation.entity';
 import { File } from '../file/file.entity';
