@@ -625,4 +625,64 @@ describe('REVISION MODULE', () => {
       expect(text).toEqual(fileData.toString());
     });
   });
+
+  describe('GET /revisions/client/:clientId', () => {
+    it('GET /revisions/client/:clientId NOT EXIST', async () => {
+      await request(app.getHttpServer())
+        .get(`/revisions/client/${new ObjectId().toHexString()}`)
+        .expect(404);
+    });
+
+    it('GET /revisions/client/:clientId', async () => {
+      const client1: Client2 = await createClient();
+      const client2: Client2 = await createClient();
+      const publishDate = new Date();
+
+      const r1 = await createRevision({
+        codeCommune: '91534',
+        clientId: client1.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: publishDate,
+      });
+
+      const r2 = await createRevision({
+        codeCommune: '37185',
+        clientId: client1.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: publishDate,
+      });
+
+      await createRevision({
+        codeCommune: '37003',
+        clientId: client2.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: publishDate,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/revisions/client/${client1.id}`)
+        .expect(200);
+
+      expect(body.length).toBe(2);
+      expect(body[0]).toEqual({
+        id: r2.id,
+        codeCommune: '37185',
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: publishDate.toISOString(),
+        validation: null,
+      });
+      expect(body[1]).toEqual({
+        id: r1.id,
+        codeCommune: '91534',
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: publishDate.toISOString(),
+        validation: null,
+      });
+    });
+  });
 });

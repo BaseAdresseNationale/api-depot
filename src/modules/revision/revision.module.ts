@@ -22,6 +22,7 @@ import { PublicationController } from './publication.controller';
 import { SlackModule as MattermostWebhookModule } from 'nestjs-slack-webhook';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Revision } from './revision.entity';
+import { ClientMiddleware } from '../client/client.middleware';
 
 @Module({
   imports: [
@@ -84,5 +85,10 @@ export class RevisionModule {
         method: RequestMethod.ALL,
       },
     );
+
+    consumer.apply(ClientMiddleware).forRoutes({
+      path: 'revisions/client/:clientId',
+      method: RequestMethod.ALL,
+    });
   }
 }
