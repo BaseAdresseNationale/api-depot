@@ -13,6 +13,7 @@ import {
   ApiQuery,
   ApiResponse,
   ApiTags,
+  OmitType,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -148,6 +149,32 @@ export class RevisionController {
     const revisionWithClient: RevisionWithClientDTO =
       await this.revisionService.expandWithClientAndFile(req.revision);
     res.status(HttpStatus.OK).json(revisionWithClient);
+  }
+
+  @Get('revisions/client/:clientId')
+  @ApiOperation({
+    summary: 'Find first revision bu commune by client',
+    operationId: 'findLastsByClient',
+  })
+  @ApiParam({ name: 'clientId', required: true, type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OmitType(Revision, [
+      'client',
+      'clientId',
+      'context',
+      'habilitation',
+      'files',
+      'createdAt',
+      'updatedAt',
+    ]),
+  })
+  async findLastsByClient(@Req() req: CustomRequest, @Res() res: Response) {
+    const revisionsByClient = await this.revisionService.findLastsByClient(
+      req.client,
+    );
+
+    res.status(HttpStatus.OK).json(revisionsByClient);
   }
 
   @Get('revisions/:revisionId/files/bal/download')

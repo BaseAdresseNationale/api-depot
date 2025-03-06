@@ -74,6 +74,37 @@ export class RevisionService {
     return revision;
   }
 
+  async findLastsByClient(
+    client: Client,
+  ): Promise<
+    Omit<
+      Revision,
+      | 'client'
+      | 'clientId'
+      | 'context'
+      | 'habilitation'
+      | 'files'
+      | 'createdAt'
+      | 'updatedAt'
+    >[]
+  > {
+    const query = this.revisionRepository
+      .createQueryBuilder('revisions')
+      .select('revisions.id', 'id')
+      .addSelect('revisions.code_commune', 'codeCommune')
+      .addSelect('revisions.published_at', 'publishedAt')
+      .addSelect('revisions.validation', 'validation')
+      .addSelect('revisions.status', 'status')
+      .addSelect('revisions.is_current', 'isCurrent')
+      .distinctOn(['code_commune'])
+      .orderBy('code_commune, revisions.created_at', 'DESC')
+      .where('revisions.client_id = :clientId', {
+        clientId: client.id,
+      });
+
+    return query.getRawMany();
+  }
+
   async findFirsts(): Promise<RevisionAgg[]> {
     const query = this.revisionRepository
       .createQueryBuilder('revisions')
