@@ -121,13 +121,13 @@ describe('API ANNUAIRE MODULE', () => {
         .reply(200, data);
 
       const email = await apiAnnuaireService.getEmailsCommune(codeCommune);
-      expect(email).toBeUndefined();
+      expect(email).toEqual([]);
     });
 
     it('getEmailCommune no emails', async () => {
       const codeCommune = '91400';
       const email = await apiAnnuaireService.getEmailsCommune(codeCommune);
-      expect(email).toBeUndefined();
+      expect(email).toEqual([]);
     });
   });
 });
