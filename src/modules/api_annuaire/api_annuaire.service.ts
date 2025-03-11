@@ -58,6 +58,7 @@ export class ApiAnnuaireService {
         ApiAnnuaireService.name,
         error,
       );
+      return [];
     }
   }
 }
