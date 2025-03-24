@@ -12,7 +12,7 @@ export class ValidateurApiService {
 
   public async validateFile(
     file: Buffer,
-    profile: FileUploadDTO.profile = FileUploadDTO.profile._1_3_STRICT,
+    profile: FileUploadDTO.profile = FileUploadDTO.profile._1_3_RELAX,
   ): Promise<ValidateProfileDTO> {
     const formData = new FormData();
     formData.append('file', file, {
