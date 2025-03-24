@@ -1,10 +1,4 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import {
-  validate,
-  ValidateRowType,
-  ValidateProfile,
-  ErrorLevelEnum,
-} from '@ban-team/validateur-bal';
 import { version as validatorVersion } from '@ban-team/validateur-bal/package.json';
 
 import { communeIsInPerimeters } from '@/lib/utils/perimeters.utils';
@@ -12,6 +6,13 @@ import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { RevisionService } from './revision.service';
 import { Validation } from './revision.entity';
 import { Client } from '../client/client.entity';
+import { ValidateurApiService } from '../validateur_api/validateur_api.service';
+import {
+  FileUploadDTO,
+  ProfileErrorDTO,
+  ValidateProfileDTO,
+  ValidateRowDTO,
+} from '../validateur_api/type';
 
 @Injectable()
 export class ValidationService {
@@ -19,9 +20,10 @@ export class ValidationService {
     private chefDeFileService: ChefDeFileService,
     @Inject(forwardRef(() => RevisionService))
     private revisionService: RevisionService,
+    private validateurApiService: ValidateurApiService,
   ) {}
 
-  private getRowCodeCommune(row: ValidateRowType): string {
+  private getRowCodeCommune(row: ValidateRowDTO): string {
     if (row.parsedValues.commune_insee) {
       return row.parsedValues.commune_insee as string;
     }
@@ -31,7 +33,7 @@ export class ValidationService {
     }
   }
 
-  private checkIsSameCommune(rows: ValidateRowType[], codeCommune: string) {
+  private checkIsSameCommune(rows: ValidateRowDTO[], codeCommune: string) {
     return rows.every((r) => this.getRowCodeCommune(r) === codeCommune);
   }
 
@@ -71,11 +73,13 @@ export class ValidationService {
     codeCommune: string,
     client: Client,
   ): Promise<Validation> {
-    const { parseOk, parseErrors, profilErrors, rows }: ValidateProfile =
-      (await validate(fileData, {
-        profile: client?.isRelaxMode ? '1.3-relax' : '1.3',
-      })) as ValidateProfile;
-
+    const { parseOk, parseErrors, profilErrors, rows }: ValidateProfileDTO =
+      await this.validateurApiService.validateFile(
+        fileData,
+        client?.isRelaxMode
+          ? FileUploadDTO.profile._1_3_RELAX
+          : FileUploadDTO.profile._1_3,
+      );
     if (!parseOk) {
       return {
         valid: false,
@@ -85,13 +89,13 @@ export class ValidationService {
     }
 
     const errors: string[] = profilErrors
-      .filter(({ level }) => level === ErrorLevelEnum.ERROR)
+      .filter(({ level }) => level === ProfileErrorDTO.level.E)
       .map(({ code }) => code);
     const warnings: string[] = profilErrors
-      .filter(({ level }) => level === ErrorLevelEnum.WARNING)
+      .filter(({ level }) => level === ProfileErrorDTO.level.W)
       .map(({ code }) => code);
     const infos: string[] = profilErrors
-      .filter(({ level }) => level === ErrorLevelEnum.INFO)
+      .filter(({ level }) => level === ProfileErrorDTO.level.I)
       .map(({ code }) => code);
 
     if (!this.checkIsSameCommune(rows, codeCommune)) {

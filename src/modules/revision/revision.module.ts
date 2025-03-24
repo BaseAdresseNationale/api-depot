@@ -23,6 +23,7 @@ import { SlackModule as MattermostWebhookModule } from 'nestjs-slack-webhook';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Revision } from './revision.entity';
 import { ClientMiddleware } from '../client/client.middleware';
+import { ValidateurApiModule } from '../validateur_api/validateur_api.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ClientMiddleware } from '../client/client.middleware';
     BanModule,
     HabilitationModule,
     MandataireModule,
+    ValidateurApiModule,
     MattermostWebhookModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

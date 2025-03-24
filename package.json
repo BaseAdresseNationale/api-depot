@@ -18,11 +18,11 @@
     "test:cov": "jest --coverage",
     "typeorm": "typeorm-ts-node-commonjs",
     "typeorm:migration:run": "yarn typeorm migration:run -- -d ./typeorm.config.ts",
-    "typeorm:migration:down": "yarn typeorm migration:revert -- -d ./typeorm.config.ts"
+    "typeorm:migration:down": "yarn typeorm migration:revert -- -d ./typeorm.config.ts",
+    "generate:openapi:validateur": "openapi --exportCore false --exportServices false --input http://localhost:4000/api-json --output  ./src/modules/validateur_api/type"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
-    "@ban-team/validateur-bal": "^3.0.6",
     "@etalab/decoupage-administratif": "^4.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.0.2",
@@ -47,6 +47,7 @@
     "lodash": "^4.17.21",
     "nestjs-slack-webhook": "^10.5.1",
     "nodemailer": "^6.9.13",
+    "openapi-typescript-codegen": "^0.29.0",
     "passport": "^0.7.0",
     "passport-oauth2": "^1.8.0",
     "pg": "^8.13.0",
