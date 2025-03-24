@@ -1,5 +1,4 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { version as validatorVersion } from '@ban-team/validateur-bal/package.json';
 
 import { communeIsInPerimeters } from '@/lib/utils/perimeters.utils';
 import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
@@ -83,7 +82,6 @@ export class ValidationService {
     if (!parseOk) {
       return {
         valid: false,
-        validatorVersion,
         parseErrors,
       };
     }
@@ -112,7 +110,6 @@ export class ValidationService {
 
     return {
       valid: errors.length === 0,
-      validatorVersion,
       errors,
       warnings,
       infos,

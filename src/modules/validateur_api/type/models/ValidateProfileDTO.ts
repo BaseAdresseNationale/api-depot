@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { FieldDTO } from './FieldDTO';
 import type { NotFoundFieldDTO } from './NotFoundFieldDTO';
+import type { ParseErrorDTO } from './ParseErrorDTO';
 import type { ProfileErrorDTO } from './ProfileErrorDTO';
 import type { ProfilesValidationDTO } from './ProfilesValidationDTO';
 import type { ValidateFileDTO } from './ValidateFileDTO';
@@ -14,7 +15,7 @@ export type ValidateProfileDTO = {
     delimiter: string;
     originalFields: Array<string>;
     parseOk: boolean;
-    parseErrors: Array<string>;
+    parseErrors: Array<ParseErrorDTO>;
     parsedRows: Array<string>;
     fields: Array<FieldDTO>;
     notFoundFields: Array<NotFoundFieldDTO>;
