@@ -129,6 +129,15 @@ describe('PUBLICATION MODULE', () => {
     revisionService = app.get<RevisionService>(RevisionService);
   });
 
+  beforeEach(async () => {
+    axiosMock.onPost(`/validate/file`).reply(200, {
+      parseOk: true,
+      parseErrors: [],
+      profilErrors: [],
+      rows: [{ parsedValues: { commune_insee: '31591' } }],
+    });
+  });
+
   afterAll(async () => {
     await postgresClient.end();
     await postgresContainer.stop();
