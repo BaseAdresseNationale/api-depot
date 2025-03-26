@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export { ErrorLevelDTO } from './models/ErrorLevelDTO';
 export type { FieldDTO } from './models/FieldDTO';
 export { FileUploadDTO } from './models/FileUploadDTO';
 export { NotFoundFieldDTO } from './models/NotFoundFieldDTO';
