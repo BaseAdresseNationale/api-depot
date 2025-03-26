@@ -229,17 +229,14 @@ export class RevisionService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
-
     const fileData: Buffer = await this.fileService.findDataByRevision(
       revision.id,
     );
-
     const validation: Validation = await this.validationService.validate(
       fileData,
       revision.codeCommune,
       client,
     );
-
     return this.updateOne(revision.id, {
       validation,
       isReady: Boolean(validation.valid),
