@@ -1,8 +1,8 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import {
   validate,
-  ValidateRowType,
-  ValidateProfile,
+  ValidateRowFullType,
+  ValidateType,
   ErrorLevelEnum,
 } from '@ban-team/validateur-bal';
 import { version as validatorVersion } from '@ban-team/validateur-bal/package.json';
@@ -21,7 +21,7 @@ export class ValidationService {
     private revisionService: RevisionService,
   ) {}
 
-  private getRowCodeCommune(row: ValidateRowType): string {
+  private getRowCodeCommune(row: ValidateRowFullType): string {
     if (row.parsedValues.commune_insee) {
       return row.parsedValues.commune_insee as string;
     }
@@ -31,7 +31,7 @@ export class ValidationService {
     }
   }
 
-  private checkIsSameCommune(rows: ValidateRowType[], codeCommune: string) {
+  private checkIsSameCommune(rows: ValidateRowFullType[], codeCommune: string) {
     return rows.every((r) => this.getRowCodeCommune(r) === codeCommune);
   }
 
@@ -71,10 +71,12 @@ export class ValidationService {
     codeCommune: string,
     client: Client,
   ): Promise<Validation> {
-    const { parseOk, parseErrors, profilErrors, rows }: ValidateProfile =
-      (await validate(fileData, {
+    const { parseOk, parseErrors, profilErrors, rows } = (await validate(
+      fileData,
+      {
         profile: client?.isRelaxMode ? '1.3-relax' : '1.3',
-      })) as ValidateProfile;
+      },
+    )) as ValidateType;
 
     if (!parseOk) {
       return {
