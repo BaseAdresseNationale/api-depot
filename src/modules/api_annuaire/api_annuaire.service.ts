@@ -35,15 +35,19 @@ export class ApiAnnuaireService {
         throw new Error('L’adresse email n’est pas trouvé');
       }
 
-      const emails: string[] = mairies
-        .reduce(
-          (accumulator, { adresse_courriel }) => [
-            ...accumulator,
-            ...adresse_courriel.split(';'),
-          ],
-          [],
-        )
-        .filter((email) => this.validateEmail(email));
+      const emails: string[] = [
+        ...new Set<string>(
+          mairies
+            .reduce(
+              (accumulator, { adresse_courriel }) => [
+                ...accumulator,
+                ...adresse_courriel.split(';'),
+              ],
+              [],
+            )
+            .filter((email) => this.validateEmail(email)),
+        ),
+      ];
 
       if (emails.length > 0) {
         return emails;
