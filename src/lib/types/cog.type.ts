@@ -12,6 +12,7 @@ export type CommuneCOG = {
   codesPostaux: string[];
   population: number;
   commune?: string;
+  anciensCodes?: string[];
 };
 
 export type DepartementCOG = {

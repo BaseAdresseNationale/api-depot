@@ -1,4 +1,4 @@
-import { keyBy, groupBy } from 'lodash';
+import { keyBy, groupBy, flatten } from 'lodash';
 import * as communes from '@etalab/decoupage-administratif/data/communes.json';
 import * as departements from '@etalab/decoupage-administratif/data/departements.json';
 import * as epci from '@etalab/decoupage-administratif/data/epci.json';
@@ -7,6 +7,13 @@ import { CommuneCOG, DepartementCOG, EpciCOG } from '@/lib/types/cog.type';
 
 const filteredCommunes: CommuneCOG[] = (communes as CommuneCOG[]).filter(
   ({ type }) => ['commune-actuelle', 'arrondissement-municipal'].includes(type),
+);
+
+// CREATE LIST COMMUNES ANCIENNE
+const filteredCommunesAncienne: string[] = flatten(
+  filteredCommunes.map((c) =>
+    c.anciensCodes ? [...c.anciensCodes, c.code] : [],
+  ),
 );
 
 const communesIndex: Record<string, CommuneCOG> = keyBy(
@@ -28,6 +35,10 @@ const communesByDepartementIndex: Record<string, CommuneCOG[]> = groupBy(
 
 export function isCommune(codeCommune: string): boolean {
   return Boolean(communesIndex[codeCommune]);
+}
+
+export function isCommuneAncienne(codeCommune: string): boolean {
+  return filteredCommunesAncienne.includes(codeCommune);
 }
 
 export function getCommune(codeCommune: string): CommuneCOG {
