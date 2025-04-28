@@ -12,8 +12,6 @@ import { isCommune, isCommuneAncienne } from '@/lib/utils/cog.utils';
 @Injectable()
 export class CommuneMiddleware implements NestMiddleware {
   async use(req: CustomRequest, res: Response, next: NextFunction) {
-    console.log(req.query);
-
     if (
       (req.query?.allCommunes !== 'true' &&
         !isCommune(req.params.codeCommune)) ||
