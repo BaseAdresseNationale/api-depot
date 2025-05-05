@@ -1,25 +1,34 @@
-import { keyBy, groupBy, flatten } from 'lodash';
-import * as communes from '@etalab/decoupage-administratif/data/communes.json';
+import { keyBy, groupBy } from 'lodash';
+import * as allCommunes from '@etalab/decoupage-administratif/data/communes.json';
 import * as departements from '@etalab/decoupage-administratif/data/departements.json';
 import * as epci from '@etalab/decoupage-administratif/data/epci.json';
 
-import { CommuneCOG, DepartementCOG, EpciCOG } from '@/lib/types/cog.type';
+import {
+  CommuneCOG,
+  CommuneTypeEnum,
+  DepartementCOG,
+  EpciCOG,
+} from '@/lib/types/cog.type';
 
-const filteredCommunes: CommuneCOG[] = (communes as CommuneCOG[]).filter(
-  ({ type }) => ['commune-actuelle', 'arrondissement-municipal'].includes(type),
+const communes = (allCommunes as CommuneCOG[]).filter((c) =>
+  [
+    CommuneTypeEnum.COMMUNE_ACTUELLE,
+    CommuneTypeEnum.ARRONDISSEMENT_MUNICIPAL,
+  ].includes(c.type),
 );
 
-// CREATE LIST COMMUNES ANCIENNE
-const filteredCommunesAncienne: string[] = flatten(
-  filteredCommunes.map((c) =>
-    c.anciensCodes ? [...c.anciensCodes, c.code] : [],
-  ),
-);
+const communesIndex: Record<string, CommuneCOG> = keyBy(communes, 'code');
 
-const communesIndex: Record<string, CommuneCOG> = keyBy(
-  filteredCommunes,
-  'code',
-);
+const codesCommunesActuelles = new Set(communes.map((c) => c.code));
+
+const codesCommunes = new Set();
+for (const commune of communes) {
+  codesCommunes.add(commune.code);
+  const anciensCodes = commune.anciensCodes || [];
+  for (const ancienCode of anciensCodes) {
+    codesCommunes.add(ancienCode);
+  }
+}
 
 const departementsIndex: Record<string, DepartementCOG> = keyBy(
   departements,
@@ -34,11 +43,11 @@ const communesByDepartementIndex: Record<string, CommuneCOG[]> = groupBy(
 );
 
 export function isCommune(codeCommune: string): boolean {
-  return Boolean(communesIndex[codeCommune]);
+  return codesCommunes.has(codeCommune);
 }
 
-export function isCommuneAncienne(codeCommune: string): boolean {
-  return filteredCommunesAncienne.includes(codeCommune);
+export function isCommuneActuelle(codeCommune: string): boolean {
+  return codesCommunesActuelles.has(codeCommune);
 }
 
 export function getCommune(codeCommune: string): CommuneCOG {

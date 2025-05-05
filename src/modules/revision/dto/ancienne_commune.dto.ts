@@ -13,5 +13,5 @@ export class AnciennesCommunesDTO {
       'Indique si on souhaite récupérer les révisions de toutes les communes',
     default: false,
   })
-  allCommunes?: boolean;
+  ancienneCommuneAllowed?: boolean;
 }

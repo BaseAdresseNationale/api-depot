@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { pick } from 'lodash';
 
-import { isCommune } from '@/lib/utils/cog.utils';
+import { isCommuneActuelle } from '@/lib/utils/cog.utils';
 import { PublicClient } from '@/modules/client/dto/public_client.dto';
 import { ClientService } from '@/modules/client/client.service';
 import { FileService } from '@/modules/file/file.service';
@@ -131,7 +131,7 @@ export class RevisionService {
       },
     });
 
-    return revisions.filter((r) => isCommune(r.codeCommune));
+    return revisions.filter((r) => isCommuneActuelle(r.codeCommune));
   }
 
   public async findCurrent(codeCommune: string): Promise<Revision> {
