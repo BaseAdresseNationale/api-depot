@@ -7,19 +7,14 @@ import {
 import { Response, NextFunction } from 'express';
 
 import { CustomRequest } from '@/lib/types/request.type';
-import { isCommune, isCommuneActuelle } from '@/lib/utils/cog.utils';
+import { isCommuneActuelle } from '@/lib/utils/cog.utils';
 
 @Injectable()
-export class CommuneMiddleware implements NestMiddleware {
+export class CommuneActuelleMiddleware implements NestMiddleware {
   async use(req: CustomRequest, res: Response, next: NextFunction) {
-    if (
-      (req.query?.ancienneCommuneAllowed !== 'true' &&
-        !isCommuneActuelle(req.params.codeCommune)) ||
-      (req.query?.ancienneCommuneAllowed === 'true' &&
-        !isCommune(req.params.codeCommune))
-    ) {
+    if (!isCommuneActuelle(req.params.codeCommune)) {
       throw new HttpException(
-        `Le code commune n’existe pas`,
+        `Le code commune n'existe pas`,
         HttpStatus.NOT_FOUND,
       );
     }

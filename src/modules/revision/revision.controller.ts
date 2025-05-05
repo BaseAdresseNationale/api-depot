@@ -23,6 +23,8 @@ import { FileService } from '@/modules/file/file.service';
 import { Revision, StatusRevisionEnum } from './revision.entity';
 import { RevisionService } from './revision.service';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
+import { RevisionQueryDto } from './dto/status_revisions.dto';
+import { AnciennesCommunesDTO } from './dto/ancienne_commune.dto';
 
 @ApiTags('revisions')
 @Controller('')
@@ -56,6 +58,7 @@ export class RevisionController {
     summary: 'Find current revision by Commune',
     operationId: 'findCommuneCurrent',
   })
+  @ApiQuery({ type: AnciennesCommunesDTO })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
   @ApiResponse({ status: HttpStatus.OK, type: RevisionWithClientDTO })
   async findCurrent(@Req() req: CustomRequest, @Res() res: Response) {
@@ -73,26 +76,6 @@ export class RevisionController {
     summary: 'Find revisions by Commune',
     operationId: 'findByCommune',
   })
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    type: String,
-    description: 'Filter revisions by status, default to published revisions',
-    examples: {
-      published: {
-        value: 'published',
-        summary: 'Published revisions',
-      },
-      all: {
-        value: 'all',
-        summary: 'All revisions',
-      },
-      pending: {
-        value: 'pending',
-        summary: 'Pending revisions',
-      },
-    },
-  })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -102,15 +85,15 @@ export class RevisionController {
   async findByCommune(
     @Req() req: CustomRequest,
     @Res() res: Response,
-    @Query('status') status: StatusRevisionEnum | 'all',
+    @Query() query: RevisionQueryDto,
   ) {
     let statusQuery: { status?: StatusRevisionEnum } = {
       status: StatusRevisionEnum.PUBLISHED,
     };
-    if (status === 'all') {
+    if (query.status === 'all') {
       statusQuery = {};
-    } else if (status) {
-      statusQuery = { status };
+    } else if (query.status) {
+      statusQuery = { status: query.status };
     }
     const revisions: Revision[] = await this.revisionService.findMany({
       codeCommune: req.params.codeCommune,
@@ -127,6 +110,7 @@ export class RevisionController {
     operationId: 'DownloadFileCurrent',
   })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
+  @ApiQuery({ type: AnciennesCommunesDTO })
   async downloadFileCurrent(@Req() req: CustomRequest, @Res() res: Response) {
     const revision: Revision = await this.revisionService.findCurrent(
       req.params.codeCommune,
@@ -186,7 +170,7 @@ export class RevisionController {
   async downloadFile(@Req() req: CustomRequest, @Res() res: Response) {
     if (req.revision.status !== StatusRevisionEnum.PUBLISHED) {
       throw new HttpException(
-        'La révision n’est pas encore accessible car non publiée',
+        "La révision n'est pas encore accessible car non publiée",
         HttpStatus.FORBIDDEN,
       );
     }
