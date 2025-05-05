@@ -16,6 +16,7 @@ import {
   ApiExcludeEndpoint,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -35,6 +36,7 @@ import {
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { SendCodePinRequestDTO } from './dto/send_code_pin.dto';
 import { ApiAnnuaireService } from '../api_annuaire/api_annuaire.service';
+import { AnciennesCommunesDTO } from '../revision/dto/ancienne_commune.dto';
 
 @ApiTags('habilitations')
 @Controller('')
@@ -67,6 +69,7 @@ export class HabilitationController {
     operationId: 'findEmailsCommune',
   })
   @ApiParam({ name: 'codeCommune', required: true, type: String })
+  @ApiQuery({ type: AnciennesCommunesDTO })
   @ApiResponse({ status: HttpStatus.OK, type: String, isArray: true })
   async findEmailsCommune(
     @Param('codeCommune') codeCommune: string,

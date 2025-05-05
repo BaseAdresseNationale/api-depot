@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
 
-import { CommuneMiddleware } from '@/lib/class/middlewares/commune.middleware';
+import { CommuneActuelleMiddleware } from '@/lib/class/middlewares/commune_actuelle.middleware';
 import { ApiAnnuaireModule } from '@/modules/api_annuaire/api_annuaire.module';
 import { ClientModule } from '@/modules/client/client.module';
 import { Habilitation } from './habilitation.entity';
@@ -45,7 +45,7 @@ export class HabilitationModule {
       })
       .forRoutes(HabilitationController);
 
-    consumer.apply(CommuneMiddleware).forRoutes({
+    consumer.apply(CommuneActuelleMiddleware).forRoutes({
       path: 'communes/:codeCommune/habilitations',
       method: RequestMethod.ALL,
     });
