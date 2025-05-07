@@ -164,8 +164,8 @@ export class RevisionController {
   @Get('revisions/:revisionId/files/bal/download')
   @ApiParam({ name: 'revisionId', required: true, type: String })
   @ApiOperation({
-    summary: 'Download file current revision by Commune',
-    operationId: 'DownloadFileCurrent',
+    summary: 'Download file revision',
+    operationId: 'DownloadFileRevision',
   })
   async downloadFile(@Req() req: CustomRequest, @Res() res: Response) {
     if (req.revision.status !== StatusRevisionEnum.PUBLISHED) {
