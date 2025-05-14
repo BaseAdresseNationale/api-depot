@@ -21,6 +21,7 @@ import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Elu } from '@/lib/types/elu.type';
 import { Client } from '../client/client.entity';
+import { ProConnectUser } from './pro_connect/pro_connect_user.type';
 
 @Injectable()
 export class HabilitationService {
@@ -312,6 +313,41 @@ export class HabilitationService {
             type: TypeStrategyEnum.FRANCECONNECT,
             authenticationError:
               'Aucun mandat valide trouvé pour cette commune',
+          },
+        });
+      }
+    }
+  }
+
+  public async proConnectCallback(
+    user: ProConnectUser,
+    habilitationId: string,
+  ): Promise<void> {
+    const habilitation = await this.findOneOrFail(habilitationId);
+
+    if (habilitation.status === StatusHabilitationEnum.PENDING) {
+      const siretBelongToCommune: boolean =
+        await this.apiAnnuaireService.siretBelongToCommune(
+          user.siret,
+          habilitation.codeCommune,
+        );
+
+      if (siretBelongToCommune) {
+        await this.acceptHabilitation(habilitation.id, {
+          strategy: {
+            type: TypeStrategyEnum.PROCONNECT,
+            mandat: {
+              prenom: user.given_name,
+              nomNaissance: user.usual_name,
+              nomMarital: user.usual_name,
+            },
+          },
+        });
+      } else {
+        await this.rejectHabilitation(habilitation.id, {
+          strategy: {
+            type: TypeStrategyEnum.PROCONNECT,
+            authenticationError: 'Le siret ne correspond à la commune',
           },
         });
       }

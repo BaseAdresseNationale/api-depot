@@ -37,6 +37,12 @@ import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { SendCodePinRequestDTO } from './dto/send_code_pin.dto';
 import { ApiAnnuaireService } from '../api_annuaire/api_annuaire.service';
 import { AnciennesCommunesDTO } from '../revision/dto/ancienne_commune.dto';
+import {
+  ProConnectAuthGuard,
+  ProConnectCallBackGuard,
+} from './pro_connect/pro_connect.guard';
+import { ProConnectUser } from './pro_connect/pro_connect_user.type';
+import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
 
 @ApiTags('habilitations')
 @Controller('')
@@ -169,7 +175,26 @@ export class HabilitationController {
   @UseGuards(FranceConnectCallBackGuard)
   franceConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
     this.habilitationService.franceConnectCallback(
-      req.user,
+      req.user as UserFranceConnect,
+      req.habilitationId,
+    );
+    res.redirect(req.redirectUrl);
+  }
+
+  @ApiExcludeEndpoint()
+  @Get('habilitations/:habilitationId/authentication/proconnect')
+  @UseGuards(ProConnectAuthGuard)
+  async authentificationProConnect() {
+    return;
+  }
+
+  // https://partenaires.proconnect.gouv.fr/docs/fournisseur-service
+  @Get('/habilitations/proconnect/callback')
+  @ApiExcludeEndpoint()
+  @UseGuards(ProConnectCallBackGuard)
+  proConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
+    this.habilitationService.proConnectCallback(
+      req.user as ProConnectUser,
       req.habilitationId,
     );
     res.redirect(req.redirectUrl);
