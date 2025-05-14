@@ -16,18 +16,41 @@ export class ApiAnnuaireService {
     return re.test(String(email).toLowerCase());
   }
 
+  private async getMairies(codeCommune: string): Promise<any[]> {
+    const url: string = `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`;
+    const options: AxiosRequestConfig = { responseType: 'json' };
+    const { data } = await firstValueFrom(
+      this.httpService.get<any>(url, options).pipe(
+        catchError((error: AxiosError) => {
+          throw error;
+        }),
+      ),
+    );
+    return data.results;
+  }
+
+  public async siretBelongToCommune(
+    siretCommune: string,
+    codeCommune: string,
+  ): Promise<boolean> {
+    try {
+      const mairies = await this.getMairies(codeCommune);
+      return mairies.some(({ siret }) => siret === siretCommune);
+    } catch (error) {
+      this.logger.error(
+        `Une erreur s’est produite lors de la récupération du siret de la mairie (Code commune: ${codeCommune}).`,
+        ApiAnnuaireService.name,
+        error,
+      );
+      return false;
+    }
+  }
+
   public async getEmailsCommune(codeCommune: string): Promise<string[]> {
     try {
-      const url: string = `/catalog/datasets/api-lannuaire-administration/records?where=pivot%20LIKE%20"mairie"%20AND%20code_insee_commune="${codeCommune}"&limit=100`;
-      const options: AxiosRequestConfig = { responseType: 'json' };
-      const { data } = await firstValueFrom(
-        this.httpService.get<any>(url, options).pipe(
-          catchError((error: AxiosError) => {
-            throw error;
-          }),
-        ),
-      );
-      const mairies: any[] = data.results.filter(
+      const res = await this.getMairies(codeCommune);
+
+      const mairies = res.filter(
         ({ adresse_courriel }) => adresse_courriel && adresse_courriel !== '',
       );
 

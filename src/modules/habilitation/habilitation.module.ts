@@ -16,6 +16,11 @@ import {
 } from './france_connect/france_connect.guard';
 import { HabilitationMiddleware } from './habilitation.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProConnectStrategy } from './pro_connect/pro_connect.strategy';
+import {
+  ProConnectAuthGuard,
+  ProConnectCallBackGuard,
+} from './pro_connect/pro_connect.guard';
 
 @Module({
   imports: [
@@ -31,6 +36,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     FranceConnectStrategy,
     FranceConnectAuthGuard,
     FranceConnectCallBackGuard,
+    ProConnectStrategy,
+    ProConnectAuthGuard,
+    ProConnectCallBackGuard,
   ],
   controllers: [HabilitationController],
   exports: [HabilitationService],
