@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
-import { getElu } from '@/lib/utils/elus.utils';
 import { getCommune } from '@/lib/utils/cog.utils';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { ApiAnnuaireService } from '@/modules/api_annuaire/api_annuaire.service';
@@ -18,7 +17,6 @@ import {
 import { ClientService } from '../client/client.service';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Elu } from '@/lib/types/elu.type';
 import { Client } from '../client/client.entity';
 import { ProConnectUser } from './pro_connect/pro_connect_user.type';
 
