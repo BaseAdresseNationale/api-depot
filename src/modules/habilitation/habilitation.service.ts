@@ -333,16 +333,7 @@ export class HabilitationService {
         );
 
       if (siretBelongToCommune) {
-        await this.acceptHabilitation(habilitation.id, {
-          strategy: {
-            type: TypeStrategyEnum.PROCONNECT,
-            mandat: {
-              prenom: user.given_name,
-              nomNaissance: user.usual_name,
-              nomMarital: user.usual_name,
-            },
-          },
-        });
+        await this.acceptHabilitation(habilitation.id);
       } else {
         await this.rejectHabilitation(habilitation.id, {
           strategy: {
