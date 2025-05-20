@@ -8,6 +8,7 @@ import { catchError, firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { Logger } from '@/lib/utils/logger.utils';
 import * as jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class ProConnectStrategy extends PassportStrategy(
@@ -28,17 +29,57 @@ export class ProConnectStrategy extends PassportStrategy(
         callbackURL:
           configService.get('API_DEPOT_URL') +
           '/habilitations/proconnect/callback',
-        state: 'foobar',
-        scope: ['openid', 'siret', 'given_name', 'usual_name'],
+        scope: ['openid', 'siret'],
+        passReqToCallback: true,
       },
-      (accessToken, refreshToken, params, profile, done) => {
+      (req, accessToken, refreshToken, params, profile, done) => {
+        if (params.id_token) {
+          const decodedToken: any = jwt.decode(params.id_token);
+
+          if (!req.session.nonce || decodedToken.nonce !== req.session.nonce) {
+            Logger.error(
+              'Nonce invalide',
+              { stored: req.session.nonce, received: decodedToken.nonce },
+              ProConnectStrategy.name,
+            );
+            return done(
+              new HttpException('Nonce invalide', HttpStatus.BAD_REQUEST),
+              null,
+            );
+          }
+        }
+
+        if (!req.query.state || req.query.state !== req.session.state) {
+          // Si le state est manquant ou différent => possible CSRF
+          return done(
+            new HttpException('Invalid OAuth2 state', HttpStatus.BAD_REQUEST),
+            false,
+          );
+        }
+
         done(null, profile);
       },
     );
   }
 
-  authorizationParams = function () {
-    return { nonce: 'foobar' };
+  authenticate(req: any, options?: any) {
+    let state = req.session.state;
+    let nonce = req.session.nonce;
+
+    if (!state && !nonce) {
+      state = randomBytes(16).toString('hex');
+      nonce = randomBytes(16).toString('hex');
+      req.session.state = state;
+      req.session.nonce = nonce;
+    }
+    super.authenticate(req, { ...options, state, nonce });
+  }
+
+  authorizationParams = function (options) {
+    return {
+      state: options.state,
+      nonce: options.nonce,
+    };
   };
 
   userProfile = callbackify(async (token) => {

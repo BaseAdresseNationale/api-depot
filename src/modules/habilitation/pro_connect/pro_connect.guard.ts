@@ -11,7 +11,7 @@ export class ProConnectAuthGuard extends AuthGuard('pro_connect_oauth2') {
   canActivate(context: ExecutionContext) {
     const req = context.getArgByIndex(0);
     const res = context.getArgByIndex(1);
-    console.log('ProConnectAuthGuard');
+
     if (!req.query.redirectUrl) {
       return res.status(400).send('redirectUrl param is mandatory');
     }
