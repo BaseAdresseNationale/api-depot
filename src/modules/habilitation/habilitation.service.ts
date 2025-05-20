@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
-import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
 import { getElu } from '@/lib/utils/elus.utils';
 import { getCommune } from '@/lib/utils/cog.utils';
 import { CommuneCOG } from '@/lib/types/cog.type';
@@ -80,7 +79,6 @@ export class HabilitationService {
       id: habilitationId,
       codeCommune,
       emailCommune: null,
-      franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${habilitationId}/authentication/franceconnect`,
       strategy: null,
       clientId: client.id,
       status: StatusHabilitationEnum.PENDING,
@@ -281,42 +279,6 @@ export class HabilitationService {
     }
 
     await this.acceptHabilitation(habilitation.id);
-  }
-
-  public async franceConnectCallback(
-    user: UserFranceConnect,
-    habilitationId: string,
-  ): Promise<void> {
-    const habilitation = await this.findOneOrFail(habilitationId);
-
-    if (habilitation.status === StatusHabilitationEnum.PENDING) {
-      const elu: Elu = getElu(user);
-
-      const haveMandat: boolean = elu?.codeCommune.includes(
-        habilitation.codeCommune,
-      );
-
-      if (haveMandat) {
-        await this.acceptHabilitation(habilitation.id, {
-          strategy: {
-            type: TypeStrategyEnum.FRANCECONNECT,
-            mandat: {
-              prenom: user.given_name,
-              nomNaissance: user.family_name,
-              nomMarital: user.preferred_username,
-            },
-          },
-        });
-      } else {
-        await this.rejectHabilitation(habilitation.id, {
-          strategy: {
-            type: TypeStrategyEnum.FRANCECONNECT,
-            authenticationError:
-              'Aucun mandat valide trouvé pour cette commune',
-          },
-        });
-      }
-    }
   }
 
   public async proConnectCallback(

@@ -29,10 +29,6 @@ import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { HabilitationService } from './habilitation.service';
 import { Habilitation, TypeStrategyEnum } from './habilitation.entity';
 import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';
-import {
-  FranceConnectAuthGuard,
-  FranceConnectCallBackGuard,
-} from './france_connect/france_connect.guard';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { SendCodePinRequestDTO } from './dto/send_code_pin.dto';
 import { ApiAnnuaireService } from '../api_annuaire/api_annuaire.service';
@@ -42,7 +38,6 @@ import {
   ProConnectCallBackGuard,
 } from './pro_connect/pro_connect.guard';
 import { ProConnectUser } from './pro_connect/pro_connect_user.type';
-import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
 
 @ApiTags('habilitations')
 @Controller('')
@@ -156,29 +151,6 @@ export class HabilitationController {
   ) {
     await this.habilitationService.validateCodePin(req.habilitation, body);
     res.sendStatus(HttpStatus.OK);
-  }
-
-  @ApiExcludeEndpoint()
-  @Get('habilitations/:habilitationId/authentication/franceconnect')
-  @UseGuards(FranceConnectAuthGuard)
-  async authentificationFranceConnect() {
-    return;
-  }
-
-  // https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service
-  @Get(
-    process.env.NODE_ENV === 'production'
-      ? '/habilitations/franceconnect/callback'
-      : '/callback',
-  )
-  @ApiExcludeEndpoint()
-  @UseGuards(FranceConnectCallBackGuard)
-  franceConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
-    this.habilitationService.franceConnectCallback(
-      req.user as UserFranceConnect,
-      req.habilitationId,
-    );
-    res.redirect(req.redirectUrl);
   }
 
   @ApiExcludeEndpoint()
