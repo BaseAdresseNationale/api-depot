@@ -22,6 +22,7 @@ import { AuthorizationStrategyEnum, Client } from '../client/client.entity';
 import {
   FindOptionsSelect,
   FindOptionsWhere,
+  In,
   MoreThan,
   Not,
   Repository,
@@ -116,13 +117,24 @@ export class RevisionService {
     return query.getRawMany();
   }
 
-  public async findCurrents(publishedSince: Date | null = null) {
+  public async findCurrents(
+    publishedSince: Date | null = null,
+    codesCommune: string[] = [],
+  ) {
     const publishedSinceQuery = publishedSince
       ? { publishedAt: MoreThan(publishedSince) }
       : {};
 
+    const codesCommuneQuery = codesCommune
+      ? { codeCommune: In(codesCommune) }
+      : {};
+
     const revisions: Revision[] = await this.revisionRepository.find({
-      where: { isCurrent: true, ...publishedSinceQuery },
+      where: {
+        isCurrent: true,
+        ...publishedSinceQuery,
+        ...codesCommuneQuery,
+      },
       select: {
         id: true,
         codeCommune: true,
