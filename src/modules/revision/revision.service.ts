@@ -119,14 +119,14 @@ export class RevisionService {
 
   public async findCurrents(
     publishedSince: Date | null = null,
-    codesCommune: string[] | null = null,
+    codesCommunes: string[] | null = null,
   ) {
     const publishedSinceQuery = publishedSince
       ? { publishedAt: MoreThan(publishedSince) }
       : {};
 
-    const codesCommuneQuery = codesCommune
-      ? { codeCommune: In(codesCommune) }
+    const codesCommuneQuery = codesCommunes
+      ? { codeCommune: In(codesCommunes) }
       : {};
 
     const revisions: Revision[] = await this.revisionRepository.find({

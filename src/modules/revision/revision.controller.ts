@@ -42,7 +42,7 @@ export class RevisionController {
   })
   @ApiQuery({ name: 'publishedSince', required: false, type: Date })
   @ApiQuery({
-    name: 'codesCommune',
+    name: 'codesCommunes',
     required: false,
     type: String,
     isArray: true,
@@ -52,17 +52,17 @@ export class RevisionController {
     @Query('publishedSince', ParseDatePipe)
     publishedSince: Date,
     @Query(
-      'codesCommune',
+      'codesCommunes',
       new ParseArrayPipe({ optional: true }),
       ValidationCogPipe,
     )
-    codesCommune: string[],
+    codesCommunes: string[],
     @Res()
     res: Response,
   ) {
     const revisions: Revision[] = await this.revisionService.findCurrents(
       publishedSince,
-      codesCommune,
+      codesCommunes,
     );
     const revisionsWithClients: RevisionWithClientDTO[] =
       await this.revisionService.expandsWithClients(revisions);
