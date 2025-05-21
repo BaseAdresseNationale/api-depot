@@ -119,7 +119,7 @@ export class RevisionService {
 
   public async findCurrents(
     publishedSince: Date | null = null,
-    codesCommune: string[] = [],
+    codesCommune: string[] | null = null,
   ) {
     const publishedSinceQuery = publishedSince
       ? { publishedAt: MoreThan(publishedSince) }

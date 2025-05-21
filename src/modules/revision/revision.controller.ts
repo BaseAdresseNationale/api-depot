@@ -51,7 +51,11 @@ export class RevisionController {
   async findCurrents(
     @Query('publishedSince', ParseDatePipe)
     publishedSince: Date,
-    @Query('codesCommune', ParseArrayPipe, ValidationCogPipe)
+    @Query(
+      'codesCommune',
+      new ParseArrayPipe({ optional: true }),
+      ValidationCogPipe,
+    )
     codesCommune: string[],
     @Res()
     res: Response,
