@@ -7,7 +7,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class FranceConnectAuthGuard extends AuthGuard('oauth2') {
+export class ProConnectAuthGuard extends AuthGuard('pro_connect_oauth2') {
   canActivate(context: ExecutionContext) {
     const req = context.getArgByIndex(0);
     const res = context.getArgByIndex(1);
@@ -27,10 +27,9 @@ export class FranceConnectAuthGuard extends AuthGuard('oauth2') {
 }
 
 @Injectable()
-export class FranceConnectCallBackGuard extends AuthGuard('oauth2') {
+export class ProConnectCallBackGuard extends AuthGuard('pro_connect_oauth2') {
   canActivate(context: ExecutionContext) {
     const req = context.getArgByIndex(0);
-
     if (!req.session.habilitationId) {
       throw new HttpException(
         'Session invalide',
