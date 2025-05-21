@@ -24,8 +24,8 @@ export class ProConnectStrategy extends PassportStrategy(
         authorizationURL:
           configService.get('PC_SERVICE_URL') + '/api/v2/authorize',
         tokenURL: configService.get('PC_SERVICE_URL') + '/api/v2/token',
-        clientID: configService.get('PC_FS_ID'),
-        clientSecret: configService.get('PC_FS_SECRET'),
+        clientID: configService.get('PC_FS_ID') || 'fake-client-id',
+        clientSecret: configService.get('PC_FS_SECRET') || 'fake-client-secret',
         callbackURL:
           configService.get('API_DEPOT_URL') +
           '/habilitations/proconnect/callback',
@@ -50,7 +50,6 @@ export class ProConnectStrategy extends PassportStrategy(
         }
 
         if (!req.query.state || req.query.state !== req.session.state) {
-          // Si le state est manquant ou différent => possible CSRF
           return done(
             new HttpException('Invalid OAuth2 state', HttpStatus.BAD_REQUEST),
             false,
@@ -108,7 +107,6 @@ export class ProConnectStrategy extends PassportStrategy(
     );
 
     try {
-      // Décodage du JWT sans vérification de la signature
       const decodedToken = jwt.decode(data);
       Logger.debug('JWT décodé', decodedToken, ProConnectStrategy.name);
       return decodedToken;
