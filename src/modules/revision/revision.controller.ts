@@ -3,6 +3,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  ParseArrayPipe,
   Query,
   Req,
   Res,
@@ -25,7 +26,7 @@ import { RevisionService } from './revision.service';
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { RevisionQueryDto } from './dto/status_revisions.dto';
 import { AnciennesCommunesDTO } from './dto/ancienne_commune.dto';
-
+import { ValidationCogPipe } from '@/lib/class/pipes/validation_cog.pipe';
 @ApiTags('revisions')
 @Controller('')
 export class RevisionController {
@@ -40,14 +41,29 @@ export class RevisionController {
     operationId: 'findCurrent',
   })
   @ApiQuery({ name: 'publishedSince', required: false, type: Date })
+  @ApiQuery({
+    name: 'codesCommunes',
+    required: false,
+    type: String,
+    isArray: true,
+  })
   @ApiResponse({ status: HttpStatus.OK, type: RevisionWithClientDTO })
   async findCurrents(
     @Query('publishedSince', ParseDatePipe)
     publishedSince: Date,
-    @Res() res: Response,
+    @Query(
+      'codesCommunes',
+      new ParseArrayPipe({ optional: true }),
+      ValidationCogPipe,
+    )
+    codesCommunes: string[],
+    @Res()
+    res: Response,
   ) {
-    const revisions: Revision[] =
-      await this.revisionService.findCurrents(publishedSince);
+    const revisions: Revision[] = await this.revisionService.findCurrents(
+      publishedSince,
+      codesCommunes,
+    );
     const revisionsWithClients: RevisionWithClientDTO[] =
       await this.revisionService.expandsWithClients(revisions);
     res.status(HttpStatus.OK).json(revisionsWithClients);
