@@ -94,7 +94,7 @@ export class ProConnectStrategy extends PassportStrategy(
       this.httpService.get(url, options).pipe(
         catchError((error: AxiosError) => {
           Logger.error(
-            `Une erreur est survenue lors de l'authentitification FranceConnect`,
+            `Une erreur est survenue lors de l'authentitification ProConnect`,
             error,
             ProConnectStrategy.name,
           );
