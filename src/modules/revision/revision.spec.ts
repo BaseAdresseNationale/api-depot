@@ -257,6 +257,40 @@ describe('REVISION MODULE', () => {
     });
   });
 
+  it('GET /current-revisions codesCommunes', async () => {
+    const client: Client2 = await createClient();
+
+    await createRevision({
+      codeCommune: '91534',
+      clientId: client.id,
+      status: StatusRevisionEnum.PUBLISHED,
+      isCurrent: true,
+      publishedAt: sub(new Date(), { years: 1 }),
+    });
+
+    await createRevision({
+      codeCommune: '43089',
+      clientId: client.id,
+      status: StatusRevisionEnum.PUBLISHED,
+      isCurrent: true,
+      publishedAt: sub(new Date(), { weeks: 1 }),
+    });
+
+    await createRevision({
+      codeCommune: '43001',
+      clientId: client.id,
+      status: StatusRevisionEnum.PUBLISHED,
+      isCurrent: true,
+      publishedAt: sub(new Date(), { weeks: 1 }),
+    });
+
+    const { body } = await request(app.getHttpServer())
+      .get(`/current-revisions?codesCommunes=91534&codesCommunes=43089`)
+      .expect(200);
+
+    expect(body.length).toBe(2);
+  });
+
   describe('GET /communes/:codeCommune/current-revision', () => {
     it('GET /communes/:codeCommune/current-revision NOT EXIST', async () => {
       await request(app.getHttpServer())
