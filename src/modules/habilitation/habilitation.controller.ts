@@ -29,14 +29,15 @@ import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { HabilitationService } from './habilitation.service';
 import { Habilitation, TypeStrategyEnum } from './habilitation.entity';
 import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';
-import {
-  FranceConnectAuthGuard,
-  FranceConnectCallBackGuard,
-} from './france_connect/france_connect.guard';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { SendCodePinRequestDTO } from './dto/send_code_pin.dto';
 import { ApiAnnuaireService } from '../api_annuaire/api_annuaire.service';
 import { AnciennesCommunesDTO } from '../revision/dto/ancienne_commune.dto';
+import {
+  ProConnectAuthGuard,
+  ProConnectCallBackGuard,
+} from './pro_connect/pro_connect.guard';
+import { ProConnectUser } from './pro_connect/pro_connect_user.type';
 
 @ApiTags('habilitations')
 @Controller('')
@@ -153,23 +154,19 @@ export class HabilitationController {
   }
 
   @ApiExcludeEndpoint()
-  @Get('habilitations/:habilitationId/authentication/franceconnect')
-  @UseGuards(FranceConnectAuthGuard)
-  async authentificationFranceConnect() {
+  @Get('habilitations/:habilitationId/authentication/proconnect')
+  @UseGuards(ProConnectAuthGuard)
+  async authentificationProConnect() {
     return;
   }
 
-  // https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service
-  @Get(
-    process.env.NODE_ENV === 'production'
-      ? '/habilitations/franceconnect/callback'
-      : '/callback',
-  )
+  // https://partenaires.proconnect.gouv.fr/docs/fournisseur-service
+  @Get('/habilitations/proconnect/callback')
   @ApiExcludeEndpoint()
-  @UseGuards(FranceConnectCallBackGuard)
-  franceConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
-    this.habilitationService.franceConnectCallback(
-      req.user,
+  @UseGuards(ProConnectCallBackGuard)
+  proConnectCallback(@Req() req: CustomRequest, @Res() res: Response) {
+    this.habilitationService.proConnectCallback(
+      req.user as ProConnectUser,
       req.habilitationId,
     );
     res.redirect(req.redirectUrl);
