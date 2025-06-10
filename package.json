@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
-    "@ban-team/validateur-bal": "^3.0.8",
+    "@ban-team/validateur-bal": "^3.1.11",
     "@etalab/decoupage-administratif": "^5.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.0.2",
