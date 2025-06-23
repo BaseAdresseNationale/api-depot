@@ -12,6 +12,7 @@ export enum StatusHabilitationEnum {
 export enum TypeStrategyEnum {
   EMAIL = 'email',
   FRANCECONNECT = 'franceconnect',
+  PROCONNECT = 'proconnect',
   INTERNAL = 'internal',
 }
 
@@ -62,13 +63,6 @@ export class Habilitation extends IdEntity {
   @ApiProperty()
   @Column('text', { nullable: true, name: 'email_commune' })
   emailCommune: string;
-
-  @ApiProperty()
-  @Column('text', {
-    nullable: true,
-    name: 'franceconnect_authentication_url',
-  })
-  franceconnectAuthenticationUrl: string;
 
   @ApiProperty({ enum: StatusHabilitationEnum })
   @Column('enum', {

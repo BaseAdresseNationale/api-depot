@@ -5,8 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
-import { UserFranceConnect } from '@/lib/types/user_france_connect.type';
-import { getElu } from '@/lib/utils/elus.utils';
 import { getCommune } from '@/lib/utils/cog.utils';
 import { CommuneCOG } from '@/lib/types/cog.type';
 import { ApiAnnuaireService } from '@/modules/api_annuaire/api_annuaire.service';
@@ -19,8 +17,8 @@ import {
 import { ClientService } from '../client/client.service';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Elu } from '@/lib/types/elu.type';
 import { Client } from '../client/client.entity';
+import { ProConnectUser } from './pro_connect/pro_connect_user.type';
 
 @Injectable()
 export class HabilitationService {
@@ -79,7 +77,6 @@ export class HabilitationService {
       id: habilitationId,
       codeCommune,
       emailCommune: null,
-      franceconnectAuthenticationUrl: `${this.configService.get<string>('API_DEPOT_URL')}/habilitations/${habilitationId}/authentication/franceconnect`,
       strategy: null,
       clientId: client.id,
       status: StatusHabilitationEnum.PENDING,
@@ -282,36 +279,30 @@ export class HabilitationService {
     await this.acceptHabilitation(habilitation.id);
   }
 
-  public async franceConnectCallback(
-    user: UserFranceConnect,
+  public async proConnectCallback(
+    user: ProConnectUser,
     habilitationId: string,
   ): Promise<void> {
     const habilitation = await this.findOneOrFail(habilitationId);
 
     if (habilitation.status === StatusHabilitationEnum.PENDING) {
-      const elu: Elu = getElu(user);
+      const siretBelongToCommune: boolean =
+        await this.apiAnnuaireService.siretBelongToCommune(
+          user.siret,
+          habilitation.codeCommune,
+        );
 
-      const haveMandat: boolean = elu?.codeCommune.includes(
-        habilitation.codeCommune,
-      );
-
-      if (haveMandat) {
+      if (siretBelongToCommune) {
         await this.acceptHabilitation(habilitation.id, {
           strategy: {
-            type: TypeStrategyEnum.FRANCECONNECT,
-            mandat: {
-              prenom: user.given_name,
-              nomNaissance: user.family_name,
-              nomMarital: user.preferred_username,
-            },
+            type: TypeStrategyEnum.PROCONNECT,
           },
         });
       } else {
         await this.rejectHabilitation(habilitation.id, {
           strategy: {
-            type: TypeStrategyEnum.FRANCECONNECT,
-            authenticationError:
-              'Aucun mandat valide trouvé pour cette commune',
+            type: TypeStrategyEnum.PROCONNECT,
+            authenticationError: 'Le siret ne correspond à la commune',
           },
         });
       }

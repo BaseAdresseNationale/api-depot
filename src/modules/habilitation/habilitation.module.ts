@@ -9,13 +9,13 @@ import { ClientModule } from '@/modules/client/client.module';
 import { Habilitation } from './habilitation.entity';
 import { HabilitationService } from './habilitation.service';
 import { HabilitationController } from './habilitation.controller';
-import { FranceConnectStrategy } from './france_connect/france_connect.strategy';
-import {
-  FranceConnectAuthGuard,
-  FranceConnectCallBackGuard,
-} from './france_connect/france_connect.guard';
 import { HabilitationMiddleware } from './habilitation.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProConnectStrategy } from './pro_connect/pro_connect.strategy';
+import {
+  ProConnectAuthGuard,
+  ProConnectCallBackGuard,
+} from './pro_connect/pro_connect.guard';
 
 @Module({
   imports: [
@@ -28,9 +28,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   ],
   providers: [
     HabilitationService,
-    FranceConnectStrategy,
-    FranceConnectAuthGuard,
-    FranceConnectCallBackGuard,
+    ProConnectStrategy,
+    ProConnectAuthGuard,
+    ProConnectCallBackGuard,
   ],
   controllers: [HabilitationController],
   exports: [HabilitationService],
