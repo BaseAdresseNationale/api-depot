@@ -2,9 +2,9 @@
 
 L'api-depot est un système de versionning des BALs, c'est la ou sont centralisés tous les fichiers BALs.
 
-## Documentation
+## 📚 Documentation
 
-https://adresse-data-gouv-fr.gitbook.io/bal/api-depot
+Une documentation plus complète et des guides d’utilisation sont disponibles dans le [Wiki](https://github.com/BaseAdresseNationale/api-depot/wiki).
 
 ## Pré-requis
 
