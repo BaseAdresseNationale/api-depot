@@ -55,6 +55,8 @@ export class NotifyService {
         habilitationText = 'Habilitation via FranceConnect :fr:';
       } else if (habilitationStrategy === TypeStrategyEnum.EMAIL) {
         habilitationText = 'Habilitation par email :email:';
+      } else if (habilitationStrategy === TypeStrategyEnum.PROCONNECT) {
+        habilitationText = 'Habilitation via ProConnect :proconnect:';
       }
 
       const meta = [`Application : ${client.nom}`, habilitationText].filter(
