@@ -20,7 +20,7 @@ async function bootstrap() {
     )
     .setExternalDoc(
       'Documentation technique',
-      'https://adresse-data-gouv-fr.gitbook.io/bal/api-depot',
+      'https://github.com/BaseAdresseNationale/api-depot/wiki/02_API',
     )
     .addServer(process.env.API_DEPOT_URL)
     .setVersion('1.0')
@@ -44,7 +44,7 @@ async function bootstrap() {
     )
     .addTag('publications', 'Procédure pour publier un BAL', {
       description: 'Documentation publication',
-      url: 'https://adresse-data-gouv-fr.gitbook.io/bal/api-depot#publication-dune-bal',
+      url: 'https://github.com/BaseAdresseNationale/api-depot/wiki/04_Publication_BAL',
     })
     .build();
   app.useGlobalPipes(new ValidationPipe());
