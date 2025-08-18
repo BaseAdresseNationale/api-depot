@@ -10,6 +10,21 @@ export class BanService {
     private readonly logger: Logger,
   ) {}
 
+  public async getBanAssemblage(codeCommune: string): Promise<Buffer> {
+    const { data } = await firstValueFrom(
+      await this.httpService
+        .get<Buffer>(`/communes/${codeCommune}/download/csv-bal/adresses`, {
+          responseType: 'arraybuffer',
+        })
+        .pipe(
+          catchError((error: AxiosError) => {
+            throw error;
+          }),
+        ),
+    );
+    return data;
+  }
+
   public async composeCommune(codeCommune: string) {
     try {
       const url: string = `/communes/${codeCommune}/compose`;

@@ -12,6 +12,7 @@ import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { RevisionService } from './revision.service';
 import { Validation } from './revision.entity';
 import { Client } from '../client/client.entity';
+import { BanService } from '../ban/ban.service';
 
 @Injectable()
 export class ValidationService {
@@ -19,6 +20,7 @@ export class ValidationService {
     private chefDeFileService: ChefDeFileService,
     @Inject(forwardRef(() => RevisionService))
     private revisionService: RevisionService,
+    private banService: BanService,
   ) {}
 
   private getRowCodeCommune(row: ValidateRowFullType): string {
@@ -47,6 +49,29 @@ export class ValidationService {
     }
 
     return true;
+  }
+
+  async getLastNbRowsFromBan(codeCommune: string): Promise<number> {
+    try {
+      const file = await this.banService.getBanAssemblage(codeCommune);
+      const fileContent = file.toString('utf-8');
+      const lines = fileContent
+        .split('\n')
+        .filter((line) => line.trim() !== '');
+      return lines.length;
+    } catch {
+      return 0;
+    }
+  }
+
+  async getLastNbRows(codeCommune: string): Promise<number> {
+    try {
+      const currentRevision =
+        await this.revisionService.findCurrent(codeCommune);
+      return currentRevision?.validation?.rowsCount || 0;
+    } catch {
+      return this.getLastNbRowsFromBan(codeCommune);
+    }
   }
 
   async checkRemoveLotNumeros(
@@ -103,8 +128,14 @@ export class ValidationService {
       errors.push('commune_insee.out_of_perimeter');
     }
 
-    const rowsCount: number = rows.length;
-    if (await this.checkRemoveLotNumeros(codeCommune, rowsCount)) {
+    const rowsCount = rows.length;
+    const rowsCountLast = await this.getLastNbRows(codeCommune);
+
+    if (rowsCountLast * 0.8 < rowsCountLast - rowsCount) {
+      errors.push('rows.delete_too_many_addresses');
+    }
+
+    if (rowsCountLast * 0.2 < rowsCountLast - rowsCount) {
       warnings.push('rows.delete_many_addresses');
     }
 
