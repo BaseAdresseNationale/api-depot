@@ -1,4 +1,4 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, forwardRef, Logger } from '@nestjs/common';
 import {
   validate,
   ValidateRowFullType,
@@ -12,6 +12,7 @@ import { ChefDeFileService } from '@/modules/chef_de_file/chef_de_file.service';
 import { RevisionService } from './revision.service';
 import { Validation } from './revision.entity';
 import { Client } from '../client/client.entity';
+import { BanService } from '../ban/ban.service';
 
 @Injectable()
 export class ValidationService {
@@ -19,6 +20,8 @@ export class ValidationService {
     private chefDeFileService: ChefDeFileService,
     @Inject(forwardRef(() => RevisionService))
     private revisionService: RevisionService,
+    private banService: BanService,
+    private readonly logger: Logger,
   ) {}
 
   private getRowCodeCommune(row: ValidateRowFullType): string {
@@ -47,6 +50,30 @@ export class ValidationService {
     }
 
     return true;
+  }
+
+  async getLastNbRowsFromBan(codeCommune: string): Promise<number> {
+    try {
+      const lookup = await this.banService.getLookup(codeCommune);
+      return lookup.nbNumeros || 0;
+    } catch (error) {
+      this.logger.error(
+        "Une erreur est survenue lors de l'apelle a lookup",
+        ValidationService.name,
+        error,
+      );
+      return 0;
+    }
+  }
+
+  async getLastNbRows(codeCommune: string): Promise<number> {
+    try {
+      const currentRevision =
+        await this.revisionService.findCurrent(codeCommune);
+      return currentRevision?.validation?.rowsCount || 0;
+    } catch {
+      return this.getLastNbRowsFromBan(codeCommune);
+    }
   }
 
   async checkRemoveLotNumeros(
@@ -103,8 +130,13 @@ export class ValidationService {
       errors.push('commune_insee.out_of_perimeter');
     }
 
-    const rowsCount: number = rows.length;
-    if (await this.checkRemoveLotNumeros(codeCommune, rowsCount)) {
+    const rowsCount = rows.length;
+    const rowsCountLast = await this.getLastNbRows(codeCommune);
+    if (rowsCountLast * 0.8 < rowsCountLast - rowsCount) {
+      errors.push('rows.delete_too_many_addresses');
+    }
+
+    if (rowsCountLast * 0.2 < rowsCountLast - rowsCount) {
       warnings.push('rows.delete_many_addresses');
     }
 
