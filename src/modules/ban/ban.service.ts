@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { catchError, firstValueFrom } from 'rxjs';
+import { LookupResponse } from './ban.type';
 
 @Injectable()
 export class BanService {
@@ -10,24 +11,20 @@ export class BanService {
     private readonly logger: Logger,
   ) {}
 
-  public async getBanAssemblage(codeCommune: string): Promise<Buffer> {
+  public async getLookup(codeCommune: string): Promise<LookupResponse> {
     const { data } = await firstValueFrom(
-      await this.httpService
-        .get<Buffer>(`/communes/${codeCommune}/download/csv-bal/adresses`, {
-          responseType: 'arraybuffer',
-        })
-        .pipe(
-          catchError((error: AxiosError) => {
-            throw error;
-          }),
-        ),
+      await this.httpService.get<LookupResponse>(`/lookup/${codeCommune}`).pipe(
+        catchError((error: AxiosError) => {
+          throw error;
+        }),
+      ),
     );
     return data;
   }
 
   public async composeCommune(codeCommune: string) {
     try {
-      const url: string = `/communes/${codeCommune}/compose`;
+      const url: string = `/ban/communes/${codeCommune}/compose`;
       await firstValueFrom(
         this.httpService.post<any>(url).pipe(
           catchError((error: AxiosError) => {

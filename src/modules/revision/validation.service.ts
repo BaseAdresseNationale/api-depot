@@ -1,4 +1,4 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, forwardRef, Logger } from '@nestjs/common';
 import {
   validate,
   ValidateRowFullType,
@@ -21,6 +21,7 @@ export class ValidationService {
     @Inject(forwardRef(() => RevisionService))
     private revisionService: RevisionService,
     private banService: BanService,
+    private readonly logger: Logger,
   ) {}
 
   private getRowCodeCommune(row: ValidateRowFullType): string {
@@ -53,13 +54,14 @@ export class ValidationService {
 
   async getLastNbRowsFromBan(codeCommune: string): Promise<number> {
     try {
-      const file = await this.banService.getBanAssemblage(codeCommune);
-      const fileContent = file.toString('utf-8');
-      const lines = fileContent
-        .split('\n')
-        .filter((line) => line.trim() !== '');
-      return lines.length;
-    } catch {
+      const lookup = await this.banService.getLookup(codeCommune);
+      return lookup.nbNumeros || 0;
+    } catch (error) {
+      this.logger.error(
+        "Une erreur est survenue lors de l'apelle a lookup",
+        ValidationService.name,
+        error,
+      );
       return 0;
     }
   }
@@ -130,7 +132,6 @@ export class ValidationService {
 
     const rowsCount = rows.length;
     const rowsCountLast = await this.getLastNbRows(codeCommune);
-
     if (rowsCountLast * 0.8 < rowsCountLast - rowsCount) {
       errors.push('rows.delete_too_many_addresses');
     }
