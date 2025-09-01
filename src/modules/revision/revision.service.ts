@@ -29,7 +29,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RevisionAgg } from '../stats/stats.service';
+import { RevisionAgg, RevisionLast } from '../stats/stats.service';
 
 @Injectable()
 export class RevisionService {
@@ -54,6 +54,29 @@ export class RevisionService {
       where,
       ...(select && { select }),
     });
+  }
+
+  async findLasts({
+    offset,
+    limit,
+  }: {
+    offset?: number;
+    limit?: number;
+  }): Promise<RevisionLast[]> {
+    const query = this.revisionRepository
+      .createQueryBuilder('revisions')
+      .select('DISTINCT ON (code_commune) code_commune', 'codeCommune')
+      .addSelect('revisions.published_at', 'publishedAt')
+      .orderBy('code_commune', 'ASC')
+      .addOrderBy('published_at', 'DESC');
+
+    if (offset) {
+      query.offset(offset);
+    }
+    if (limit) {
+      query.limit(limit);
+    }
+    return query.getRawMany();
   }
 
   public async findOneOrFail(revisionId: string): Promise<Revision> {
