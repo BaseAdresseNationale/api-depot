@@ -24,7 +24,11 @@ import { DateFromToQuery } from './dto/date_to_from.dto';
 import { StatService } from './stats.service';
 import { FirstPublicationDTO } from './dto/first_pulication.dto';
 import { PublicationDTO } from './dto/publication.dto';
-import { MetricsIncubateurDTO } from './dto/metrics_incubateur.dto';
+import {
+  LimitDTO,
+  MetricsIncubateurDTO,
+  OffsetDTO,
+} from './dto/metrics_incubateur.dto';
 
 @ApiTags('stats')
 @Controller('stats')
@@ -78,8 +82,8 @@ export class StatController {
     summary: 'Metrics incubateur',
     operationId: 'metricsIncubateur',
   })
-  @ApiQuery({ name: 'offset', type: Number })
-  @ApiQuery({ name: 'limit', type: Number })
+  @ApiQuery({ name: 'offset', type: OffsetDTO, required: false })
+  @ApiQuery({ name: 'limit', type: LimitDTO, required: false })
   @ApiResponse({
     status: HttpStatus.OK,
     type: MetricsIncubateurDTO,
