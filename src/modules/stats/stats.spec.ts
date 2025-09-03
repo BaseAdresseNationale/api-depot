@@ -11,7 +11,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import * as request from 'supertest';
-import { parse } from 'date-fns';
+import { parse, subYears, subMonths, subDays } from 'date-fns';
 
 import {
   AuthorizationStrategyEnum,
@@ -278,6 +278,113 @@ describe('STATS MODULE', () => {
         },
       ];
       expect(response.body).toEqual(resExpected);
+    });
+  });
+
+  describe('GET /stats/metrics-incubateur', () => {
+    it('GET /stats/metrics-incubateur forbidden', async () => {
+      await request(app.getHttpServer())
+        .get(`/stats/metrics-incubateur`)
+        .expect(403);
+    });
+
+    it('GET /stats/metrics-incubateur with offset and limit', async () => {
+      // Créer plusieurs révisions pour tester la pagination
+      await createRevision({
+        codeCommune: '91400',
+        publishedAt: parse('2023-01-01', 'yyyy-MM-dd', new Date()),
+      });
+      await createRevision({
+        codeCommune: '91401',
+        publishedAt: parse('2023-02-01', 'yyyy-MM-dd', new Date()),
+      });
+      await createRevision({
+        codeCommune: '91402',
+        publishedAt: parse('2023-03-01', 'yyyy-MM-dd', new Date()),
+      });
+      await createRevision({
+        codeCommune: '91403',
+        publishedAt: parse('2023-04-01', 'yyyy-MM-dd', new Date()),
+      });
+
+      // Test avec offset=1 et limit=2
+      const response = await request(app.getHttpServer())
+        .get(`/stats/metrics-incubateur?offset=1&limit=2`)
+        .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
+        .expect(200);
+      expect(response.body.count).toBe(2);
+      expect(response.body.results).toHaveLength(2);
+      expect(response.body.results[0].insee).toBe('91401');
+      expect(response.body.results[1].insee).toBe('91402');
+    });
+
+    it('GET /stats/metrics-incubateur metrics calculation', async () => {
+      const now = new Date();
+      const twoYearAgo = subYears(now, 2);
+      const twoMonthAgo = subMonths(now, 2);
+      const tenDayAgo = subDays(now, 10);
+      const twoDayAgo = subDays(now, 2);
+
+      // Créer des révisions avec différentes dates pour tester les métriques
+      await createRevision({
+        codeCommune: '91400',
+        publishedAt: twoYearAgo, // YAU = 0, MAU = 0, WAU = 0
+      });
+      await createRevision({
+        codeCommune: '91401',
+        publishedAt: twoMonthAgo, // YAU = 1, MAU = 0, WAU = 0
+      });
+      await createRevision({
+        codeCommune: '91402',
+        publishedAt: tenDayAgo, // YAU = 1, MAU = 1, WAU = 0
+      });
+      await createRevision({
+        codeCommune: '91403',
+        publishedAt: twoYearAgo, // YAU = 0, MAU = 0, WAU = 0 no selected
+      });
+      await createRevision({
+        codeCommune: '91403',
+        publishedAt: twoMonthAgo, /// YAU = 1, MAU = 0, WAU = 0 no selected
+      });
+      await createRevision({
+        codeCommune: '91403',
+        publishedAt: twoDayAgo, // YAU = 1, MAU = 1, WAU = 1
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/stats/metrics-incubateur`)
+        .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
+        .expect(200);
+
+      expect(response.body.count).toBe(4);
+      expect(response.body.results).toHaveLength(4);
+
+      // Vérifier les métriques pour chaque révision
+      const results = response.body.results;
+
+      // Première révision (oneYearAgo)
+      expect(results[0].metrics.tu).toBe(1);
+      expect(results[0].metrics.yau).toBe(0);
+      expect(results[0].metrics.mau).toBe(0);
+      expect(results[0].metrics.wau).toBe(0);
+
+      // Deuxième révision (oneMonthAgo)
+      expect(results[1].metrics.tu).toBe(1);
+      expect(results[1].metrics.yau).toBe(1);
+      expect(results[1].metrics.mau).toBe(0);
+      expect(results[1].metrics.wau).toBe(0);
+
+      // Troisième révision (oneDayAgo)
+      expect(results[2].metrics.tu).toBe(1);
+      expect(results[2].metrics.yau).toBe(1);
+      expect(results[2].metrics.mau).toBe(1);
+      expect(results[2].metrics.wau).toBe(0);
+
+      // Quatrième révision (twoDaysAgo)
+      expect(results[3].metrics.tu).toBe(1);
+      expect(results[3].metrics.yau).toBe(1);
+      expect(results[3].metrics.mau).toBe(1);
+      expect(results[3].metrics.wau).toBe(1);
     });
   });
 });

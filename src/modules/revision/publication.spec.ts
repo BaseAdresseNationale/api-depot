@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import * as request from 'supertest';
 import MockAdapter from 'axios-mock-adapter';
-import { add } from 'date-fns';
 import * as fs from 'fs';
 import axios from 'axios';
 
@@ -703,10 +702,8 @@ describe('PUBLICATION MODULE', () => {
         status: StatusRevisionEnum.PENDING,
         isReady: false,
       });
-      const expiresAt = add(new Date(), { years: 1 });
       const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt,
         codeCommune: '31591',
         clientId: client.id,
       });
@@ -730,10 +727,8 @@ describe('PUBLICATION MODULE', () => {
         status: StatusRevisionEnum.PUBLISHED,
         isReady: false,
       });
-      const expiresAt = add(new Date(), { years: 1 });
       const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt,
         codeCommune: '31591',
         clientId: client.id,
       });
@@ -757,10 +752,8 @@ describe('PUBLICATION MODULE', () => {
         status: StatusRevisionEnum.PENDING,
         isReady: true,
       });
-      const expiresAt = add(new Date(), { years: 1 });
       const habilitation = await createHabilitation({
         status: StatusHabilitationEnum.ACCEPTED,
-        expiresAt,
         codeCommune: '31591',
         clientId: client.id,
         strategy: {
@@ -780,7 +773,6 @@ describe('PUBLICATION MODULE', () => {
       expect(body.habilitation).toMatchObject({
         id: habilitation.id,
         codeCommune: '31591',
-        expiresAt: expiresAt.toISOString(),
       });
     });
 

@@ -204,7 +204,6 @@ describe('HABILITATION MODULE', () => {
       const hab = {
         codeCommune: '91534',
         strategy: null,
-        expiresAt: null,
         clientId: client.id,
         status: StatusHabilitationEnum.PENDING,
       };
@@ -225,7 +224,6 @@ describe('HABILITATION MODULE', () => {
         codeCommune,
         emailCommune: null,
         strategy: null,
-        expiresAt: null,
         clientId: client.id,
         status: StatusHabilitationEnum.PENDING,
       };
@@ -318,8 +316,6 @@ describe('HABILITATION MODULE', () => {
         .set('authorization', `Token ${process.env.ADMIN_TOKEN}`)
         .expect(200);
 
-      expect(body.expiresAt).toBeDefined();
-      expect(body.expiresAt).not.toBeNull();
       expect(body.acceptedAt).toBeDefined();
       expect(body.acceptedAt).not.toBeNull();
       expect(body.status).toBe(StatusHabilitationEnum.ACCEPTED);
@@ -344,8 +340,6 @@ describe('HABILITATION MODULE', () => {
         .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
         .expect(200);
 
-      expect(body.expiresAt).toBeDefined();
-      expect(body.expiresAt).not.toBeNull();
       expect(body.acceptedAt).toBeDefined();
       expect(body.acceptedAt).not.toBeNull();
       expect(body.status).toBe(StatusHabilitationEnum.ACCEPTED);
@@ -579,7 +573,6 @@ describe('HABILITATION MODULE', () => {
       });
       expect(afterHabilitation.status).toBe(StatusHabilitationEnum.REJECTED);
       expect(afterHabilitation.acceptedAt).toBeNull();
-      expect(afterHabilitation.expiresAt).toBeNull();
     });
 
     it('VALIDATE CODE PIN BAD CODE', async () => {
@@ -613,7 +606,6 @@ describe('HABILITATION MODULE', () => {
       const afterHabilitation = await habilitationRepository.findOneBy({ id });
       expect(afterHabilitation.status).toBe(StatusHabilitationEnum.PENDING);
       expect(afterHabilitation.acceptedAt).toBeNull();
-      expect(afterHabilitation.expiresAt).toBeNull();
     });
 
     it('VALIDATE CODE PIN DATE EXPIRE', async () => {
@@ -647,7 +639,6 @@ describe('HABILITATION MODULE', () => {
       const afterHabilitation = await habilitationRepository.findOneBy({ id });
       expect(afterHabilitation.status).toBe(StatusHabilitationEnum.PENDING);
       expect(afterHabilitation.acceptedAt).toBeNull();
-      expect(afterHabilitation.expiresAt).toBeNull();
     });
 
     it('VALIDATE CODE PIN', async () => {
@@ -676,7 +667,6 @@ describe('HABILITATION MODULE', () => {
       const afterHabilitation = await habilitationRepository.findOneBy({ id });
       expect(afterHabilitation.status).toBe(StatusHabilitationEnum.ACCEPTED);
       expect(afterHabilitation.acceptedAt).toBeDefined();
-      expect(afterHabilitation.expiresAt).toBeDefined();
     });
   });
 });
