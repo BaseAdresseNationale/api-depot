@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { add, endOfDay, format, compareDesc } from 'date-fns';
+import {
+  add,
+  endOfDay,
+  format,
+  compareDesc,
+  subYears,
+  subMonths,
+  subWeeks,
+} from 'date-fns';
 import { keyBy, groupBy, mapValues } from 'lodash';
 
 import { DateFromToQueryTransformed } from '@/lib/class/pipes/date_from_to.pipe';
@@ -10,11 +18,17 @@ import { FirstPublicationDTO } from './dto/first_pulication.dto';
 import { PublicationDTO } from './dto/publication.dto';
 import { Client } from '../client/client.entity';
 import { Between, In } from 'typeorm';
+import { MetricsIncubateurDTO } from './dto/metrics_incubateur.dto';
 
 const CLIENTS_TO_MONITOR = {
   mesAdresses: 'mes-adresses',
   moissonneur: 'moissonneur-bal',
 };
+
+export interface RevisionLast {
+  codeCommune: string;
+  publishedAt: Date;
+}
 
 export interface RevisionAgg {
   codeCommune: string;
@@ -104,5 +118,28 @@ export class StatService {
         })),
       };
     });
+  }
+
+  public async metricsIncubateur(
+    offset?: number,
+    limit?: number,
+  ): Promise<MetricsIncubateurDTO> {
+    const revisions: RevisionLast[] = await this.revisionService.findLasts({
+      offset,
+      limit,
+    });
+    const now = new Date();
+    return {
+      count: revisions.length,
+      results: revisions.map((revision) => ({
+        insee: revision.codeCommune,
+        metrics: {
+          tu: 1,
+          yau: subYears(now, 1) <= revision.publishedAt ? 1 : 0,
+          mau: subMonths(now, 1) <= revision.publishedAt ? 1 : 0,
+          wau: subWeeks(now, 1) <= revision.publishedAt ? 1 : 0,
+        },
+      })),
+    };
   }
 }
