@@ -349,7 +349,6 @@ export class RevisionService {
           'codeCommune',
           'createdAt',
           'updatedAt',
-          'expiresAt',
           'strategy',
         ]);
       } else {

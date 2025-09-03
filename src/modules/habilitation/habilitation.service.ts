@@ -80,7 +80,6 @@ export class HabilitationService {
       strategy: null,
       clientId: client.id,
       status: StatusHabilitationEnum.PENDING,
-      expiresAt: null,
     });
     return this.habilitationRepository.save(entityToSave);
   }
@@ -98,14 +97,11 @@ export class HabilitationService {
     changes: Partial<Habilitation> = {},
   ): Promise<Habilitation> {
     const now = new Date();
-    const habilitationEnd = new Date();
-    habilitationEnd.setMonth(habilitationEnd.getMonth() + 12);
 
     return this.updateOne(habilitationId, {
       ...changes,
       status: StatusHabilitationEnum.ACCEPTED,
       acceptedAt: now,
-      expiresAt: habilitationEnd,
     });
   }
 
@@ -114,8 +110,6 @@ export class HabilitationService {
     changes: Partial<Habilitation> = {},
   ): Promise<Habilitation> {
     const now = new Date();
-    const habilitationEnd = new Date();
-    habilitationEnd.setMonth(habilitationEnd.getMonth() + 12);
 
     return this.updateOne(habilitationId, {
       ...changes,
