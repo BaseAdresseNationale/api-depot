@@ -28,6 +28,7 @@ const CLIENTS_TO_MONITOR = {
 export interface RevisionLast {
   codeCommune: string;
   publishedAt: Date;
+  totalCount: number;
 }
 
 export interface RevisionAgg {
@@ -130,7 +131,7 @@ export class StatService {
     });
     const now = new Date();
     return {
-      count: revisions.length,
+      count: Number(revisions[0]?.totalCount) || 0,
       results: revisions.map((revision) => ({
         insee: revision.codeCommune,
         metrics: {
