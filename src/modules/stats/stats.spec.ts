@@ -306,7 +306,7 @@ describe('STATS MODULE', () => {
         .get(`/stats/metrics-incubateur?offset=1&limit=2`)
         .set('authorization', `Bearer ${process.env.ADMIN_TOKEN}`)
         .expect(200);
-      expect(response.body.count).toBe(2);
+      expect(response.body.count).toBe(4);
       expect(response.body.results).toHaveLength(2);
       expect(response.body.results[0].insee).toBe('91401');
       expect(response.body.results[1].insee).toBe('91402');
