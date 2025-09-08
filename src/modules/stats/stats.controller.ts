@@ -24,6 +24,11 @@ import { DateFromToQuery } from './dto/date_to_from.dto';
 import { StatService } from './stats.service';
 import { FirstPublicationDTO } from './dto/first_pulication.dto';
 import { PublicationDTO } from './dto/publication.dto';
+import {
+  LimitDTO,
+  MetricsIncubateurDTO,
+  OffsetDTO,
+} from './dto/metrics_incubateur.dto';
 
 @ApiTags('stats')
 @Controller('stats')
@@ -69,6 +74,27 @@ export class StatController {
   ) {
     const result: PublicationDTO[] =
       await this.statService.findPublications(dates);
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  @Get('metrics-incubateur')
+  @ApiOperation({
+    summary: 'Metrics incubateur',
+    operationId: 'metricsIncubateur',
+  })
+  @ApiQuery({ name: 'offset', type: OffsetDTO, required: false })
+  @ApiQuery({ name: 'limit', type: LimitDTO, required: false })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: MetricsIncubateurDTO,
+  })
+  async metricsIncubateur(
+    @Query('offset') offset: number,
+    @Query('limit') limit: number,
+    @Res() res: Response,
+  ) {
+    const result: MetricsIncubateurDTO =
+      await this.statService.metricsIncubateur(offset, limit);
     res.status(HttpStatus.OK).json(result);
   }
 }
