@@ -282,12 +282,6 @@ describe('STATS MODULE', () => {
   });
 
   describe('GET /stats/metrics-incubateur', () => {
-    it('GET /stats/metrics-incubateur forbidden', async () => {
-      await request(app.getHttpServer())
-        .get(`/stats/metrics-incubateur`)
-        .expect(403);
-    });
-
     it('GET /stats/metrics-incubateur with offset and limit', async () => {
       // Créer plusieurs révisions pour tester la pagination
       await createRevision({

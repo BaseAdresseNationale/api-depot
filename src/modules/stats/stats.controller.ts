@@ -88,8 +88,6 @@ export class StatController {
     status: HttpStatus.OK,
     type: MetricsIncubateurDTO,
   })
-  @ApiBearerAuth('admin-token')
-  @UseGuards(AdminGuard)
   async metricsIncubateur(
     @Query('offset') offset: number,
     @Query('limit') limit: number,
