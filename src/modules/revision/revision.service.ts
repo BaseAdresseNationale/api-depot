@@ -65,10 +65,11 @@ export class RevisionService {
   }): Promise<RevisionLast[]> {
     const query = this.revisionRepository
       .createQueryBuilder('revisions')
-      .select('DISTINCT ON (code_commune) code_commune', 'codeCommune')
-      .addSelect('revisions.published_at', 'publishedAt')
+      .select('code_commune', 'codeCommune')
+      .addSelect('MAX(published_at)', 'publishedAt')
+      .addSelect('COUNT(*) OVER()', 'totalCount')
       .orderBy('code_commune', 'ASC')
-      .addOrderBy('published_at', 'DESC');
+      .groupBy('code_commune');
 
     if (offset) {
       query.offset(offset);
