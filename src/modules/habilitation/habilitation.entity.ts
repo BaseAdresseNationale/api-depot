@@ -78,10 +78,6 @@ export class Habilitation extends IdEntity {
   strategy: Strategy | null;
 
   @ApiProperty()
-  @Column('timestamp', { name: 'expires_at', nullable: true })
-  expiresAt?: Date;
-
-  @ApiProperty()
   @Column('timestamp', { name: 'accepted_at', nullable: true })
   acceptedAt?: Date;
 
