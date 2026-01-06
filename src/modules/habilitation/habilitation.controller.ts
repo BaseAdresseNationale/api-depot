@@ -27,7 +27,11 @@ import { CustomRequest } from '@/lib/types/request.type';
 import { AdminGuard } from '@/lib/class/guards/admin.guard';
 import { ClientGuard } from '@/lib/class/guards/client.guard';
 import { HabilitationService } from './habilitation.service';
-import { Habilitation, TypeStrategyEnum } from './habilitation.entity';
+import {
+  Habilitation,
+  StatusHabilitationEnum,
+  TypeStrategyEnum,
+} from './habilitation.entity';
 import { ValidateCodePinRequestDTO } from './dto/validate_code_pin.dto';
 import { HabilitationWithClientDTO } from './dto/habilitation_with_client.dto';
 import { SendCodePinRequestDTO } from './dto/send_code_pin.dto';
@@ -38,6 +42,8 @@ import {
   ProConnectCallBackGuard,
 } from './pro_connect/pro_connect.guard';
 import { ProConnectUser } from './pro_connect/pro_connect_user.type';
+import { FindManyHabilitationDTO } from './dto/find_many_habilitation.dto';
+import { In, IsNull, Not } from 'typeorm';
 
 @ApiTags('habilitations')
 @Controller('')
@@ -96,6 +102,42 @@ export class HabilitationController {
     res
       .status(HttpStatus.OK)
       .json(omit(habilitationWithClient, 'strategy.pinCode'));
+  }
+
+  @Post('habilitations/are-valid')
+  @ApiOperation({
+    summary: 'find many habilitations are valid',
+    operationId: 'habilitationsAreValid',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    schema: {
+      type: 'object',
+      additionalProperties: {
+        type: 'boolean',
+      },
+    },
+  })
+  @ApiBody({ type: FindManyHabilitationDTO, required: true })
+  @ApiBearerAuth('client-token')
+  @UseGuards(ClientGuard)
+  async habilitationsAreValid(
+    @Body() { ids }: FindManyHabilitationDTO,
+    @Res() res: Response,
+  ) {
+    const habilitations: Habilitation[] =
+      await this.habilitationService.findMany({
+        id: In(ids),
+        status: StatusHabilitationEnum.ACCEPTED,
+        acceptedAt: Not(IsNull()),
+      });
+
+    const habilitationsIdsSet = new Set(habilitations.map((h) => h.id));
+    const response: Record<string, boolean> = Object.fromEntries(
+      ids.map((id) => [id, habilitationsIdsSet.has(id)]),
+    );
+
+    res.status(HttpStatus.OK).json(response);
   }
 
   @Put('habilitations/:habilitationId/validate')
