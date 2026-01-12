@@ -24,6 +24,12 @@ export class ClientGuard implements CanActivate {
       );
     }
     const [, token] = req.get('Authorization').split(' ');
+    if (token === undefined) {
+      throw new HttpException(
+        `Le token d'authentification est manquant`,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
     const client = await this.clientService.findOne({ token });
 
     if (!client) {
