@@ -58,6 +58,14 @@ export class HabilitationService {
     });
   }
 
+  public async findMany(
+    where: FindOptionsWhere<Habilitation>,
+  ): Promise<Habilitation[]> {
+    return this.habilitationRepository.find({
+      where,
+    });
+  }
+
   public async expandWithClient(
     habilitation: Habilitation,
   ): Promise<HabilitationWithClientDTO> {
