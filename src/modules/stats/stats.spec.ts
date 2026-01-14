@@ -113,12 +113,12 @@ describe('STATS MODULE', () => {
   });
 
   afterEach(async () => {
-    await mandataireRepository.delete({});
-    await clientRepository.delete({});
-    await chefDeFileRepository.delete({});
-    await habilitationRepository.delete({});
-    await revisionRepository.delete({});
-    await fileRepository.delete({});
+    await mandataireRepository.deleteAll();
+    await clientRepository.deleteAll();
+    await chefDeFileRepository.deleteAll();
+    await habilitationRepository.deleteAll();
+    await revisionRepository.deleteAll();
+    await fileRepository.deleteAll();
   });
 
   async function createClient(props: Partial<Client2> = {}): Promise<Client2> {
