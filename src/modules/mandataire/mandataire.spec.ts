@@ -80,7 +80,7 @@ describe('MANDATAIRE MODULE', () => {
   });
 
   afterEach(async () => {
-    await mandataireRepository.delete({});
+    await mandataireRepository.deleteAll();
   });
 
   it('GET /mandataires empty', async () => {

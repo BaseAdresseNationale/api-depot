@@ -80,7 +80,7 @@ describe('CHEF_DE_FILE MODULE', () => {
   });
 
   afterEach(async () => {
-    await chefDeFileRepository.delete({});
+    await chefDeFileRepository.deleteAll();
   });
 
   it('GET /chefs-de-file empty', async () => {

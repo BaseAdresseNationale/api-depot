@@ -106,9 +106,9 @@ describe('CLIENT MODULE', () => {
   });
 
   afterEach(async () => {
-    await clientRepository.delete({});
-    await mandataireRepository.delete({});
-    await chefDeFileRepository.delete({});
+    await chefDeFileRepository.deleteAll();
+    await mandataireRepository.deleteAll();
+    await clientRepository.deleteAll();
   });
 
   async function getClient(props: UpdateClientDTO): Promise<UpdateClientDTO> {

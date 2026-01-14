@@ -120,10 +120,10 @@ describe('HABILITATION MODULE', () => {
   });
 
   afterEach(async () => {
-    await mandataireRepository.delete({});
-    await clientRepository.delete({});
-    await chefDeFileRepository.delete({});
-    await habilitationRepository.delete({});
+    await mandataireRepository.deleteAll();
+    await chefDeFileRepository.deleteAll();
+    await habilitationRepository.deleteAll();
+    await clientRepository.deleteAll();
   });
 
   async function createClient(props: Partial<Client2> = {}): Promise<Client2> {
