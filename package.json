@@ -18,6 +18,9 @@
     "typeorm:migration:run": "yarn typeorm migration:run -- -d ./typeorm.config.ts",
     "typeorm:migration:down": "yarn typeorm migration:revert -- -d ./typeorm.config.ts"
   },
+  "resolutions": {
+    "cpu-features": "npm:noop3@13.8.1"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.576.0",
     "@ban-team/validateur-bal": "^3.3.3",
@@ -107,6 +110,6 @@
     }
   },
   "engines": {
-    "node": "22"
+    "node": "24"
   }
 }
