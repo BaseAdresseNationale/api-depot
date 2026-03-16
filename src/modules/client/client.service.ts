@@ -14,6 +14,7 @@ import { Mandataire } from '../mandataire/mandataire.entity';
 import { AuthorizationStrategyEnum, Client } from './client.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import { BalAdminService } from '../bal_admin/bal_admin.service';
 
 @Injectable()
 export class ClientService {
@@ -22,6 +23,7 @@ export class ClientService {
     private clientRepository: Repository<Client>,
     private mandataireService: MandataireService,
     private chefDeFileService: ChefDeFileService,
+    private balAdminService: BalAdminService,
     private readonly configService: ConfigService,
     private mailerService: MailerService,
   ) {}
@@ -81,7 +83,10 @@ export class ClientService {
         : AuthorizationStrategyEnum.HABILITATION,
     });
     const client = await this.clientRepository.save(entityToSave);
-
+    await this.balAdminService.createClient(client, chefDeFile);
+    if (!client.isActive) {
+      this.balAdminService.deleteClient(client.id);
+    }
     await this.mailerService.sendMail({
       to: mandataire.email,
       subject: 'Accès à l’API dépôt d’une Base Adresse Locale',
@@ -99,18 +104,32 @@ export class ClientService {
   }
 
   public async updateOne(
-    clientId: string,
+    client: Client,
     changes: UpdateClientDTO,
   ): Promise<Client> {
+    let chefDeFile: ChefDeFile;
     if (changes.chefDeFileId) {
-      await this.chefDeFileService.findOneOrFail(changes.chefDeFileId);
+      chefDeFile = await this.chefDeFileService.findOneOrFail(
+        changes.chefDeFileId,
+      );
     }
     if (changes.mandataireId) {
       await this.mandataireService.findOneOrFail(changes.mandataireId);
     }
 
-    await this.clientRepository.update({ id: clientId }, changes);
-    return this.clientRepository.findOneBy({ id: clientId });
+    await this.clientRepository.update({ id: client.id }, changes);
+    await this.balAdminService.updateClientPerimeters(
+      { id: client.id, nom: changes.nom } as Client,
+      chefDeFile,
+    );
+    if (client.isActive !== changes.isActive) {
+      if (changes.isActive) {
+        this.balAdminService.restoreClient(client.id);
+      } else {
+        this.balAdminService.deleteClient(client.id);
+      }
+    }
+    return this.clientRepository.findOneBy({ id: client.id });
   }
 
   public filterSensitiveFields(client: Client): Omit<Client, 'token'> {

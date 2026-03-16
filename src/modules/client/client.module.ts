@@ -8,6 +8,7 @@ import { ClientController } from './client.controller';
 import { ClientMiddleware } from './client.middleware';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Client } from './client.entity';
+import { BalAdminModule } from '../bal_admin/bal_admin.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { Client } from './client.entity';
     TypeOrmModule.forFeature([Client]),
     MandataireModule,
     ChefDeFileModule,
+    BalAdminModule,
   ],
   providers: [ClientService],
   controllers: [ClientController],

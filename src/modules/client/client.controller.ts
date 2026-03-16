@@ -115,10 +115,7 @@ export class ClientController {
     @Body() body: UpdateClientDTO,
     @Res() res: Response,
   ) {
-    const client: Client = await this.clientService.updateOne(
-      req.client.id,
-      body,
-    );
+    const client: Client = await this.clientService.updateOne(req.client, body);
     const clientSafe: Omit<Client, 'token'> =
       this.clientService.filterSensitiveFields(client);
     res.status(HttpStatus.OK).json(clientSafe);
