@@ -16,6 +16,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Client as Client2 } from './client.entity';
 import { ClientModule } from './client.module';
 import { UpdateClientDTO } from './dto/update_client.dto';
+import { BalAdminService } from '../bal_admin/bal_admin.service';
 import { Mandataire } from '../mandataire/mandataire.entity';
 import { ChefDeFile } from '../chef_de_file/chef_de_file.entity';
 import { TOKEN_LENGTH } from '@/lib/utils/token.utils';
@@ -29,6 +30,13 @@ import { ObjectId } from 'bson';
 
 process.env.FC_FS_ID = 'coucou';
 process.env.ADMIN_TOKEN = 'xxxx';
+
+const mockBalAdminService = {
+  createClient: jest.fn().mockResolvedValue(undefined),
+  updateClientPerimeters: jest.fn().mockResolvedValue(undefined),
+  deleteClient: jest.fn().mockResolvedValue(undefined),
+  restoreClient: jest.fn().mockResolvedValue(undefined),
+};
 
 @Global()
 @Module({
@@ -87,7 +95,10 @@ describe('CLIENT MODULE', () => {
         ClientModule,
         MailerModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(BalAdminService)
+      .useValue(mockBalAdminService)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
@@ -106,6 +117,7 @@ describe('CLIENT MODULE', () => {
   });
 
   afterEach(async () => {
+    jest.clearAllMocks();
     await clientRepository.delete({});
     await mandataireRepository.delete({});
     await chefDeFileRepository.delete({});
@@ -173,6 +185,21 @@ describe('CLIENT MODULE', () => {
 
     expect(response.body).toMatchObject(client);
     expect(response.body.token).toHaveLength(TOKEN_LENGTH);
+
+    expect(mockBalAdminService.createClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: response.body.id,
+        nom: 'client_test',
+        isActive: false,
+      }),
+      expect.objectContaining({
+        nom: 'chefDeFile',
+        email: 'chefDeFile@test.com',
+      }),
+    );
+    expect(mockBalAdminService.deleteClient).toHaveBeenCalledWith(
+      response.body.id,
+    );
   });
 
   it('POST /clients', async () => {
@@ -192,6 +219,21 @@ describe('CLIENT MODULE', () => {
       isActive: false,
       isRelaxMode: true,
     });
+
+    expect(mockBalAdminService.createClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: response.body.id,
+        nom: 'client_test',
+        isActive: false,
+      }),
+      expect.objectContaining({
+        nom: 'chefDeFile',
+        email: 'chefDeFile@test.com',
+      }),
+    );
+    expect(mockBalAdminService.deleteClient).toHaveBeenCalledWith(
+      response.body.id,
+    );
   });
 
   it('GET /clients/:id', async () => {
@@ -308,6 +350,17 @@ describe('CLIENT MODULE', () => {
       .expect(200);
 
     expect(response4.body).toMatchObject(change);
+
+    expect(mockBalAdminService.updateClientPerimeters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: response.body.id,
+        nom: 'put_test',
+      }),
+      undefined,
+    );
+    expect(mockBalAdminService.restoreClient).toHaveBeenCalledWith(
+      response.body.id,
+    );
   });
 
   it('PUT 403 /clients', async () => {
