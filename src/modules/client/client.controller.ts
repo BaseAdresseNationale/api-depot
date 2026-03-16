@@ -27,6 +27,9 @@ import { UpdateClientDTO } from './dto/update_client.dto';
 import { ConfigService } from '@nestjs/config';
 import { CreateClientDTO } from './dto/create_client.dto';
 import { Client } from './client.entity';
+import { ChefDeFileService } from '../chef_de_file/chef_de_file.service';
+import { UpdateChefDeFileDTO } from '../chef_de_file/dto/update_chef_de_file.dto';
+import { UpdateChefDeFilePerimeterDTO } from './dto/update_chef_de_file_perimter.dto';
 
 @ApiTags('clients')
 @Controller('clients')
@@ -34,6 +37,7 @@ export class ClientController {
   constructor(
     private clientService: ClientService,
     private configService: ConfigService,
+    private chefDeFileService: ChefDeFileService,
   ) {}
 
   isAdmin(req: CustomRequest): boolean {
@@ -118,5 +122,27 @@ export class ClientController {
     const clientSafe: Omit<Client, 'token'> =
       this.clientService.filterSensitiveFields(client);
     res.status(HttpStatus.OK).json(clientSafe);
+  }
+
+  @Put(':clientId/chef_de_file/perimeter')
+  @ApiOperation({
+    summary: 'update one client',
+    operationId: 'updateOne',
+  })
+  @ApiParam({ name: 'clientId', required: true, type: String })
+  @ApiBody({ type: UpdateChefDeFileDTO, required: true })
+  @ApiResponse({ status: HttpStatus.OK, type: OmitType(Client, ['token']) })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  async updateChefDeFile(
+    @Req() req: CustomRequest,
+    @Body() { perimeters }: UpdateChefDeFilePerimeterDTO,
+    @Res() res: Response,
+  ) {
+    const chefDeFile = await this.chefDeFileService.updatePerimeters(
+      req.client.chefDeFileId,
+      perimeters,
+    );
+    res.status(HttpStatus.OK).json(chefDeFile);
   }
 }

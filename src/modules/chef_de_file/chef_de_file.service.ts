@@ -3,6 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChefDeFile } from './chef_de_file.entity';
+import { Perimeter } from './perimeters.entity';
 
 @Injectable()
 export class ChefDeFileService {
@@ -58,5 +59,11 @@ export class ChefDeFileService {
     });
     await this.chefsDeFileRepository.save(entityToSave);
     return this.chefsDeFileRepository.findOneBy({ id: chefDeFileId });
+  }
+
+  public async updatePerimeters(chefDeFileId: string, perimeters: Perimeter[]) {
+    const entityToSave = await this.findOneOrFail(chefDeFileId);
+    Object.assign(entityToSave, { perimeters });
+    this.chefsDeFileRepository.save(entityToSave);
   }
 }
