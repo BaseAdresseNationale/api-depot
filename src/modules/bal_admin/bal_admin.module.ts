@@ -10,9 +10,9 @@ import { HttpModule } from '@nestjs/axios';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         baseURL: configService.get('API_BAL_ADMIN_URL'),
-        // headers: {
-        //   Authorization: `Bearer ${configService.get('API_BAL_ADMIN_TOKEN')}`,
-        // },
+        headers: {
+          Authorization: `Bearer ${configService.get('API_BAL_ADMIN_TOKEN')}`,
+        },
       }),
       inject: [ConfigService],
     }),
