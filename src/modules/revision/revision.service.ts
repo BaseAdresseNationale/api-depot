@@ -164,6 +164,12 @@ export class RevisionService {
         codeCommune: true,
         publishedAt: true,
         clientId: true,
+        context: {
+          extras: {
+            balId: true,
+            sourceId: true,
+          },
+        },
       },
     });
 

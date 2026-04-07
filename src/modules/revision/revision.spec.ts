@@ -255,6 +255,52 @@ describe('REVISION MODULE', () => {
 
       expect(body.length).toBe(1);
     });
+
+    it('GET /current-revisions should return context extras', async () => {
+      const client: Client2 = await createClient();
+
+      await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: new Date(),
+        context: {
+          extras: {
+            balId: 'bal-123',
+            sourceId: 'source-456',
+          },
+        },
+      });
+
+      await createRevision({
+        codeCommune: '91477',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: new Date(),
+        context: {
+          extras: null,
+        },
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get(`/current-revisions`)
+        .expect(200);
+
+      expect(body.length).toBe(2);
+
+      const revisionWithExtras = body.find((r) => r.codeCommune === '91534');
+      expect(revisionWithExtras.context).toBeDefined();
+      expect(revisionWithExtras.context.extras).toMatchObject({
+        balId: 'bal-123',
+        sourceId: 'source-456',
+      });
+
+      const revisionWithoutExtras = body.find((r) => r.codeCommune === '91477');
+      expect(revisionWithoutExtras.context).toBeDefined();
+      expect(revisionWithoutExtras.context.extras).toBeNull();
+    });
   });
 
   it('GET /current-revisions codesCommunes', async () => {
