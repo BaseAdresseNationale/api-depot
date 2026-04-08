@@ -22,14 +22,18 @@ export class BalAdminService {
   constructor(private readonly httpService: HttpService) {}
 
   private buildPayload(client: Client, chefDeFile: ChefDeFile): ClientPayload {
+    const perimeters = chefDeFile
+      ? (chefDeFile.perimeters ?? []).map(({ type, code }) => ({
+          type,
+          code,
+        }))
+      : undefined;
+
     return {
       clientId: client.id,
       name: client.nom,
       type: 'api-depot',
-      perimeters: (chefDeFile.perimeters ?? []).map(({ type, code }) => ({
-        type,
-        code,
-      })),
+      perimeters,
     };
   }
 
