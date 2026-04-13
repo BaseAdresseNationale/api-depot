@@ -175,7 +175,6 @@ describe('CLIENT MODULE', () => {
     const client = await getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
     const response = await request(app.getHttpServer())
       .post(`/clients`)
@@ -217,7 +216,6 @@ describe('CLIENT MODULE', () => {
     expect(response.body).toMatchObject({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
 
     expect(mockBalAdminService.createClient).toHaveBeenCalledWith(
@@ -240,7 +238,6 @@ describe('CLIENT MODULE', () => {
     const client = await getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
     const { body }: { body: Client } = await request(app.getHttpServer())
       .post(`/clients`)
@@ -271,7 +268,6 @@ describe('CLIENT MODULE', () => {
     const client = await getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
     await request(app.getHttpServer())
       .post(`/clients`)
@@ -292,7 +288,6 @@ describe('CLIENT MODULE', () => {
     const client = await getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
     await request(app.getHttpServer())
       .post(`/clients`)
@@ -323,7 +318,6 @@ describe('CLIENT MODULE', () => {
     const client = await getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
     const response = await request(app.getHttpServer())
       .post(`/clients`)
@@ -334,7 +328,6 @@ describe('CLIENT MODULE', () => {
     const change: UpdateClientDTO = {
       nom: 'put_test',
       isActive: true,
-      isRelaxMode: true,
     };
 
     const response3 = await request(app.getHttpServer())
@@ -367,7 +360,6 @@ describe('CLIENT MODULE', () => {
     const client = await getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
     const response = await request(app.getHttpServer())
       .post(`/clients`)
@@ -378,7 +370,6 @@ describe('CLIENT MODULE', () => {
     const change: UpdateClientDTO = {
       nom: 'put_test',
       isActive: true,
-      isRelaxMode: true,
     };
 
     await request(app.getHttpServer())
@@ -397,7 +388,6 @@ describe('CLIENT MODULE', () => {
     const change = getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
 
     await request(app.getHttpServer())
@@ -411,7 +401,6 @@ describe('CLIENT MODULE', () => {
     const change = getClient({
       nom: 'client_test',
       isActive: false,
-      isRelaxMode: true,
     });
 
     await request(app.getHttpServer())

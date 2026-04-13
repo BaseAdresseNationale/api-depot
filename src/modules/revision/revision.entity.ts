@@ -23,6 +23,9 @@ export class Validation {
   valid: boolean;
 
   @ApiProperty({ type: String, required: false })
+  format?: string;
+
+  @ApiProperty({ type: String, required: false })
   validatorVersion?: string;
 
   @ApiProperty()

@@ -28,10 +28,4 @@ export class CreateClientDTO {
   @IsBoolean()
   @ApiProperty({ required: false, default: true })
   isActive?: boolean;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @IsBoolean()
-  @ApiProperty({ type: Boolean, required: false })
-  isRelaxMode?: boolean;
 }

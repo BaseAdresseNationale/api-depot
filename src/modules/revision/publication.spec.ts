@@ -480,9 +480,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION BAD CODE INSEE', async () => {
-      const client: Client2 = await createClient({
-        isRelaxMode: true,
-      });
+      const client: Client2 = await createClient();
       const fileData = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '91534',
@@ -514,9 +512,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
-      const client: Client2 = await createClient({
-        isRelaxMode: true,
-      });
+      const client: Client2 = await createClient({});
       const fileData = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '31591',
@@ -548,9 +544,7 @@ describe('PUBLICATION MODULE', () => {
     });
 
     it('COMPUTE REVISION OUT OF PERIMETER', async () => {
-      const client: Client2 = await createClient({
-        isRelaxMode: true,
-      });
+      const client: Client2 = await createClient({});
       const fileData = readFile('1.3-valid.csv');
       const revision = await createRevision({
         codeCommune: '31591',
@@ -584,9 +578,7 @@ describe('PUBLICATION MODULE', () => {
 
     it('COMPUTE REVISION', async () => {
       const client: Client2 = await createClient(
-        {
-          isRelaxMode: true,
-        },
+        {},
         {
           perimeters: [
             {
