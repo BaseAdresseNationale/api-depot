@@ -44,10 +44,6 @@ export class Client extends IdEntity {
   isActive: boolean;
 
   @ApiProperty()
-  @Column('boolean', { nullable: true, default: true, name: 'is_relax_mode' })
-  isRelaxMode: boolean;
-
-  @ApiProperty()
   @Column('varchar', { length: 32, nullable: false })
   token?: string;
 

@@ -98,12 +98,8 @@ export class ValidationService {
     codeCommune: string,
     client: Client,
   ): Promise<Validation> {
-    const { parseOk, parseErrors, profilErrors, rows } = (await validate(
-      fileData,
-      {
-        profile: client?.isRelaxMode ? '1.3-relax' : '1.3',
-      },
-    )) as ValidateType;
+    const { parseOk, parseErrors, profilErrors, rows, profile } =
+      (await validate(fileData)) as ValidateType;
 
     if (!parseOk) {
       return {
@@ -142,6 +138,7 @@ export class ValidationService {
 
     return {
       valid: errors.length === 0,
+      format: profile,
       validatorVersion,
       errors,
       warnings,
