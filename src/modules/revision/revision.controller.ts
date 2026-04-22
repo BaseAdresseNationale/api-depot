@@ -27,6 +27,7 @@ import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { RevisionQueryDto } from './dto/status_revisions.dto';
 import { AnciennesCommunesDTO } from './dto/ancienne_commune.dto';
 import { ValidationCogPipe } from '@/lib/class/pipes/validation_cog.pipe';
+
 @ApiTags('revisions')
 @Controller('')
 export class RevisionController {
@@ -136,6 +137,24 @@ export class RevisionController {
     res.attachment(`bal-${revision.codeCommune}.csv`);
     res.setHeader('Content-Type', 'text/csv');
     res.send(data);
+  }
+
+  @Get('revisions-lasts-pending')
+  @ApiOperation({
+    summary: 'Find lasts revisions pending',
+    operationId: 'findLastsRevisionInPending',
+  })
+  @ApiQuery({ name: 'page', required: false, schema: { type: 'number' } })
+  @ApiQuery({ name: 'limit', required: false, schema: { type: 'number' } })
+  async findLastsRevisionInPending(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Res() res: Response,
+  ) {
+    const lastsRevisionsPending =
+      await this.revisionService.findLastsRevisionInPending(page, limit);
+
+    res.status(HttpStatus.OK).json(lastsRevisionsPending);
   }
 
   @Get('revisions/:revisionId')
