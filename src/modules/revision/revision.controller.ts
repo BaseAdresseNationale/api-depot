@@ -139,22 +139,15 @@ export class RevisionController {
     res.send(data);
   }
 
-  @Get('revisions-lasts-pending')
+  @Get('last-revisions')
   @ApiOperation({
-    summary: 'Find lasts revisions pending',
-    operationId: 'findLastsRevisionInPending',
+    summary: 'Find last revisions',
+    operationId: 'findLastRevisions',
   })
-  @ApiQuery({ name: 'page', required: false, schema: { type: 'number' } })
-  @ApiQuery({ name: 'limit', required: false, schema: { type: 'number' } })
-  async findLastsRevisionInPending(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
-    @Res() res: Response,
-  ) {
-    const lastsRevisionsPending =
-      await this.revisionService.findLastsRevisionInPending(page, limit);
+  async findLastRevisions(@Res() res: Response) {
+    const lastRevisions = await this.revisionService.findLasts();
 
-    res.status(HttpStatus.OK).json(lastsRevisionsPending);
+    res.status(HttpStatus.OK).json(lastRevisions);
   }
 
   @Get('revisions/:revisionId')
