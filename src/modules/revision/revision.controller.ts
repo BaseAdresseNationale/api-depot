@@ -4,11 +4,14 @@ import {
   HttpException,
   HttpStatus,
   ParseArrayPipe,
+  Post,
   Query,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -27,6 +30,9 @@ import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { RevisionQueryDto } from './dto/status_revisions.dto';
 import { AnciennesCommunesDTO } from './dto/ancienne_commune.dto';
 import { ValidationCogPipe } from '@/lib/class/pipes/validation_cog.pipe';
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
+import { ClientService } from '../client/client.service';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('revisions')
 @Controller('')
@@ -34,6 +40,8 @@ export class RevisionController {
   constructor(
     private revisionService: RevisionService,
     private fileService: FileService,
+    private clientService: ClientService,
+    private configService: ConfigService,
   ) {}
 
   @Get('current-revisions')
@@ -216,5 +224,50 @@ export class RevisionController {
     res.attachment(`bal-${req.revision.codeCommune}.csv`);
     res.setHeader('Content-Type', 'text/csv');
     res.send(data);
+  }
+
+  @Post('revisions/:revisionId/sync-ids-ban-publish')
+  @ApiParam({ name: 'revisionId', required: true, type: String })
+  @ApiOperation({
+    summary: 'Synchro ids BAL with ids BAN and publish',
+    operationId: 'syncIdsBANPublish',
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Revision,
+  })
+  async syncIdsBANPublish(@Req() req: CustomRequest, @Res() res: Response) {
+    try {
+      const { file: csvFileSync, codeCommune } =
+        await this.revisionService.syncIdsBAN(req.revision);
+
+      const clienBalAdmin = await this.clientService.findOneOrFail(
+        this.configService.get('ID_CLIENT_BAL_ADMIN'),
+      );
+      const newRevisionFirstStep: Revision =
+        await this.revisionService.createOne(codeCommune, clienBalAdmin, {
+          nomComplet: 'ANCT',
+          organisation: 'ANCT',
+          extras: {
+            sourceRevisionId: req.revision.id,
+          },
+        });
+      await this.revisionService.setFile(newRevisionFirstStep, csvFileSync);
+      const newRevisionSecondStep: Revision =
+        await this.revisionService.computeOne(
+          newRevisionFirstStep,
+          clienBalAdmin,
+        );
+      const newRevisionFinalStep: Revision =
+        await this.revisionService.publishOneWithLock(
+          newRevisionSecondStep,
+          clienBalAdmin,
+        );
+      res.status(HttpStatus.OK).send(newRevisionFinalStep);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
