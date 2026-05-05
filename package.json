@@ -22,6 +22,7 @@
     "cpu-features": "npm:noop3@13.8.1"
   },
   "dependencies": {
+    "formatting-bal": "file:../formatting-bal",
     "@aws-sdk/client-s3": "^3.576.0",
     "@ban-team/validateur-bal": "^3.5.2",
     "@etalab/decoupage-administratif": "^6.0.0",
