@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  HttpException,
   HttpStatus,
   ParseArrayPipe,
   Query,
