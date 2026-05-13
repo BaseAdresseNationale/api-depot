@@ -25,7 +25,7 @@ const CLIENTS_TO_MONITOR = {
   moissonneur: 'moissonneur-bal',
 };
 
-export interface RevisionLast {
+export interface RevisionLastPublished {
   codeCommune: string;
   publishedAt: Date;
   totalCount: number;
@@ -125,7 +125,7 @@ export class StatService {
     offset?: number,
     limit?: number,
   ): Promise<MetricsIncubateurDTO> {
-    const revisions: RevisionLast[] =
+    const revisions: RevisionLastPublished[] =
       await this.revisionService.findLastsPublished({
         offset,
         limit,
