@@ -56,7 +56,7 @@ export class RevisionService {
     });
   }
 
-  async findLasts({
+  async findLastsPublished({
     offset,
     limit,
   }: {
@@ -130,39 +130,13 @@ export class RevisionService {
     return query.getRawMany();
   }
 
-  async findLastsRevisionInPending(page = 1, limit = 10): Promise<any> {
-    const offset = (page - 1) * limit;
-    const result = await this.revisionRepository.query(
-      `SELECT 
-        last_revisions.id,
-        code_commune AS "codeCommune",
-        status,
-        last_revisions.created_at AS "createdAt",
-        legacy_id AS "legacyId",
-        validation
-        FROM (
-            SELECT DISTINCT ON (code_commune) *
-            FROM revisions
-            ORDER BY code_commune, created_at DESC
-        ) last_revisions
-        LEFT JOIN clients on clients.id = last_revisions.client_id
-        WHERE status = 'pending'
-        ORDER BY last_revisions.created_at DESC
-        LIMIT $1 OFFSET $2`,
-      [limit, offset],
-    );
-
-    const [{ total }] = await this.revisionRepository.query(`
-      SELECT COUNT(*) as total
-      FROM (
-          SELECT DISTINCT ON (code_commune) *
-          FROM revisions
-          ORDER BY code_commune, created_at DESC
-      ) last_revisions
-      WHERE status = 'pending'
-    `);
-
-    return { result, total };
+  async findLasts(): Promise<any> {
+    return await this.revisionRepository
+      .createQueryBuilder('revision')
+      .select('DISTINCT ON (revision.code_commune) revision.*')
+      .orderBy('revision.code_commune', 'ASC')
+      .addOrderBy('revision.created_at', 'DESC')
+      .getRawMany();
   }
 
   async findFirsts(): Promise<RevisionAgg[]> {
