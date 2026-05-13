@@ -69,6 +69,10 @@ export class RevisionModule {
         path: 'revisions/:revisionId/publish',
         method: RequestMethod.ALL,
       },
+      {
+        path: 'revisions/:revisionId/sync-ids-ban-publish',
+        method: RequestMethod.ALL,
+      },
     );
 
     consumer.apply(CommuneMiddleware).forRoutes(

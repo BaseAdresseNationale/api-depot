@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  HttpException,
   HttpStatus,
   Logger,
   Post,
@@ -33,11 +34,14 @@ import { FileBinary } from '@/lib/class/decorators/file_binary.decorator';
 import { FileBinaryPipe } from '@/lib/class/pipes/file_binary.pipe';
 import { FileBinaryInterceptor } from '@/lib/class/interceptors/file_binary.interceptor';
 import { PublishDTO } from './dto/publish.dto';
+import { AdminGuard } from '@/lib/class/guards/admin.guard';
+import { ClientService } from '../client/client.service';
 
 @ApiTags('publications')
 @Controller('')
 export class PublicationController {
   constructor(
+    private clientService: ClientService,
     private revisionService: RevisionService,
     private readonly logger: Logger,
   ) {}
@@ -190,5 +194,53 @@ export class PublicationController {
     const revisionWithClient: RevisionWithClientDTO =
       await this.revisionService.expandWithClientAndFile(revision);
     res.status(HttpStatus.OK).json(revisionWithClient);
+  }
+
+  @Post('revisions/:revisionId/sync-ids-ban-publish')
+  @ApiParam({ name: 'revisionId', required: true, type: String })
+  @ApiOperation({
+    summary: 'Synchro ids BAL with ids BAN and publish',
+    operationId: 'syncIdsBANPublish',
+  })
+  @ApiBearerAuth('admin-token')
+  @UseGuards(AdminGuard)
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Revision,
+  })
+  async syncIdsBANPublish(@Req() req: CustomRequest, @Res() res: Response) {
+    try {
+      if (!req.revision.isCurrent) {
+        throw new HttpException(
+          'Erreur: on ne peut pas synchroniser une publication non courante',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      const { file: csvFileSync, codeCommune } =
+        await this.revisionService.syncIdsBAN(req.revision);
+
+      const client = await this.clientService.findOneOrFail(
+        req.revision.clientId,
+      );
+      const newRevisionFirstStep: Revision =
+        await this.revisionService.createOne(codeCommune, client, {
+          ...req.revision.context,
+          extras: {
+            ...req.revision.context?.extras,
+            syncRevisionId: req.revision.id,
+          },
+        });
+      await this.revisionService.setFile(newRevisionFirstStep, csvFileSync);
+      const newRevisionSecondStep: Revision =
+        await this.revisionService.computeOne(newRevisionFirstStep, client);
+      const newRevisionFinalStep: Revision =
+        await this.revisionService.publishOneWithLock(
+          newRevisionSecondStep,
+          client,
+        );
+      res.status(HttpStatus.OK).send(newRevisionFinalStep);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

@@ -12,6 +12,7 @@ import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.enti
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { ValidationService } from './validation.service';
 import { NotifyService } from './notify.service';
+import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import {
   Context,
   Revision,
@@ -429,5 +430,19 @@ export class RevisionService {
     await this.notifyService.onForcePublish(prevRevision, revisionPublished);
 
     return revisionPublished;
+  }
+
+  async syncIdsBAN(revision: Revision): Promise<{
+    codeCommune: string;
+    file: Buffer;
+  }> {
+    const csvFile = await this.fileService.findDataByRevision(revision.id);
+    const { file, tree } = (await formatterBAL(csvFile, {
+      withTree: true,
+    })) as {
+      tree: BalTree;
+      file: Buffer;
+    };
+    return { file, codeCommune: tree.commune_insee };
   }
 }
