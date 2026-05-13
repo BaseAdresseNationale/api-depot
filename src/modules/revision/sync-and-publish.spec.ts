@@ -303,7 +303,7 @@ describe('SYNC AND PUBLISH MODULE', () => {
   }
 
   describe('POST /revisions/:revisionId/sync-ids-ban-publish', () => {
-    it('doit retourner 500 quand typeComposition=BAL et withBanId=false', async () => {
+    it('doit retourner 500 quand la BAN ne repond pas', async () => {
       const adminClient = await createAdminClient();
       const sourceClient = await createSourceClient();
       const originalFileId = new ObjectId().toHexString();
@@ -324,7 +324,7 @@ describe('SYNC AND PUBLISH MODULE', () => {
         .expect(500);
 
       expect(body.message).toContain(
-        "La commune n'a pas d'identifiants stables sur la BAN",
+        'Impossible de fetch id_ban_commune de la BAN',
       );
 
       // Vérifier qu'aucune nouvelle révision n'a été créée pour le client admin
@@ -355,7 +355,7 @@ describe('SYNC AND PUBLISH MODULE', () => {
         .expect(200);
 
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.context.extras.sourceRevisionId).toBe(sourceRevision.id);
+      expect(body.context.extras.syncRevisionId).toBe(sourceRevision.id);
 
       const row = parseFirstRow(getWrittenFile());
       expect(row.id_ban_commune).toBe(BAN_COMMUNE_ID);
@@ -384,7 +384,7 @@ describe('SYNC AND PUBLISH MODULE', () => {
         .expect(200);
 
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.context.extras.sourceRevisionId).toBe(sourceRevision.id);
+      expect(body.context.extras.syncRevisionId).toBe(sourceRevision.id);
 
       const row = parseFirstRow(getWrittenFile());
       expect(row.id_ban_commune).toBe(BAN_COMMUNE_ID);
@@ -417,7 +417,7 @@ describe('SYNC AND PUBLISH MODULE', () => {
         .expect(200);
 
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.context.extras.sourceRevisionId).toBe(sourceRevision.id);
+      expect(body.context.extras.syncRevisionId).toBe(sourceRevision.id);
 
       const row = parseFirstRow(getWrittenFile());
       expect(row.id_ban_commune).toBe(BAN_COMMUNE_ID);
@@ -450,7 +450,7 @@ describe('SYNC AND PUBLISH MODULE', () => {
         .expect(200);
 
       expect(body.status).toBe(StatusRevisionEnum.PUBLISHED);
-      expect(body.context.extras.sourceRevisionId).toBe(sourceRevision.id);
+      expect(body.context.extras.syncRevisionId).toBe(sourceRevision.id);
 
       const row = parseFirstRow(getWrittenFile());
       expect(row.id_ban_commune).toBe(BAN_COMMUNE_ID);
