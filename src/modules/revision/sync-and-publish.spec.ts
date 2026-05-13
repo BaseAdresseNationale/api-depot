@@ -206,7 +206,7 @@ describe('SYNC AND PUBLISH MODULE', () => {
   }
 
   /**
-   * Mock global.fetch pour les appels de formattingBAL (fetch API).
+   * Mock global.fetch pour les appels de formatterBAL (fetch API).
    */
   function mockFetchAssemblage() {
     jest.spyOn(global, 'fetch').mockImplementation(async (url: RequestInfo) => {

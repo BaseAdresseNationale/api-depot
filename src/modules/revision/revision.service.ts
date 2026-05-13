@@ -12,7 +12,7 @@ import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.enti
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { ValidationService } from './validation.service';
 import { NotifyService } from './notify.service';
-import { BalTree, formattingBAL } from 'formatting-bal';
+import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import {
   Context,
   Revision,
@@ -452,7 +452,7 @@ export class RevisionService {
     file: Buffer;
   }> {
     const csvFile = await this.fileService.findDataByRevision(revision.id);
-    const { file, tree } = (await formattingBAL(csvFile, {
+    const { file, tree } = (await formatterBAL(csvFile, {
       withTree: true,
     })) as {
       tree: BalTree;
