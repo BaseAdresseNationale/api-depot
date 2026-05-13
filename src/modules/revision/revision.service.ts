@@ -30,7 +30,12 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RevisionAgg, RevisionLast } from '../stats/stats.service';
+import { RevisionAgg, RevisionLastPublished } from '../stats/stats.service';
+
+export type RevisionLast = Pick<
+  Revision,
+  'id' | 'codeCommune' | 'isReady' | 'status'
+> & { isValid: boolean };
 
 @Injectable()
 export class RevisionService {
@@ -63,7 +68,7 @@ export class RevisionService {
   }: {
     offset?: number;
     limit?: number;
-  }): Promise<RevisionLast[]> {
+  }): Promise<RevisionLastPublished[]> {
     const query = this.revisionRepository
       .createQueryBuilder('revisions')
       .select('code_commune', 'codeCommune')
@@ -131,13 +136,19 @@ export class RevisionService {
     return query.getRawMany();
   }
 
-  async findLasts(): Promise<any> {
-    return await this.revisionRepository
-      .createQueryBuilder('revision')
-      .select('DISTINCT ON (revision.code_commune) revision.*')
-      .orderBy('revision.code_commune', 'ASC')
-      .addOrderBy('revision.created_at', 'DESC')
-      .getRawMany();
+  async findLasts(): Promise<RevisionLast[]> {
+    const query = this.revisionRepository
+      .createQueryBuilder('revisions')
+      .distinctOn(['revisions.code_commune'])
+      .select('revisions.code_commune', 'codeCommune')
+      .addSelect('revisions.id', 'id')
+      .addSelect('revisions.is_ready', 'isReady')
+      .addSelect('revisions.status', 'status')
+      .addSelect(`revisions.validation->>'valid'`, 'isValid')
+      .orderBy('revisions.code_commune', 'ASC')
+      .addOrderBy('revisions.created_at', 'DESC');
+
+    return query.getRawMany() as Promise<RevisionLast[]>;
   }
 
   async findFirsts(): Promise<RevisionAgg[]> {
