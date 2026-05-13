@@ -243,27 +243,24 @@ export class RevisionController {
       const { file: csvFileSync, codeCommune } =
         await this.revisionService.syncIdsBAN(req.revision);
 
-      const clienBalAdmin = await this.clientService.findOneOrFail(
-        this.configService.get('ID_CLIENT_BAL_ADMIN'),
+      const client = await this.clientService.findOneOrFail(
+        req.revision.clientId,
       );
       const newRevisionFirstStep: Revision =
-        await this.revisionService.createOne(codeCommune, clienBalAdmin, {
-          nomComplet: 'ANCT',
-          organisation: 'ANCT',
+        await this.revisionService.createOne(codeCommune, client, {
+          ...req.revision.context,
           extras: {
-            sourceRevisionId: req.revision.id,
+            ...req.revision.context?.extras,
+            syncRevisionId: req.revision.id,
           },
         });
       await this.revisionService.setFile(newRevisionFirstStep, csvFileSync);
       const newRevisionSecondStep: Revision =
-        await this.revisionService.computeOne(
-          newRevisionFirstStep,
-          clienBalAdmin,
-        );
+        await this.revisionService.computeOne(newRevisionFirstStep, client);
       const newRevisionFinalStep: Revision =
         await this.revisionService.publishOneWithLock(
           newRevisionSecondStep,
-          clienBalAdmin,
+          client,
         );
       res.status(HttpStatus.OK).send(newRevisionFinalStep);
     } catch (error) {
