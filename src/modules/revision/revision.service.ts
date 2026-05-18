@@ -12,6 +12,7 @@ import { StatusHabilitationEnum } from '@/modules/habilitation/habilitation.enti
 import { RevisionWithClientDTO } from './dto/revision_with_client.dto';
 import { ValidationService } from './validation.service';
 import { NotifyService } from './notify.service';
+import { BalTree, formatterBAL } from '@ban-team/formatter-bal';
 import {
   Context,
   Revision,
@@ -29,7 +30,12 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RevisionAgg, RevisionLast } from '../stats/stats.service';
+import { RevisionAgg, RevisionLastPublished } from '../stats/stats.service';
+
+export type RevisionLast = Pick<
+  Revision,
+  'id' | 'codeCommune' | 'isReady' | 'status'
+> & { isValid: boolean };
 
 @Injectable()
 export class RevisionService {
@@ -56,13 +62,13 @@ export class RevisionService {
     });
   }
 
-  async findLasts({
+  async findLastsPublished({
     offset,
     limit,
   }: {
     offset?: number;
     limit?: number;
-  }): Promise<RevisionLast[]> {
+  }): Promise<RevisionLastPublished[]> {
     const query = this.revisionRepository
       .createQueryBuilder('revisions')
       .select('code_commune', 'codeCommune')
@@ -130,39 +136,19 @@ export class RevisionService {
     return query.getRawMany();
   }
 
-  async findLastsRevisionInPending(page = 1, limit = 10): Promise<any> {
-    const offset = (page - 1) * limit;
-    const result = await this.revisionRepository.query(
-      `SELECT 
-        last_revisions.id,
-        code_commune AS "codeCommune",
-        status,
-        last_revisions.created_at AS "createdAt",
-        legacy_id AS "legacyId",
-        validation
-        FROM (
-            SELECT DISTINCT ON (code_commune) *
-            FROM revisions
-            ORDER BY code_commune, created_at DESC
-        ) last_revisions
-        LEFT JOIN clients on clients.id = last_revisions.client_id
-        WHERE status = 'pending'
-        ORDER BY last_revisions.created_at DESC
-        LIMIT $1 OFFSET $2`,
-      [limit, offset],
-    );
+  async findLasts(): Promise<RevisionLast[]> {
+    const query = this.revisionRepository
+      .createQueryBuilder('revisions')
+      .distinctOn(['revisions.code_commune'])
+      .select('revisions.code_commune', 'codeCommune')
+      .addSelect('revisions.id', 'id')
+      .addSelect('revisions.is_ready', 'isReady')
+      .addSelect('revisions.status', 'status')
+      .addSelect(`revisions.validation->>'valid'`, 'isValid')
+      .orderBy('revisions.code_commune', 'ASC')
+      .addOrderBy('revisions.created_at', 'DESC');
 
-    const [{ total }] = await this.revisionRepository.query(`
-      SELECT COUNT(*) as total
-      FROM (
-          SELECT DISTINCT ON (code_commune) *
-          FROM revisions
-          ORDER BY code_commune, created_at DESC
-      ) last_revisions
-      WHERE status = 'pending'
-    `);
-
-    return { result, total };
+    return query.getRawMany() as Promise<RevisionLast[]>;
   }
 
   async findFirsts(): Promise<RevisionAgg[]> {
@@ -444,5 +430,19 @@ export class RevisionService {
     await this.notifyService.onForcePublish(prevRevision, revisionPublished);
 
     return revisionPublished;
+  }
+
+  async syncIdsBAN(revision: Revision): Promise<{
+    codeCommune: string;
+    file: Buffer;
+  }> {
+    const csvFile = await this.fileService.findDataByRevision(revision.id);
+    const { file, tree } = (await formatterBAL(csvFile, {
+      withTree: true,
+    })) as {
+      tree: BalTree;
+      file: Buffer;
+    };
+    return { file, codeCommune: tree.commune_insee };
   }
 }
