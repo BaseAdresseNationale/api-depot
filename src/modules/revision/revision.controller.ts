@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  HttpException,
   HttpStatus,
   ParseArrayPipe,
   Query,
@@ -196,12 +195,6 @@ export class RevisionController {
     operationId: 'DownloadFileRevision',
   })
   async downloadFile(@Req() req: CustomRequest, @Res() res: Response) {
-    if (req.revision.status !== StatusRevisionEnum.PUBLISHED) {
-      throw new HttpException(
-        "La révision n'est pas encore accessible car non publiée",
-        HttpStatus.FORBIDDEN,
-      );
-    }
     const data: Buffer = await this.fileService.findDataByRevision(
       req.revision.id,
     );
