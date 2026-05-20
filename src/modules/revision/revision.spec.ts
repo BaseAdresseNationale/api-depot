@@ -25,6 +25,7 @@ import { Mandataire } from '../mandataire/mandataire.entity';
 import { RevisionModule } from './revision.module';
 import { Habilitation } from '../habilitation/habilitation.entity';
 import { Revision, StatusRevisionEnum } from './revision.entity';
+import { RevisionLast } from './revision.service';
 import { S3Service } from '../file/s3.service';
 import { File } from '../file/file.entity';
 import { Repository } from 'typeorm';
@@ -290,14 +291,18 @@ describe('REVISION MODULE', () => {
 
       expect(body.length).toBe(2);
 
-      const revisionWithExtras = body.find((r) => r.codeCommune === '91534');
+      const revisionWithExtras = body.find(
+        (r: RevisionLast) => r.codeCommune === '91534',
+      );
       expect(revisionWithExtras.context).toBeDefined();
       expect(revisionWithExtras.context.extras).toMatchObject({
         balId: 'bal-123',
         sourceId: 'source-456',
       });
 
-      const revisionWithoutExtras = body.find((r) => r.codeCommune === '91477');
+      const revisionWithoutExtras = body.find(
+        (r: RevisionLast) => r.codeCommune === '91477',
+      );
       expect(revisionWithoutExtras.context).toBeDefined();
       expect(revisionWithoutExtras.context.extras).toBeNull();
     });
@@ -703,6 +708,182 @@ describe('REVISION MODULE', () => {
         .expect(200);
 
       expect(text).toEqual(fileData.toString());
+    });
+  });
+
+  describe('GET /last-revisions', () => {
+    it('GET /last-revisions returns empty array when no revisions', async () => {
+      const { body } = await request(app.getHttpServer())
+        .get('/last-revisions')
+        .expect(200);
+
+      expect(body).toEqual([]);
+    });
+
+    it('GET /last-revisions returns one entry per commune with published isCurrent revision', async () => {
+      const client: Client2 = await createClient();
+
+      const r1 = await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: false,
+      });
+
+      const r2 = await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get('/last-revisions')
+        .expect(200);
+
+      expect(body.length).toBe(1);
+      expect(body[0].id).toBe(r2.id);
+      expect(body[0].codeCommune).toBe('91534');
+      expect(body[0].status).toBe(StatusRevisionEnum.PUBLISHED);
+      expect(body[0].id).not.toBe(r1.id);
+    });
+
+    it('GET /last-revisions returns pending revision when last created is pending', async () => {
+      const client: Client2 = await createClient();
+
+      await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+      });
+
+      const pendingRevision = await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PENDING,
+        isCurrent: false,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get('/last-revisions')
+        .expect(200);
+
+      expect(body.length).toBe(1);
+      expect(body[0].id).toBe(pendingRevision.id);
+      expect(body[0].codeCommune).toBe('91534');
+      expect(body[0].status).toBe(StatusRevisionEnum.PENDING);
+    });
+
+    it('GET /last-revisions mixed - some communes published isCurrent, others pending', async () => {
+      const client: Client2 = await createClient();
+
+      const publishedRevision = await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        publishedAt: new Date(),
+      });
+
+      const pendingRevision = await createRevision({
+        codeCommune: '37185',
+        clientId: client.id,
+        status: StatusRevisionEnum.PENDING,
+        isCurrent: false,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get('/last-revisions')
+        .expect(200);
+
+      expect(body.length).toBe(2);
+
+      const rev91534 = body.find(
+        (r: RevisionLast) => r.codeCommune === '91534',
+      );
+      expect(rev91534.id).toBe(publishedRevision.id);
+      expect(rev91534.status).toBe(StatusRevisionEnum.PUBLISHED);
+
+      const rev37185 = body.find(
+        (r: RevisionLast) => r.codeCommune === '37185',
+      );
+      expect(rev37185.id).toBe(pendingRevision.id);
+      expect(rev37185.status).toBe(StatusRevisionEnum.PENDING);
+    });
+
+    it('GET /last-revisions returns isValid from validation field', async () => {
+      const client: Client2 = await createClient();
+
+      await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        validation: { valid: true },
+      });
+
+      await createRevision({
+        codeCommune: '37185',
+        clientId: client.id,
+        status: StatusRevisionEnum.PENDING,
+        isCurrent: false,
+        validation: { valid: false },
+      });
+
+      await createRevision({
+        codeCommune: '43089',
+        clientId: client.id,
+        status: StatusRevisionEnum.PENDING,
+        isCurrent: false,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get('/last-revisions')
+        .expect(200);
+
+      expect(body.length).toBe(3);
+
+      const rev91534 = body.find(
+        (r: RevisionLast) => r.codeCommune === '91534',
+      );
+      expect(rev91534.isValid).toBe('true');
+
+      const rev37185 = body.find(
+        (r: RevisionLast) => r.codeCommune === '37185',
+      );
+      expect(rev37185.isValid).toBe('false');
+
+      const rev43089 = body.find(
+        (r: RevisionLast) => r.codeCommune === '43089',
+      );
+      expect(rev43089.isValid).toBeNull();
+    });
+
+    it('GET /last-revisions returns correct fields structure', async () => {
+      const client: Client2 = await createClient();
+
+      await createRevision({
+        codeCommune: '91534',
+        clientId: client.id,
+        status: StatusRevisionEnum.PUBLISHED,
+        isCurrent: true,
+        isReady: false,
+        validation: { valid: true },
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get('/last-revisions')
+        .expect(200);
+
+      expect(body.length).toBe(1);
+      expect(body[0]).toMatchObject({
+        codeCommune: '91534',
+        status: StatusRevisionEnum.PUBLISHED,
+        isValid: 'true',
+      });
+      expect(body[0].id).toBeDefined();
+      expect(body[0].isReady).toBeDefined();
     });
   });
 
