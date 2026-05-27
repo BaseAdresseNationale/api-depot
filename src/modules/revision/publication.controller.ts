@@ -237,6 +237,7 @@ export class PublicationController {
         await this.revisionService.publishOneWithLock(
           newRevisionSecondStep,
           client,
+          req.revision.habilitation.id,
         );
       res.status(HttpStatus.OK).send(newRevisionFinalStep);
     } catch (error) {
