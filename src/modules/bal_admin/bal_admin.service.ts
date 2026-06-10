@@ -23,9 +23,10 @@ export class BalAdminService {
 
   private buildPayload(client: Client, chefDeFile: ChefDeFile): ClientPayload {
     const perimeters = chefDeFile
-      ? (chefDeFile.perimeters ?? []).map(({ type, code }) => ({
+      ? (chefDeFile.perimeters ?? []).map(({ type, code, expiredAt }) => ({
           type,
           code,
+          expiredAt,
         }))
       : undefined;
 
