@@ -1,4 +1,5 @@
 import { Inject, Injectable, forwardRef, Logger } from '@nestjs/common';
+import { parseISO } from 'date-fns';
 import {
   validate,
   ValidateRowFullType,
@@ -38,18 +39,31 @@ export class ValidationService {
     return rows.every((r) => this.getRowCodeCommune(r) === codeCommune);
   }
 
-  private async checkIsInPerimetre(codeCommune: string, client: Client) {
+  private async checkIsInPerimetre(
+    codeCommune: string,
+    client: Client,
+  ): Promise<string | undefined> {
     if (client?.chefDeFileId) {
       const chefDeFile = await this.chefDeFileService.findOneOrFail(
         client.chefDeFileId,
       );
-      return (
-        chefDeFile.perimeters &&
-        communeIsInPerimeters(codeCommune, chefDeFile.perimeters)
-      );
+      if (chefDeFile.perimeters) {
+        const now = new Date();
+        const perimetersNotExpired = chefDeFile.perimeters.filter(
+          ({ expiredAt }) => !expiredAt || parseISO(expiredAt) > now,
+        );
+
+        if (communeIsInPerimeters(codeCommune, perimetersNotExpired)) {
+          return;
+        } else if (communeIsInPerimeters(codeCommune, chefDeFile.perimeters)) {
+          return 'commune_insee.perimeter_expired';
+        } else {
+          return 'commune_insee.out_of_perimeter';
+        }
+      }
     }
 
-    return true;
+    return;
   }
 
   async getLastNbRowsFromBan(codeCommune: string): Promise<number> {
@@ -122,8 +136,10 @@ export class ValidationService {
     if (!this.checkIsSameCommune(rows, codeCommune)) {
       errors.push('commune_insee.valeur_inattendue');
     }
-    if (!(await this.checkIsInPerimetre(codeCommune, client))) {
-      errors.push('commune_insee.out_of_perimeter');
+
+    const errorPerimeter = await this.checkIsInPerimetre(codeCommune, client);
+    if (errorPerimeter) {
+      errors.push(errorPerimeter);
     }
 
     const rowsCount = rows.length;

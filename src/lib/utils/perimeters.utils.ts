@@ -8,7 +8,6 @@ import {
   getEPCI,
   isArrondissement,
 } from './cog.utils';
-import { parseISO } from 'date-fns';
 import { CommuneCOG, EpciCOG } from '@/lib/types/cog.type';
 
 function isInDepartement(departement: string, codeCommune: string): boolean {
@@ -47,17 +46,10 @@ export function communeIsInPerimeters(
   codeInsee: string,
   perimeters: Perimeter[],
 ) {
-  const now = new Date();
-  const perimetersNotExpired = perimeters.filter(
-    ({ expiredAt }) => !expiredAt || parseISO(expiredAt) > now,
-  );
-  const res = codeInseeIsInPerimeters(codeInsee, perimetersNotExpired);
+  const res = codeInseeIsInPerimeters(codeInsee, perimeters);
   if (isArrondissement(codeInsee)) {
     const codeCommune: string = getCommune(codeInsee).commune;
-    const resArrondissement = codeInseeIsInPerimeters(
-      codeCommune,
-      perimetersNotExpired,
-    );
+    const resArrondissement = codeInseeIsInPerimeters(codeCommune, perimeters);
     return res || resArrondissement;
   }
   return res;
