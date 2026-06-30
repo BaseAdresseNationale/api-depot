@@ -44,6 +44,10 @@ export class Perimeter {
   @Column('text', { nullable: false })
   code: string;
 
+  @ApiProperty()
+  @Column('text', { nullable: true, name: 'expired_at' })
+  expiredAt?: string;
+
   @ApiProperty({ type: () => ChefDeFile })
   @ManyToOne(() => ChefDeFile, (cdf) => cdf.perimeters, {
     onDelete: 'CASCADE',

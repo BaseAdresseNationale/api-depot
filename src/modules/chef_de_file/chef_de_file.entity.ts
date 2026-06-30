@@ -39,5 +39,5 @@ export class ChefDeFile extends IdEntity {
     eager: true,
     cascade: true,
   })
-  perimeters?: Perimeter[] | [];
+  perimeters?: Perimeter[];
 }
