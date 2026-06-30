@@ -97,26 +97,30 @@ export class StatService {
     const revisionsGroupByDays = groupBy(revisions, (revision) =>
       format(revision.publishedAt, 'yyyy-MM-dd'),
     );
+
     return Object.entries(revisionsGroupByDays).map(([date, revisions]) => {
-      const revisionsGroupByBals = groupBy(
+      const revisionsGroupByCommunes = groupBy(
         revisions,
         (revision) => revision.codeCommune,
       );
       return {
         date,
-        publishedBAL: mapValues(revisionsGroupByBals, (revisionsByBal) => ({
-          total: revisionsByBal.length,
-          viaMesAdresses: revisionsByBal.filter(
-            ({ client }) =>
-              this.clientsToMonitorIndex[client]?.id ===
-              CLIENTS_TO_MONITOR.mesAdresses,
-          ).length,
-          viaMoissonneur: revisionsByBal.filter(
-            ({ client }) =>
-              this.clientsToMonitorIndex[client]?.id ===
-              CLIENTS_TO_MONITOR.moissonneur,
-          ).length,
-        })),
+        publishedBAL: mapValues(
+          revisionsGroupByCommunes,
+          (revisionsByCommune) => ({
+            total: revisionsByCommune.length,
+            viaMesAdresses: revisionsByCommune.filter(
+              ({ clientId }) =>
+                this.clientsToMonitorIndex[clientId]?.legacyId ===
+                CLIENTS_TO_MONITOR.mesAdresses,
+            ).length,
+            viaMoissonneur: revisionsByCommune.filter(
+              ({ clientId }) =>
+                this.clientsToMonitorIndex[clientId]?.legacyId ===
+                CLIENTS_TO_MONITOR.moissonneur,
+            ).length,
+          }),
+        ),
       };
     });
   }
