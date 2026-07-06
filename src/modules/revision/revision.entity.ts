@@ -55,6 +55,10 @@ export class Context {
   extras?: Record<string, any> | null;
 }
 
+@Index('IDX_revision_current_commune', ['codeCommune'], {
+  where: '"is_current" = TRUE',
+  unique: true,
+})
 @Entity({
   name: 'revisions',
   orderBy: {
