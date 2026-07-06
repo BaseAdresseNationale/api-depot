@@ -241,7 +241,7 @@ describe('REVISION MODULE', () => {
       });
 
       await createRevision({
-        codeCommune: '91534',
+        codeCommune: '91434',
         clientId: client.id,
         status: StatusRevisionEnum.PUBLISHED,
         isCurrent: true,
