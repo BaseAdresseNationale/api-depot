@@ -29,7 +29,7 @@ export class ProConnectStrategy extends PassportStrategy(
         callbackURL:
           configService.get('API_DEPOT_URL') +
           '/habilitations/proconnect/callback',
-        scope: ['openid', 'siret'],
+        scope: ['openid', 'siret', 'email'],
         passReqToCallback: true,
       },
       (req, accessToken, refreshToken, params, profile, done) => {
