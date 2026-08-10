@@ -288,16 +288,13 @@ export class HabilitationService {
     const habilitation = await this.findOneOrFail(habilitationId);
 
     if (habilitation.status === StatusHabilitationEnum.PENDING) {
-      const proConnectMailAdmin =
-        this.configService.get('PC_EMAIL_ADMIN')?.split(',') || [];
-
       const siretBelongToCommune: boolean =
         await this.apiAnnuaireService.siretBelongToCommune(
           user.siret,
           habilitation.codeCommune,
         );
 
-      if (siretBelongToCommune || proConnectMailAdmin.includes(user.email)) {
+      if (siretBelongToCommune) {
         await this.acceptHabilitation(habilitation.id, {
           strategy: {
             type: TypeStrategyEnum.PROCONNECT,
