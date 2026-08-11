@@ -1,13 +1,20 @@
+import { randomBytes } from 'crypto';
+
 export const TOKEN_LENGTH = 32;
 
-export function generateToken(): string {
-  const charset =
-    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const TOKEN_CHARSET =
+  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+// Plus grand multiple de 62 <= 256, pour rejeter les octets biaisés
+const REJECTION_THRESHOLD = 256 - (256 % TOKEN_CHARSET.length);
 
+export function generateToken(length = TOKEN_LENGTH): string {
   let token = '';
-  for (let i = 0, n = charset.length; i < TOKEN_LENGTH; ++i) {
-    token += charset.charAt(Math.floor(Math.random() * n));
+  while (token.length < length) {
+    for (const byte of randomBytes((length - token.length) * 2)) {
+      if (byte >= REJECTION_THRESHOLD) continue;
+      token += TOKEN_CHARSET[byte % TOKEN_CHARSET.length];
+      if (token.length === length) break;
+    }
   }
-
   return token;
 }
