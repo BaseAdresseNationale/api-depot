@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import * as Papa from 'papaparse';
 import {
   add,
+  eachMonthOfInterval,
   endOfDay,
   format,
   compareDesc,
   subYears,
   subMonths,
   subWeeks,
+  getMonth,
+  getYear,
 } from 'date-fns';
 import { keyBy, groupBy, mapValues } from 'lodash';
 
@@ -40,6 +46,9 @@ export interface RevisionAgg {
 @Injectable()
 export class StatService {
   clientsToMonitorIndex = [];
+  private publicationDateByCommune: Map<string, Date> =
+    this.loadPublicationDateByCommune();
+
   constructor(
     private revisionService: RevisionService,
     private clientService: ClientService,
@@ -53,6 +62,62 @@ export class StatService {
     });
 
     this.clientsToMonitorIndex = keyBy(clientsToMonitor, 'id');
+  }
+
+  private loadPublicationDateByCommune(): Map<string, Date> {
+    const csvContent = readFileSync(
+      join(process.cwd(), 'publication_date.csv'),
+      'utf-8',
+    );
+    const { data } = Papa.parse<{ code: string; publication_date: string }>(
+      csvContent,
+      { header: true, skipEmptyLines: true },
+    );
+
+    return new Map(
+      data.map(({ code, publication_date }) => [
+        code,
+        new Date(publication_date),
+      ]),
+    );
+  }
+
+  public async findFirstPublicationsByMonth(): Promise<Record<string, number>> {
+    const revisionsAgg: RevisionAgg[] = await this.revisionService.findFirsts();
+
+    const revisionsAggWithPublicationDate: RevisionAgg[] = revisionsAgg.map(
+      (revision) => ({
+        ...revision,
+        publishedAt:
+          this.publicationDateByCommune.get(revision.codeCommune) ??
+          revision.publishedAt,
+      }),
+    );
+
+    const from = new Date(2020, 0, 1);
+    const to = new Date();
+
+    const countBeforeFrom = revisionsAggWithPublicationDate.filter(
+      ({ publishedAt }) => publishedAt < from,
+    ).length;
+
+    const revisionsAggByMonth: Record<string, RevisionAgg[]> = groupBy(
+      revisionsAggWithPublicationDate,
+      ({ publishedAt }: RevisionAgg) =>
+        `${getMonth(publishedAt)}-${getYear(publishedAt)}`,
+    );
+
+    let cumul = countBeforeFrom;
+    const cumulFirstRevisionsByMonth: Record<string, number> =
+      Object.fromEntries(
+        eachMonthOfInterval({ start: from, end: to }).map((date) => {
+          const month = `${getMonth(date)}-${getYear(date)}`;
+          cumul += revisionsAggByMonth[month]?.length ?? 0;
+          return [month, cumul];
+        }),
+      );
+
+    return cumulFirstRevisionsByMonth;
   }
 
   public async findFirstPublications(

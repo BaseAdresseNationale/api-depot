@@ -35,6 +35,24 @@ import {
 export class StatController {
   constructor(private statService: StatService) {}
 
+  @Get('firsts-publications-months')
+  @ApiOperation({
+    summary: 'Find first publications by months',
+    operationId: 'findFirstPublicationsByMonth',
+  })
+  @ApiQuery({ type: DateFromToQuery })
+  // @ApiResponse({
+  //   status: HttpStatus.OK,
+  //   type: FirstPublicationDTO,
+  //   isArray: true,
+  // })
+  // @ApiBearerAuth('admin-token')
+  // @UseGuards(AdminGuard)
+  async findFirstPublicationsByMonth(@Res() res: Response) {
+    const result = await this.statService.findFirstPublicationsByMonth();
+    res.status(HttpStatus.OK).json(result);
+  }
+
   @Get('firsts-publications')
   @ApiOperation({
     summary: 'Find all first publications',
